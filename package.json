@@ -1,0 +1,16 @@
+{
+  "name": "ens-metadata-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Makoto Inoue <2630+makoto@users.noreply.github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "eth-ens-namehash": "^2.0.8",
+    "ethers": "^5.3.0",
+    "express": "^4.17.1",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
+    "lodash": "^4.17.21",
+    "microbundle": "^0.13.2"
+  }
+}
