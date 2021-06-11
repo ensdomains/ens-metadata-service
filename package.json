@@ -13,10 +13,15 @@
     "graphql-request": "^3.4.0",
     "lodash": "^4.17.21"
   },
+  "scripts": {
+    "build": "tsc --project ./",
+    "dev": "ts-node-dev src/index.ts"
+  },
   "devDependencies": {
     "@types/express": "^4.17.12",
     "@types/node": "^15.12.2",
     "ts-node": "^10.0.0",
+    "ts-node-dev": "^1.1.6",
     "typescript": "^4.3.2"
   }
 }
