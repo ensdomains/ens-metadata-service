@@ -1,5 +1,5 @@
 import express from 'express';
-import { getDomain } from './domain';
+import { getImage, getDomain } from './domain';
 
 const app = express();
 
@@ -12,12 +12,11 @@ app.get('/name/:tokenId', async function (req, res) {
   res.json(await getDomain(tokenId))
 })
 
-app.get('/name/:tokenId/image', async function (req, res) {
-  const { tokenId } = req.params
-  const response = await getDomain(tokenId)
+app.get('/name/:name/image', async function (req, res) {
+  const { name } = req.params
   const body = `
     <html>
-      <img src=${response.image}>
+      <img src=${getImage(name)}>
     </html>
   `
   res.send(body)
