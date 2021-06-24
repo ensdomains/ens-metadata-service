@@ -11,12 +11,17 @@ function textEllipsis(name:string, max:number){
 }
 
 function getFontSize(name:string){
-  if(name.length <= 15){
+  // For multi byte unicode chars
+  const byteLength = Buffer.byteLength(name)
+  const length = byteLength === name.length ? byteLength : (byteLength / 1.7) + ''
+  if(length <= 15){
     return 27
-  }else if(name.length <= 20){
+  }else if(length <= 20){
     return 20
-  }else{
+  }else if (length <= 30){
     return 13
+  }else{
+    return 9
   }
 }
 
