@@ -1,28 +1,36 @@
 import { gql } from 'graphql-request'
 import { request } from 'graphql-request'
 import { ethers } from "ethers";
+const MAX_CHAR = 30
 
 const btoa = require('btoa');
 // const URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens'
 const URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby'
 const eth = '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae'
-function textEllipsis(name:string, max:number){
-  return name.slice(0,max - 3) + '...'
+function textEllipsis(name:string){
+  return name.substring(0,MAX_CHAR - 3) + '...'
 }
 
-function getFontSize(name:string){
+function getCharLength(name:string):number{
+  let byteLength = Buffer.byteLength(name)
+  byteLength = byteLength === name.length ? byteLength : (byteLength / 1.6)
+  return Math.floor(byteLength)
+}
+
+function getFontSize(name:string):number{
   // For multi byte unicode chars
-  const byteLength = Buffer.byteLength(name)
-  const length = byteLength === name.length ? byteLength : (byteLength / 1.7) + ''
-  if(length <= 15){
-    return 27
+  const length = getCharLength(name)
+  let size
+  if(length <= 10){
+    size = 30
   }else if(length <= 20){
-    return 20
-  }else if (length <= 30){
-    return 13
+    size = 24
+  }else if (length <= MAX_CHAR){
+    size = 12
   }else{
-    return 9
+    size = 8
   }
+  return size
 }
 
 function b64EncodeUnicode(str:string) {
@@ -31,22 +39,21 @@ function b64EncodeUnicode(str:string) {
   }))
 }
 export function getImage(name:string){
-  const max = 30
   let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize
   const labels = name.split('.')
   const isSubdomain = labels.length > 2
   if(isSubdomain){
     subdomain = labels.slice(0,labels.length -2).join('.') + '.'
     domain = labels.slice(-2).join('.')
-    if(subdomain.length > max){
-      subdomain = textEllipsis(subdomain, max)
+    if(getCharLength(subdomain) > MAX_CHAR){
+      subdomain = textEllipsis(subdomain)
     }
     subdomainFontSize = getFontSize(subdomain)
     subdomainText = `
     <text
       x="30"
       y="220"
-      font-family= "monospace"
+      font-family= "Helvetica"
       font-size="${subdomainFontSize}px"
       stroke-width="0"
       opacity="0.4"
@@ -58,11 +65,10 @@ export function getImage(name:string){
   }else{
     domain = name
   }
-  if(domain.length > max){
-    domain =  textEllipsis(domain, max)
+  if(getCharLength(domain) > MAX_CHAR){
+    domain = textEllipsis(domain)
   }
   domainFontSize = getFontSize(domain)
-
   const svg = `
   <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" encoding="UTF-8">
     <defs>
@@ -88,7 +94,7 @@ export function getImage(name:string){
       <text
         x="30"
         y="250"
-        font-family="monospace"
+        font-family="Helvetica"
         font-size="${domainFontSize}px"
         stroke-width="0"
         fill="white"
@@ -98,7 +104,12 @@ export function getImage(name:string){
     </g>  
   </svg>
   `
-  return 'data:image/svg+xml;base64,'+ b64EncodeUnicode(svg)
+  try{
+    return 'data:image/svg+xml;base64,'+ b64EncodeUnicode(svg)
+  }catch(e){
+    console.log(domain, e)
+    return ''
+  }
 }
 
 export const GET_DOMAINS = gql`
