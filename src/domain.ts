@@ -1,12 +1,19 @@
 import { gql } from 'graphql-request'
 import { request } from 'graphql-request'
 import { ethers } from "ethers";
+require('dotenv').config()
+
+const INFURA_API_KEY= process.env.INFURA_API_KEY
+const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`
 const MAX_CHAR = 30
 
 const btoa = require('btoa');
-// const URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens'
-const URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby'
+// const SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens'
+const SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby'
 const eth = '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae'
+console.log({INFURA_API_KEY, INFURA_URL, SUBGRAPH_URL})
+const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+const IMAGE_KEY = 'domains.ens.nft.image'
 function textEllipsis(name:string){
   return name.substring(0,MAX_CHAR - 3) + '...'
 }
@@ -39,6 +46,8 @@ function b64EncodeUnicode(str:string) {
   }))
 }
 export function getImage(name:string){
+
+
   let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize
   const labels = name.split('.')
   const isSubdomain = labels.length > 2
@@ -56,7 +65,6 @@ export function getImage(name:string){
       font-family= "Helvetica"
       font-size="${subdomainFontSize}px"
       stroke-width="0"
-      opacity="0.4"
       fill="white"
     >
       ${subdomain}
@@ -90,13 +98,23 @@ export function getImage(name:string){
 
       </g>
 
-      ${subdomainText}
+      <text
+      x="30"
+      y="220"
+      font-family= "Helvetica"
+      font-size="${subdomainFontSize}px"
+      stroke-width="0"
+      fill="white"
+    >
+      ${subdomain}
+    </text>
       <text
         x="30"
         y="250"
         font-family="Helvetica"
         font-size="${domainFontSize}px"
         stroke-width="0"
+        opacity="0.4"
         fill="white"
       >
         ${domain}
@@ -126,6 +144,9 @@ export const GET_DOMAINS = gql`
       parent{
         id
       }
+      resolver{
+        texts
+      }
     }    
   }
 `
@@ -150,7 +171,7 @@ interface Domain {
 }
 
 export async function getDomain(tokenId:string):Promise<Domain>   {
-    let hexId, intId
+    let hexId, intId, imageUrl
     if(!tokenId.match(/^0x/)){
       intId = tokenId
       hexId = ethers.utils.hexValue(ethers.BigNumber.from(tokenId))
@@ -160,9 +181,16 @@ export async function getDomain(tokenId:string):Promise<Domain>   {
     }
     console.log(2, {intId, hexId})
     try{
-      const {domain:{name, labelName, labelhash, createdAt, owner, parent}} = await request(URL, GET_DOMAINS, { tokenId:hexId })
-      console.log({name, labelName, labelhash, createdAt, owner, parent})
-      const imageUrl = getImage(name)
+      const {domain:{name, labelName, labelhash, createdAt, owner, parent, resolver}} = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId:hexId })      
+      const hasImageKey = resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY)
+      console.log({name, labelName, labelhash, createdAt, owner, parent, resolver, hasImageKey})
+      if(hasImageKey){
+        const r = await provider.getResolver(name);
+        imageUrl = await r.getText(IMAGE_KEY)  
+      }else{
+        imageUrl = getImage(name)
+      }
+      
       let attributes = [
         {
           "trait_type":"Created Date",
@@ -171,7 +199,7 @@ export async function getDomain(tokenId:string):Promise<Domain>   {
         }
       ]
       if(parent.id === eth){
-        const {registrations} = await request(URL, GET_REGISTRATIONS, { labelhash })
+        const {registrations} = await request(SUBGRAPH_URL, GET_REGISTRATIONS, { labelhash })
         console.log({registrations})
         const registration = registrations[0]
         if(registration){
