@@ -1,8 +1,10 @@
 import { gql } from 'graphql-request'
 import { request } from 'graphql-request'
 import { ethers } from "ethers";
-require('dotenv').config()
 
+// this fails
+const font = require("./PlusJakartaSans-Regular.woff")
+require('dotenv').config()
 const INFURA_API_KEY= process.env.INFURA_API_KEY
 const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`
 const MAX_CHAR = 30
@@ -46,8 +48,6 @@ function b64EncodeUnicode(str:string) {
   }))
 }
 export function getImage(name:string){
-
-
   let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize
   const labels = name.split('.')
   const isSubdomain = labels.length > 2
