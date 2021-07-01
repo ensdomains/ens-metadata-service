@@ -10,6 +10,11 @@ tokenId accepts namehash of ENS name in both hex and int format
 /name/{tokenId}
 ```
 
+Examples
+
+- [Default image](https://testnets.opensea.io/assets/0x9029c1574f91696026358d4edB0De773d0E04aeD/0x2517c0dfe3a4eebac3456a409c53f824f86070c73d48794d8268ec5c007ee683)
+- [Custom image](https://testnets.opensea.io/assets/0x9029c1574f91696026358d4edB0De773d0E04aeD/84120850835537414527020398714431393504535329440173489282076403473842759587505)
+
 ### Response
 
 ```
@@ -53,7 +58,5 @@ yarn deploy
 ## TODO
 
 - Add test (especially to mock external calls like subgraph)
-- Add support for fetching image from text record
-- Style default image
-- Test metadata display properly on Marketplaces like OpenSea and Rarible
+- Style default image (Use custom font)
 - 404 when tokenId does not exist
