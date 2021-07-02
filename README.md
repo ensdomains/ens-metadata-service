@@ -58,5 +58,7 @@ yarn deploy
 ## TODO
 
 - Add test (especially to mock external calls like subgraph)
-- Style default image (Use custom font)
+- Style default image (Use custom font [Jakarta Sans](https://tokotype.github.io/plusjakarta-sans) )
 - 404 when tokenId does not exist
+- Configure for different networks (localhost/rinkeby/ropsten/goerli/mainnet)
+- Adjust name size (to look relatively nice for ascii characters. Probably better to cut off beyond certain characters)

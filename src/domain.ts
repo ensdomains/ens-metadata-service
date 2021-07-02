@@ -1,6 +1,6 @@
-import { gql } from 'graphql-request'
 import { request } from 'graphql-request'
 import { ethers } from "ethers";
+import { GET_REGISTRATIONS, GET_DOMAINS} from './subgraph'
 require('dotenv').config()
 
 const INFURA_API_KEY= process.env.INFURA_API_KEY
@@ -46,8 +46,6 @@ function b64EncodeUnicode(str:string) {
   }))
 }
 export function getImage(name:string){
-
-
   let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize
   const labels = name.split('.')
   const isSubdomain = labels.length > 2
@@ -98,16 +96,7 @@ export function getImage(name:string){
 
       </g>
 
-      <text
-      x="30"
-      y="220"
-      font-family= "Helvetica"
-      font-size="${subdomainFontSize}px"
-      stroke-width="0"
-      fill="white"
-    >
-      ${subdomain}
-    </text>
+      ${subdomainText}
       <text
         x="30"
         y="250"
@@ -129,37 +118,6 @@ export function getImage(name:string){
     return ''
   }
 }
-
-export const GET_DOMAINS = gql`
-  query getDomains($tokenId: String ){
-    domain(id:$tokenId){
-      id
-      labelName
-      labelhash
-      name
-      createdAt
-      owner{
-        id
-      }
-      parent{
-        id
-      }
-      resolver{
-        texts
-      }
-    }    
-  }
-`
-
-export const GET_REGISTRATIONS = gql`
-  query getRegistration($labelhash: String){
-    registrations(orderBy:registrationDate, orderDirection:desc, where:{id:$labelhash}){
-      labelName    
-      registrationDate
-      expiryDate
-    }  
-  }
-`
 
 interface Domain {
   name: string;
