@@ -96,14 +96,16 @@ export function getImage(name:string){
 
       </g>
 
-      ${subdomainText}
+      ${subdomainText || ''}
       <text
         x="30"
         y="250"
         font-family="Helvetica"
         font-size="${domainFontSize}px"
         stroke-width="0"
-        opacity="0.4"
+        ${isSubdomain ? (
+          'opacity="0.4"'
+        ) : ''}
         fill="white"
       >
         ${domain}
@@ -111,6 +113,7 @@ export function getImage(name:string){
     </g>  
   </svg>
   `
+  console.log({svg})
   try{
     return 'data:image/svg+xml;base64,'+ b64EncodeUnicode(svg)
   }catch(e){
