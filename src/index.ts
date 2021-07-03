@@ -1,3 +1,5 @@
+import path from "path";
+import cors from 'cors';
 import express from 'express';
 import { getImage, getDomain } from './domain';
 
@@ -14,13 +16,22 @@ app.get('/name/:tokenId', async function (req, res) {
 
 app.get('/name/:name/image', async function (req, res) {
   const { name } = req.params
+  const image = getImage(name)
   const body = `
     <html>
-      <img src=${getImage(name)}>
+      <object data=${image} type="image/svg+xml">
+        <img src=${image} />
+      </object>
     </html>
   `
   res.send(body)
 })
+
+app.use(cors())
+app.use(
+  '/assets', 
+  express.static(path.join(__dirname, '.', 'assets'))
+)
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

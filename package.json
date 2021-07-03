@@ -7,6 +7,7 @@
   "dependencies": {
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
+    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "eth-ens-namehash": "^2.0.8",
     "ethers": "^5.3.0",
@@ -24,6 +25,7 @@
     "deploy": "yarn build && gcloud app deploy --project=ens-metadata-service"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.10",
     "@types/express": "^4.17.12",
     "@types/node": "^15.12.2",
     "ts-node": "^10.0.0",

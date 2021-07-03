@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { GET_REGISTRATIONS, GET_DOMAINS} from './subgraph'
 require('dotenv').config()
 
+const PORT = process.env.PORT || 8080;
 const INFURA_API_KEY= process.env.INFURA_API_KEY
 const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`
 const MAX_CHAR = 30
@@ -78,6 +79,7 @@ export function getImage(name:string){
   const svg = `
   <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" encoding="UTF-8">
     <defs>
+    <style type="text/css">@import url('http://localhost:${PORT}/assets/font.css');</style>
     <style>
       text { text-overflow: ellipsis; }
     </style>
@@ -100,7 +102,7 @@ export function getImage(name:string){
       <text
         x="30"
         y="250"
-        font-family="Helvetica"
+        font-family="PlusJakartaSans, sans-serif"
         font-size="${domainFontSize}px"
         stroke-width="0"
         ${isSubdomain ? (
@@ -113,7 +115,6 @@ export function getImage(name:string){
     </g>  
   </svg>
   `
-  console.log({svg})
   try{
     return 'data:image/svg+xml;base64,'+ b64EncodeUnicode(svg)
   }catch(e){
