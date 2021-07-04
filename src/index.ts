@@ -2,6 +2,7 @@ import path from "path";
 import cors from 'cors';
 import express from 'express';
 import { getImage, getDomain } from './domain';
+require('dotenv').config()
 
 const app = express();
 
@@ -28,10 +29,13 @@ app.get('/name/:name/image', async function (req, res) {
 })
 
 app.use(cors())
-app.use(
-  '/assets', 
-  express.static(path.join(__dirname, '.', 'assets'))
-)
+
+if(process.env.ENV === 'local'){
+  app.use(
+    '/assets', 
+    express.static(path.join(__dirname, '.', 'assets'))
+  )  
+}
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
