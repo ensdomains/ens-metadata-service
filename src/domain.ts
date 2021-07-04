@@ -29,7 +29,7 @@ function getFontSize(name:string):number{
   // For multi byte unicode chars
   const length = getCharLength(name)
   let size
-  if(length <= 10){
+  if(length <= 8){
     size = 35
   }else if(length <= 15){
     size = 27
