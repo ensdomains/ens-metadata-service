@@ -1,8 +1,12 @@
 import path from "path";
 import cors from 'cors';
-import express from 'express';
+import express, { Request } from 'express';
 import { getImage, getDomain } from './domain';
 require('dotenv').config()
+
+interface RequestParams {
+  tokenId?: string;
+}
 
 const app = express();
 
@@ -10,7 +14,14 @@ app.get('/', (req, res) => {
   res.send('Well done mate!');
 })
 
-app.get('/name/:tokenId', async function (req, res) {
+app.get('/name/:tokenId?', async function (req: Request<RequestParams>, res, next) {
+  if(!req.params.tokenId) {
+    res.status(404).json({
+      message: 'Seems like you haven\'t provided any tokenId, ' +
+      'thus we couldn\'t get any result back :('
+    })
+    return;
+  }
   const { tokenId } = req.params
   res.json(await getDomain(tokenId))
 })
