@@ -22,7 +22,7 @@
     "build": "tsc --project ./",
     "dev": "ENV=local ts-node-dev src/index.ts",
     "start": "node dist/index.js",
-    "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service"
+    "deploy": "yarn build && ENV=prod gcloud app deploy --project=ens-metadata-service"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
