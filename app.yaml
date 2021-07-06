@@ -9,7 +9,7 @@ handlers:
 - url: /assets
   static_dir: src/assets
   http_headers:
-    Access-Control-Allow-Origin: *
+    Access-Control-Allow-Origin: "*"
 - url: /.*
   secure: always
   redirect_http_response_code: 301
