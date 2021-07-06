@@ -1,30 +1,32 @@
-import { request } from 'graphql-request'
-import { ethers } from "ethers";
-import { GET_REGISTRATIONS, GET_DOMAINS} from './subgraph'
-require('dotenv').config()
+import { request } from 'graphql-request';
+import { ethers } from 'ethers';
+import { GET_REGISTRATIONS, GET_DOMAINS } from './subgraph';
+require('dotenv').config();
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || 'localhost';
-const ENV = process.env.ENV || 'local' // local/prod
-const NETWORK = process.env.NETWORK || 'local' // local/rinkeby/ropsten/goerli/mainnet
-const INFURA_API_KEY= process.env.INFURA_API_KEY
-const SERVER_URL = ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`
-const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`
-const MAX_CHAR = 30
-console.log({SERVER_URL, ENV, NETWORK})
+const ENV = process.env.ENV || 'local'; // local/prod
+const NETWORK = process.env.NETWORK || 'local'; // local/rinkeby/ropsten/goerli/mainnet
+const INFURA_API_KEY = process.env.INFURA_API_KEY;
+const SERVER_URL =
+  ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
+const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`;
+const MAX_CHAR = 30;
+console.log({ SERVER_URL, ENV, NETWORK });
 const btoa = require('btoa');
-const eth = '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae'
+const eth =
+  '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
 
 const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
-const IMAGE_KEY = 'domains.ens.nft.image'
-let SUBGRAPH_URL:string
+const IMAGE_KEY = 'domains.ens.nft.image';
+let SUBGRAPH_URL: string;
 
-switch(NETWORK) {
+switch (NETWORK) {
   case 'local':
-    SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens'
+    SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';
     break;
   case 'rinkeby':
-    SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby'
+    SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby';
     break;
   // New subgraph not deployed yet
   // case 'ropsten':
@@ -35,57 +37,59 @@ switch(NETWORK) {
   //   break;
   // case 'mainnet':
   //   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
-  //   break;          
+  //   break;
   default:
-    throw('unknown network')
+    throw 'unknown network';
 }
 
-console.log({INFURA_API_KEY, INFURA_URL, SUBGRAPH_URL})
+console.log({ INFURA_API_KEY, INFURA_URL, SUBGRAPH_URL });
 
-function textEllipsis(name:string){
-  return name.substring(0,MAX_CHAR - 3) + '...'
+function textEllipsis(name: string) {
+  return name.substring(0, MAX_CHAR - 3) + '...';
 }
 
-function getCharLength(name:string):number{
-  let byteLength = Buffer.byteLength(name)
-  byteLength = byteLength === name.length ? byteLength : (byteLength / 1.6)
-  return Math.floor(byteLength)
+function getCharLength(name: string): number {
+  let byteLength = Buffer.byteLength(name);
+  byteLength = byteLength === name.length ? byteLength : byteLength / 1.6;
+  return Math.floor(byteLength);
 }
 
-function getFontSize(name:string):number{
+function getFontSize(name: string): number {
   // For multi byte unicode chars
-  const length = getCharLength(name)
-  let size
-  if(length <= 8){
-    size = 35
-  }else if(length <= 15){
-    size = 27
-  }else if (length <= 18){
-    size = 24
-  }else if (length <= 21){
-    size = 13
-  }else{
-    size = 8
+  const length = getCharLength(name);
+  let size;
+  if (length <= 8) {
+    size = 35;
+  } else if (length <= 15) {
+    size = 27;
+  } else if (length <= 18) {
+    size = 24;
+  } else if (length <= 21) {
+    size = 13;
+  } else {
+    size = 8;
   }
-  return size
+  return size;
 }
 
-function b64EncodeUnicode(str:string) {
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-      return String.fromCharCode(parseInt(p1, 16))
-  }))
+function b64EncodeUnicode(str: string) {
+  return btoa(
+    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+      return String.fromCharCode(parseInt(p1, 16));
+    })
+  );
 }
-export function getImage(name:string){
-  let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize
-  const labels = name.split('.')
-  const isSubdomain = labels.length > 2
-  if(isSubdomain){
-    subdomain = labels.slice(0,labels.length -2).join('.') + '.'
-    domain = labels.slice(-2).join('.')
-    if(getCharLength(subdomain) > MAX_CHAR){
-      subdomain = textEllipsis(subdomain)
+export function getImage(name: string) {
+  let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize;
+  const labels = name.split('.');
+  const isSubdomain = labels.length > 2;
+  if (isSubdomain) {
+    subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
+    domain = labels.slice(-2).join('.');
+    if (getCharLength(subdomain) > MAX_CHAR) {
+      subdomain = textEllipsis(subdomain);
     }
-    subdomainFontSize = getFontSize(subdomain)
+    subdomainFontSize = getFontSize(subdomain);
     subdomainText = `
     <text
       x="30"
@@ -95,14 +99,14 @@ export function getImage(name:string){
     >
       ${subdomain}
     </text>
-    `
-  }else{
-    domain = name
+    `;
+  } else {
+    domain = name;
   }
-  if(getCharLength(domain) > MAX_CHAR){
-    domain = textEllipsis(domain)
+  if (getCharLength(domain) > MAX_CHAR) {
+    domain = textEllipsis(domain);
   }
-  domainFontSize = getFontSize(domain)
+  domainFontSize = getFontSize(domain);
   const svg = `
   <svg width="286" height="270" viewBox="0 0 286 270" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="286" height="270" rx="24" fill="url(#paint0_linear)"/>
@@ -117,9 +121,7 @@ export function getImage(name:string){
       x="30"
       y="235"
       font-size="${domainFontSize}px"
-      ${isSubdomain ? (
-        'opacity="0.4"'
-      ) : ''}
+      ${isSubdomain ? 'opacity="0.4"' : ''}
       fill="white"
     >
       ${domain}
@@ -141,12 +143,12 @@ export function getImage(name:string){
       </linearGradient>
     </defs>
   </svg>
-  `
-  try{
-    return 'data:image/svg+xml;base64,'+ b64EncodeUnicode(svg)
-  }catch(e){
-    console.log(domain, e)
-    return ''
+  `;
+  try {
+    return 'data:image/svg+xml;base64,' + b64EncodeUnicode(svg);
+  } catch (e) {
+    console.log(domain, e);
+    return '';
   }
 }
 
@@ -156,72 +158,74 @@ interface Domain {
   image: string;
   image_url: string;
   external_link: string;
-  attributes:any;
+  attributes: any;
 }
 
-export async function getDomain(tokenId:string):Promise<Domain>   {
-    let hexId, intId, imageUrl
-    if(!tokenId.match(/^0x/)){
-      intId = tokenId
-      hexId = ethers.utils.hexValue(ethers.BigNumber.from(tokenId))
-    }else{
-      intId = ethers.BigNumber.from(tokenId).toString()
-      hexId = tokenId
+export async function getDomain(tokenId: string): Promise<Domain> {
+  let hexId, intId, imageUrl;
+  if (!tokenId.match(/^0x/)) {
+    intId = tokenId;
+    hexId = ethers.utils.hexValue(ethers.BigNumber.from(tokenId));
+  } else {
+    intId = ethers.BigNumber.from(tokenId).toString();
+    hexId = tokenId;
+  }
+  console.log(2, { intId, hexId });
+  const {
+    domain: { name, labelName, labelhash, createdAt, owner, parent, resolver },
+  } = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId: hexId });
+  const hasImageKey =
+    resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
+  console.log({
+    name,
+    labelName,
+    labelhash,
+    createdAt,
+    owner,
+    parent,
+    resolver,
+    hasImageKey,
+  });
+  if (hasImageKey) {
+    const r = await provider.getResolver(name);
+    imageUrl = await r.getText(IMAGE_KEY);
+  } else {
+    imageUrl = getImage(name);
+  }
+
+  let attributes = [
+    {
+      trait_type: 'Created Date',
+      display_type: 'date',
+      value: createdAt * 1000,
+    },
+  ];
+  if (parent.id === eth) {
+    const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
+      labelhash,
+    });
+    console.log({ registrations });
+    const registration = registrations[0];
+    if (registration) {
+      attributes.push({
+        trait_type: 'Registration Date',
+        display_type: 'date',
+        value: registration.registrationDate * 1000,
+      });
+      attributes.push({
+        trait_type: 'Expiration Date',
+        display_type: 'date',
+        value: registration.expiryDate * 1000,
+      });
     }
-    console.log(2, {intId, hexId})
-    try{
-      const {domain:{name, labelName, labelhash, createdAt, owner, parent, resolver}} = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId:hexId })      
-      const hasImageKey = resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY)
-      console.log({name, labelName, labelhash, createdAt, owner, parent, resolver, hasImageKey})
-      if(hasImageKey){
-        const r = await provider.getResolver(name);
-        imageUrl = await r.getText(IMAGE_KEY)  
-      }else{
-        imageUrl = getImage(name)
-      }
-      
-      let attributes = [
-        {
-          "trait_type":"Created Date",
-          "display_type":"date",
-          "value":createdAt * 1000
-        }
-      ]
-      if(parent.id === eth){
-        const {registrations} = await request(SUBGRAPH_URL, GET_REGISTRATIONS, { labelhash })
-        console.log({registrations})
-        const registration = registrations[0]
-        if(registration){
-          attributes.push({
-            "trait_type":"Registration Date",
-            "display_type":"date",
-            "value":registration.registrationDate * 1000
-          })        
-          attributes.push({
-            "trait_type":"Expiration Date",
-            "display_type":"date",
-            "value":registration.expiryDate * 1000
-          })
-        }
-      }
-      const obj:Domain = {
-        "name":name,
-        "description":name,
-        "image":imageUrl,
-        "image_url":imageUrl,
-        "external_link": `https://ens.domains/name/${name}`,
-        "attributes":attributes
-      }
-      return(obj)  
-    }catch(e){
-      console.log({e})
-      return({
-        "name":'',
-        "description":'',
-        "image":'',
-        "image_url":'',
-        "external_link": '',
-        "attributes":''
-      })
-    }  
+  }
+  const obj: Domain = {
+    name: name,
+    description: name,
+    image: imageUrl,
+    image_url: imageUrl,
+    external_link: `https://ens.domains/name/${name}`,
+    attributes: attributes,
+  };
+  return obj;
 }

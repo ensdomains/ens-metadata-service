@@ -1,8 +1,8 @@
-import path from "path";
+import path from 'path';
 import cors from 'cors';
-import express, { Request } from 'express';
+import express from 'express';
 import { getImage, getDomain } from './domain';
-require('dotenv').config()
+require('dotenv').config();
 
 interface RequestParams {
   tokenId?: string;
@@ -12,40 +12,43 @@ const app = express();
 
 app.get('/', (req, res) => {
   res.send('Well done mate!');
-})
+});
 
-app.get('/name/:tokenId?', async function (req: Request<RequestParams>, res, next) {
-  if(!req.params.tokenId) {
+app.get('/name/:tokenId', async function (req, res) {
+  const { tokenId } = req.params;
+  try {
+    const result = await getDomain(tokenId);
+    res.json(result);
+  } catch (error) {
+    if (error.name === 'FetchError') {
+      res.status(404).json({
+        message: error.message,
+      });
+      return;
+    }
     res.status(404).json({
-      message: 'Seems like you haven\'t provided any tokenId, ' +
-      'thus we couldn\'t get any result back :('
-    })
-    return;
+      message: 'No results found.',
+    });
   }
-  const { tokenId } = req.params
-  res.json(await getDomain(tokenId))
-})
+});
 
 app.get('/name/:name/image', async function (req, res) {
-  const { name } = req.params
-  const image = getImage(name)
+  const { name } = req.params;
+  const image = getImage(name);
   const body = `
     <html>
       <object data=${image} type="image/svg+xml">
         <img src=${image} />
       </object>
     </html>
-  `
-  res.send(body)
-})
+  `;
+  res.send(body);
+});
 
-app.use(cors())
+app.use(cors());
 
-if(process.env.ENV === 'local'){
-  app.use(
-    '/assets', 
-    express.static(path.join(__dirname, '.', 'assets'))
-  )  
+if (process.env.ENV === 'local') {
+  app.use('/assets', express.static(path.join(__dirname, '.', 'assets')));
 }
 
 const PORT = process.env.PORT || 8080;
