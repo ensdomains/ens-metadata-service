@@ -1,5 +1,12 @@
 # ens-metadata-service
 
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![License][license-shield]][license-url]
+[![Travis][travis-shield]][travis-url]
+
 ## API
 
 ### Requesst
@@ -34,7 +41,7 @@ Examples
 }
 ```
 
-Attreibutes include
+Attributes include
 
 - Created Date
 - Registration Date (only .eth secondary domain)
@@ -57,8 +64,34 @@ yarn dev
 yarn deploy
 ```
 
+## How to test
+
+Regular unit test;
+```
+yarn test
+```
+
+Unit test + coverage;
+```
+yarn test:cov
+```
+
 ## TODO
 
-- Add test (especially to mock external calls like subgraph)
-- 404 when tokenId does not exist
+- 404 when the token does not exist for given tokenId
 - Configure for different networks (localhost/rinkeby/ropsten/goerli/mainnet)
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/ensdomains/ens-metadata-service.svg?style=for-the-badge
+[contributors-url]: https://github.com/ensdomains/ens-metadata-service/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/ensdomains/ens-metadata-service.svg?style=for-the-badge
+[forks-url]: https://github.com/mdtanrikulu/ensdomains/ens-metadata-service/members
+[stars-shield]: https://img.shields.io/github/stars/ensdomains/ens-metadata-service.svg?style=for-the-badge
+[stars-url]: https://github.com/ensdomains/ens-metadata-service/stargazers
+[issues-shield]: https://img.shields.io/github/issues/ensdomains/ens-metadata-service.svg?style=for-the-badge
+[issues-url]: https://github.com/ensdomains/ens-metadata-service/issues
+[license-shield]: https://img.shields.io/github/license/ensdomains/ens-metadata-service.svg?style=for-the-badge
+[license-url]: https://github.com/ensdomains/ens-metadata-service/blob/master/LICENSE
+[travis-shield]: https://img.shields.io/travis/com/ensdomains/ens-metadata-service/master?style=for-the-badge
+[travis-url]: https://travis-ci.com/github/ensdomains/ens-metadata-service
