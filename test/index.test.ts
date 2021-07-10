@@ -6,11 +6,12 @@ const listen = require('test-listen');
 const app = require('../src/index');
 const { GET_DOMAINS, GET_REGISTRATIONS } = require('../src/subgraph');
 const {
-  INFURA_URL,
+  INFURA_URL: infura_url,
   SERVER_URL: server_url,
   SUBGRAPH_URL: subgraph_url,
 } = require('../src/config');
 
+const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
 
@@ -71,17 +72,17 @@ const mockEntry = {
 
 /* Helper functions */
 
-function nockGraph(namehash: string) {
+function nockGraph(namehash: string, statusCode = 200) {
   nock(SUBGRAPH_URL.origin)
-  .post(SUBGRAPH_URL.pathname, {
-    query: GET_DOMAINS,
-    variables: {
-      tokenId: namehash,
-    },
-  })
-  .reply(200, {
-    data: mockEntry[namehash].request,
-  });
+    .post(SUBGRAPH_URL.pathname, {
+      query: GET_DOMAINS,
+      variables: {
+        tokenId: namehash,
+      },
+    })
+    .reply(statusCode, {
+      data: mockEntry[namehash].request,
+    });
 }
 
 /* Test Setup */
@@ -89,6 +90,12 @@ function nockGraph(namehash: string) {
 test.before(async (t: { context: any }) => {
   nock.disableNetConnect();
   nock.enableNetConnect(SERVER_URL.host);
+
+  // nock(INFURA_URL.origin)
+  //   .get(INFURA_URL.pathname)
+  //   .reply(200, {
+  //     data: "testing here",
+  //   });
 
   nockGraph(mockNameHash.sub1);
   nockGraph(mockNameHash.unknown);

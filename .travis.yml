@@ -1,0 +1,25 @@
+sudo: required
+
+language: node_js
+
+node_js:
+  - 14
+
+cache:
+  yarn: true
+
+jobs:
+  include:
+    - stage: test
+      name: 'Unit test'
+      install:
+        - yarn
+      script:
+        - yarn test
+
+stages:
+  - name: test
+    if: branch = master
+
+notifications:
+  email: false

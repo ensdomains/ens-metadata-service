@@ -24,7 +24,7 @@
     "start": "node dist/index.js",
     "deploy": "yarn build && ENV=prod gcloud app deploy --project=ens-metadata-service",
     "test": "ava",
-    "test:cov": "nyc ava"
+    "test:cov": "nyc --reporter=json --reporter=text ava"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
