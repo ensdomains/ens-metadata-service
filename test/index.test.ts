@@ -161,31 +161,6 @@ function nockGraph(
   }
 }
 
-function nockRegistration(
-  labelhash: string,
-  labelName: string,
-  statusCode = 200
-) {
-  nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
-      query: GET_REGISTRATIONS,
-      variables: {
-        labelhash,
-      },
-    })
-    .reply(statusCode, {
-      data: {
-        registrations: [
-          {
-            expiryDate: '1656522544',
-            labelName,
-            registrationDate: '1624965592',
-          },
-        ],
-      },
-    });
-}
-
 /* Test Setup */
 
 test.before(async (t: { context: any }) => {
