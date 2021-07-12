@@ -21,6 +21,7 @@ const mockNameHash = {
   wrappertest3:
     '0x4b63a18d769e58615781f80e410d301811a62a6a10e2fc557825313b3bcf03db',
   sub1: '0xb71788e9ec63be108fba9c0b01c927e4d8f1887d53787ff84752be3d8db1dd9a',
+  sub2: '0xb9fab6dd33ccdfd1f65ea203855508034652c2e01f585a7b742c3698c0c8d6b1',
   unknown: '0xb71788e9ec63be108fba9c0b01c927e4d8f1887d53787ff84752be3d8db1dd7a',
 };
 const mockEntry = {
@@ -111,6 +112,39 @@ const mockEntry = {
       ],
     },
   },
+  [mockNameHash.sub2]: {
+    domainResponse: {
+      domain: {
+        name: 'sub2.wrappertest9.eth',
+        id: mockNameHash.sub2,
+        labelName: 'sub2',
+        labelhash:
+          '0xb2fd3233fdc544d81e84c93822934ddd9b599f056b6a7f84f4de29378bf1cb15',
+        createdAt: '1625137830',
+        owner: { id: '0x97ba55f61345665cf08c4233b9d6e61051a43b18' },
+        parent: {
+          id: '0x0b00a980e17bfb715fca7267b401b08daa6e750f1bdac52b273e11c46c3e2b9f',
+        },
+        resolver: { texts: ['domains.ens.nft.image'] },
+        hasImageKey: true,
+      },
+    },
+    registrationResponse: null,
+    expect: {
+      name: 'sub2.wrappertest9.eth',
+      description: 'sub2.wrappertest9.eth',
+      image: 'https://i.imgur.com/JcZESMp.png',
+      image_url: 'https://i.imgur.com/JcZESMp.png',
+      external_link: 'https://ens.domains/name/sub2.wrappertest9.eth',
+      attributes: [
+        {
+          trait_type: 'Created Date',
+          display_type: 'date',
+          value: 1625137830000,
+        },
+      ],
+    },
+  },
   [mockNameHash.unknown]: {
     domainResponse: {
       domain: {},
@@ -161,17 +195,62 @@ function nockGraph(
   }
 }
 
+function nockInfura(method: string, params: any[], response: object) {
+  nock(INFURA_URL.origin)
+    .persist()
+    .post(INFURA_URL.pathname, {
+      method,
+      params,
+      id: /[0-9]/,
+      jsonrpc: '2.0',
+    })
+    .reply(200, response);
+}
+
 /* Test Setup */
 
 test.before(async (t: { context: any }) => {
   nock.disableNetConnect();
   nock.enableNetConnect(SERVER_URL.host);
 
-  // nock(INFURA_URL.origin)
-  //   .get(INFURA_URL.pathname)
-  //   .reply(200, {
-  //     data: "testing here",
-  //   });
+  nockInfura('eth_chainId', [], {
+    id: 1,
+    jsonrpc: '2.0',
+    result: '0x04', // rinkeby
+  });
+  nockInfura('net_version', [], {
+    jsonrpc: '2.0',
+    id: 1,
+    result: '4',
+  });
+  nockInfura(
+    'eth_call',
+    [
+      {
+        to: '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+        data: '0x0178b8bfb9fab6dd33ccdfd1f65ea203855508034652c2e01f585a7b742c3698c0c8d6b1',
+      },
+      'latest',
+    ],
+    {
+      result:
+        '0x0000000000000000000000004d9487c0fa713630a8f3cd8067564a604f0d2989',
+    }
+  );
+  nockInfura(
+    'eth_call',
+    [
+      {
+        to: '0x4d9487c0fa713630a8f3cd8067564a604f0d2989',
+        data: '0x59d1d43cb9fab6dd33ccdfd1f65ea203855508034652c2e01f585a7b742c3698c0c8d6b100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000015646f6d61696e732e656e732e6e66742e696d6167650000000000000000000000',
+      },
+      'latest',
+    ],
+    {
+      result:
+        '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001f68747470733a2f2f692e696d6775722e636f6d2f4a635a45534d702e706e6700',
+    }
+  );
 
   for (let namehash of Object.values(mockNameHash)) {
     const { domainResponse, registrationResponse } = mockEntry[namehash];
@@ -196,18 +275,25 @@ test('get welcome message', async (t: any) => {
   t.deepEqual(result, 'Well done mate!');
 });
 
-test('get /name/:tokenId for domain', async (t: any) => {
+test('get /name/:tokenId for domain (wrappertest3.eth)', async (t: any) => {
   const result = await got(`name/${mockNameHash.wrappertest3}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.wrappertest3].expect);
 });
 
-test('get /name/:tokenId for subdomain', async (t: any) => {
+test('get /name/:tokenId for subdomain (sub1.wrappertest.eth)', async (t: any) => {
   const result = await got(`name/${mockNameHash.sub1}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub1].expect);
+});
+
+test('get /name/:tokenId for subdomain (sub2.wrappertest9.eth)', async (t: any) => {
+  const result = await got(`name/${mockNameHash.sub2}`, {
+    prefixUrl: SERVER_URL,
+  }).json();
+  t.deepEqual(result, mockEntry[mockNameHash.sub2].expect);
 });
 
 test('get /name/:tokenId for unknown namehash', async (t: any) => {
