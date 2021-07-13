@@ -9,7 +9,7 @@
 
 ## API
 
-### Requesst
+### Request
 
 tokenId accepts namehash of ENS name in both hex and int format
 
