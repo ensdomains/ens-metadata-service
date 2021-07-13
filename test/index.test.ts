@@ -1,5 +1,5 @@
-const test = require('ava');
-const http = require('http');
+import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import * as http from 'http';
 const got = require('got');
 const nock = require('nock');
 const listen = require('test-listen');
@@ -146,9 +146,7 @@ const mockEntry = {
     },
   },
   [mockNameHash.unknown]: {
-    domainResponse: {
-      domain: {},
-    },
+    domainResponse: null,
     registrationResponse: null,
     expect: {
       name: '',
@@ -161,12 +159,63 @@ const mockEntry = {
   },
 };
 
+/* Interfaces */
+
+interface DomainResponse {
+  domain: {
+    name: string;
+    id?: string;
+    labelName: string;
+    labelhash: string;
+    createdAt: string;
+    owner: {
+      id: string;
+    };
+    parent: {
+      id: string;
+    };
+    resolver: {
+      texts: string[] | null;
+    } | null;
+    hasImageKey?: boolean | null;
+  };
+}
+
+interface RegistrationResponse {
+  registrations: {
+    expiryDate: string;
+    labelName: string;
+    registrationDate: string;
+  }[];
+}
+
+interface EthChainIdResponse {
+  id: number;
+  jsonrpc: string;
+  result: string;
+}
+
+interface EthCallResponse {
+  result: string;
+}
+
+interface NetVersionResponse {
+  id: number;
+  jsonrpc: string;
+  result: string;
+}
+
+interface TestContext {
+  server: http.Server;
+  prefixUrl: string;
+}
+
 /* Helper functions */
 
 function nockGraph(
   namehash: string,
-  domainResponse: { domain: any },
-  registrationResponse: object | null = null,
+  domainResponse: DomainResponse | null = null,
+  registrationResponse: RegistrationResponse | null = null,
   statusCode = 200
 ) {
   nock(SUBGRAPH_URL.origin)
@@ -180,7 +229,7 @@ function nockGraph(
       data: domainResponse,
     });
 
-  if (!!domainResponse.domain.resolver) {
+  if (!!domainResponse?.domain.resolver) {
     const { labelhash } = domainResponse.domain;
     nock(SUBGRAPH_URL.origin)
       .post(SUBGRAPH_URL.pathname, {
@@ -195,7 +244,11 @@ function nockGraph(
   }
 }
 
-function nockInfura(method: string, params: any[], response: object) {
+function nockInfura(
+  method: string,
+  params: any[],
+  response: EthCallResponse | EthChainIdResponse | NetVersionResponse
+) {
   nock(INFURA_URL.origin)
     .persist()
     .post(INFURA_URL.pathname, {
@@ -209,7 +262,9 @@ function nockInfura(method: string, params: any[], response: object) {
 
 /* Test Setup */
 
-test.before(async (t: { context: any }) => {
+const test = avaTest as TestInterface<TestContext>;
+
+test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
   nock.enableNetConnect(SERVER_URL.host);
 
@@ -261,42 +316,42 @@ test.before(async (t: { context: any }) => {
   t.context.prefixUrl = await listen(t.context.server);
 });
 
-test.after.always((t: { context: any }) => {
+test.after.always((t: ExecutionContext<TestContext>) => {
   t.context.server.close();
   nock.enableNetConnect();
 });
 
 /* Tests */
 
-test('get welcome message', async (t: any) => {
+test('get welcome message', async (t: ExecutionContext<TestContext>) => {
   const result = await got('', {
     prefixUrl: SERVER_URL,
   }).text();
   t.deepEqual(result, 'Well done mate!');
 });
 
-test('get /name/:tokenId for domain (wrappertest3.eth)', async (t: any) => {
+test('get /name/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.wrappertest3}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.wrappertest3].expect);
 });
 
-test('get /name/:tokenId for subdomain (sub1.wrappertest.eth)', async (t: any) => {
+test('get /name/:tokenId for subdomain (sub1.wrappertest.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.sub1}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub1].expect);
 });
 
-test('get /name/:tokenId for subdomain (sub2.wrappertest9.eth)', async (t: any) => {
+test('get /name/:tokenId for subdomain (sub2.wrappertest9.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.sub2}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub2].expect);
 });
 
-test('get /name/:tokenId for unknown namehash', async (t: any) => {
+test('get /name/:tokenId for unknown namehash', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.unknown}`, {
     prefixUrl: SERVER_URL,
   }).json();
