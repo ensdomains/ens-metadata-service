@@ -337,14 +337,14 @@ test('get /name/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionCont
   t.deepEqual(result, mockEntry[mockNameHash.wrappertest3].expect);
 });
 
-test('get /name/:tokenId for subdomain (sub1.wrappertest.eth)', async (t: ExecutionContext<TestContext>) => {
+test('get /name/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.sub1}`, {
     prefixUrl: SERVER_URL,
   }).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub1].expect);
 });
 
-test('get /name/:tokenId for subdomain (sub2.wrappertest9.eth)', async (t: ExecutionContext<TestContext>) => {
+test('get /name/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
   const result = await got(`name/${mockNameHash.sub2}`, {
     prefixUrl: SERVER_URL,
   }).json();
