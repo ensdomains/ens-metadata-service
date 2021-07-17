@@ -1,48 +1,14 @@
 import { request } from 'graphql-request';
 import { ethers } from 'ethers';
 import { GET_REGISTRATIONS, GET_DOMAINS } from './subgraph';
-require('dotenv').config();
+import { INFURA_URL, SERVER_URL, SUBGRAPH_URL } from './config';
 
-const PORT = process.env.PORT || 8080;
-const HOST = process.env.HOST || 'localhost';
-const ENV = process.env.ENV || 'local'; // local/prod
-const NETWORK = process.env.NETWORK || 'local'; // local/rinkeby/ropsten/goerli/mainnet
-const INFURA_API_KEY = process.env.INFURA_API_KEY;
-const SERVER_URL =
-  ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
-const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`;
 const MAX_CHAR = 30;
-console.log({ SERVER_URL, ENV, NETWORK });
 const btoa = require('btoa');
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
-
 const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
 const IMAGE_KEY = 'domains.ens.nft.image';
-let SUBGRAPH_URL: string;
-
-switch (NETWORK) {
-  case 'local':
-    SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';
-    break;
-  case 'rinkeby':
-    SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby';
-    break;
-  // New subgraph not deployed yet
-  // case 'ropsten':
-  //   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ensropsten'
-  //   break;
-  // case 'goerli':
-  //   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli'
-  //   break;
-  // case 'mainnet':
-  //   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
-  //   break;
-  default:
-    throw 'unknown network';
-}
-
-console.log({ INFURA_API_KEY, INFURA_URL, SUBGRAPH_URL });
 
 function textEllipsis(name: string) {
   return name.substring(0, MAX_CHAR - 3) + '...';
