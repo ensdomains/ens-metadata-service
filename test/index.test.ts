@@ -1,6 +1,10 @@
 import avaTest, { ExecutionContext, TestInterface } from 'ava';
 import * as http from 'http';
-const got = require('got');
+import got, {
+  HTTPError,
+  OptionsOfJSONResponseBody,
+  OptionsOfTextResponseBody,
+} from 'got';
 const nock = require('nock');
 const listen = require('test-listen');
 const app = require('../src/index');
@@ -148,14 +152,8 @@ const mockEntry = {
   [mockNameHash.unknown]: {
     domainResponse: null,
     registrationResponse: null,
-    expect: {
-      name: '',
-      description: '',
-      image: '',
-      image_url: '',
-      external_link: '',
-      attributes: '',
-    },
+    statusCode: 404,
+    expect: 'Response code 404 (Not Found)',
   },
 };
 
@@ -261,8 +259,10 @@ function nockInfura(
 }
 
 /* Test Setup */
-
 const test = avaTest as TestInterface<TestContext>;
+const options: OptionsOfJSONResponseBody | OptionsOfTextResponseBody = {
+  prefixUrl: SERVER_URL.toString(),
+};
 
 test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
@@ -308,8 +308,9 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   );
 
   for (let namehash of Object.values(mockNameHash)) {
-    const { domainResponse, registrationResponse } = mockEntry[namehash];
-    nockGraph(namehash, domainResponse, registrationResponse);
+    const { domainResponse, registrationResponse, statusCode } =
+      mockEntry[namehash];
+    nockGraph(namehash, domainResponse, registrationResponse, statusCode);
   }
 
   t.context.server = http.createServer(app);
@@ -324,36 +325,32 @@ test.after.always((t: ExecutionContext<TestContext>) => {
 /* Tests */
 
 test('get welcome message', async (t: ExecutionContext<TestContext>) => {
-  const result = await got('', {
-    prefixUrl: SERVER_URL,
-  }).text();
+  const result = await got('', options).text();
   t.deepEqual(result, 'Well done mate!');
 });
 
 test('get /name/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`name/${mockNameHash.wrappertest3}`, {
-    prefixUrl: SERVER_URL,
-  }).json();
+  const result = await got(`name/${mockNameHash.wrappertest3}`, options).json();
   t.deepEqual(result, mockEntry[mockNameHash.wrappertest3].expect);
 });
 
 test('get /name/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`name/${mockNameHash.sub1}`, {
-    prefixUrl: SERVER_URL,
-  }).json();
+  const result = await got(`name/${mockNameHash.sub1}`, options).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub1].expect);
 });
 
 test('get /name/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`name/${mockNameHash.sub2}`, {
-    prefixUrl: SERVER_URL,
-  }).json();
+  const result = await got(`name/${mockNameHash.sub2}`, options).json();
   t.deepEqual(result, mockEntry[mockNameHash.sub2].expect);
 });
 
 test('get /name/:tokenId for unknown namehash', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`name/${mockNameHash.unknown}`, {
-    prefixUrl: SERVER_URL,
-  }).json();
-  t.deepEqual(result, mockEntry[mockNameHash.unknown].expect);
+  const error: HTTPError = await t.throwsAsync(
+    async () => {
+      await got(`name/${mockNameHash.unknown}`, options).json();
+    },
+    { instanceOf: HTTPError }
+  );
+  t.is(error.message, mockEntry[mockNameHash.unknown].expect);
+  t.is(error.response.statusCode, 404);
 });
