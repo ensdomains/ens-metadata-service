@@ -2,7 +2,6 @@ import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import { getImage, getDomain } from './domain';
-require('dotenv').config();
 
 interface RequestParams {
   tokenId?: string;

@@ -153,7 +153,7 @@ const mockEntry = {
     domainResponse: null,
     registrationResponse: null,
     statusCode: 404,
-    expect: 'Response code 404 (Not Found)',
+    expect: 'No results found.',
   },
 };
 
@@ -345,12 +345,20 @@ test('get /name/:tokenId for subdomain returns image from text record', async (t
 });
 
 test('get /name/:tokenId for unknown namehash', async (t: ExecutionContext<TestContext>) => {
-  const error: HTTPError = await t.throwsAsync(
-    async () => {
-      await got(`name/${mockNameHash.unknown}`, options).json();
-    },
+  const { response: { statusCode, body }}: HTTPError = await t.throwsAsync(
+    () => got(`name/${mockNameHash.unknown}`, options),
     { instanceOf: HTTPError }
   );
-  t.is(error.message, mockEntry[mockNameHash.unknown].expect);
-  t.is(error.response.statusCode, 404);
+  const message = JSON.parse(body as string)?.message;
+  t.is(message, mockEntry[mockNameHash.unknown].expect);
+  t.is(statusCode, 404);
+});
+
+test('get /name/:tokenId for empty tokenId', async (t: ExecutionContext<TestContext>) => {
+  const { response: { statusCode, body }}: HTTPError = await t.throwsAsync(
+    () => got(`name/`, options),
+    { instanceOf: HTTPError }
+  );
+  t.assert((body as string).includes('Cannot GET /name/'));
+  t.is(statusCode, 404);
 });
