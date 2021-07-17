@@ -1,6 +1,7 @@
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
+import { FetchError } from 'node-fetch';
 import { getImage, getDomain } from './domain';
 
 interface RequestParams {
@@ -19,7 +20,7 @@ app.get('/name/:tokenId', async function (req, res) {
     const result = await getDomain(tokenId);
     res.json(result);
   } catch (error) {
-    if (error.name === 'FetchError') {
+    if (error instanceof FetchError) {
       res.status(404).json({
         message: error.message,
       });

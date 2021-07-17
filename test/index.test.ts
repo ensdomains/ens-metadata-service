@@ -5,15 +5,16 @@ import got, {
   OptionsOfJSONResponseBody,
   OptionsOfTextResponseBody,
 } from 'got';
-const nock = require('nock');
-const listen = require('test-listen');
-const app = require('../src/index');
-const { GET_DOMAINS, GET_REGISTRATIONS } = require('../src/subgraph');
-const {
-  INFURA_URL: infura_url,
-  SERVER_URL: server_url,
-  SUBGRAPH_URL: subgraph_url,
-} = require('../src/config');
+import nock from 'nock';
+import listen from 'test-listen';
+
+import * as app from '../src/index';
+import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/subgraph';
+import {
+  INFURA_URL as infura_url,
+  SERVER_URL as server_url,
+  SUBGRAPH_URL as subgraph_url,
+} from '../src/config';
 
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
@@ -345,7 +346,9 @@ test('get /name/:tokenId for subdomain returns image from text record', async (t
 });
 
 test('get /name/:tokenId for unknown namehash', async (t: ExecutionContext<TestContext>) => {
-  const { response: { statusCode, body }}: HTTPError = await t.throwsAsync(
+  const {
+    response: { statusCode, body },
+  }: HTTPError = await t.throwsAsync(
     () => got(`name/${mockNameHash.unknown}`, options),
     { instanceOf: HTTPError }
   );
@@ -355,10 +358,34 @@ test('get /name/:tokenId for unknown namehash', async (t: ExecutionContext<TestC
 });
 
 test('get /name/:tokenId for empty tokenId', async (t: ExecutionContext<TestContext>) => {
-  const { response: { statusCode, body }}: HTTPError = await t.throwsAsync(
-    () => got(`name/`, options),
-    { instanceOf: HTTPError }
-  );
+  const {
+    response: { statusCode, body },
+  }: HTTPError = await t.throwsAsync(() => got(`name/`, options), {
+    instanceOf: HTTPError,
+  });
   t.assert((body as string).includes('Cannot GET /name/'));
+  t.is(statusCode, 404);
+});
+
+test('raise FetchError from subgraph', async (t: ExecutionContext<TestContext>) => {
+  const fetchError = {
+    message: 'reason: connect ECONNREFUSED 127.0.0.1:8000',
+  };
+  nock(SUBGRAPH_URL.origin)
+    .post(SUBGRAPH_URL.pathname, {
+      query: GET_DOMAINS,
+      variables: {
+        tokenId: mockNameHash.sub1,
+      },
+    })
+    .replyWithError(fetchError.message);
+  const { response: { body, statusCode } }: HTTPError = await t.throwsAsync(
+    () => got(`name/${mockNameHash.sub1}`, options),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  t.assert(message.includes(fetchError.message));
   t.is(statusCode, 404);
 });
