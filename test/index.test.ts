@@ -16,7 +16,12 @@ import {
   SUBGRAPH_URL as subgraph_url,
 } from '../src/config';
 import { MockEntry } from './entry.mock';
-import { EthCallResponse, EthChainIdResponse, NetVersionResponse, TestContext } from './interface';
+import {
+  EthCallResponse,
+  EthChainIdResponse,
+  NetVersionResponse,
+  TestContext,
+} from './interface';
 
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);

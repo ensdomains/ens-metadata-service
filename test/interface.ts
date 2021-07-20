@@ -48,3 +48,15 @@ export interface TestContext {
   server: http.Server;
   prefixUrl: string;
 }
+
+export interface MockEntryBody {
+  name: string;
+  hasImageKey?: boolean | null;
+  image?: string;
+  owner?: string;
+  parent?: string;
+  registration?: boolean;
+  resolver?: any;
+  statusCode?: number;
+  unknown?: boolean;
+}
