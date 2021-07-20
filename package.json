@@ -45,6 +45,11 @@
     "extensions": {
       "ts": "module"
     },
+    "files": [
+			"test/**/*",
+			"!test/entry.mock.ts",
+			"!test/interface.ts"
+		],
     "nonSemVerExperiments": {
       "configurableModuleFormat": true
     },
