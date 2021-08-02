@@ -46,10 +46,10 @@
       "ts": "module"
     },
     "files": [
-			"test/**/*",
-			"!test/entry.mock.ts",
-			"!test/interface.ts"
-		],
+      "test/**/*",
+      "!test/entry.mock.ts",
+      "!test/interface.ts"
+    ],
     "nonSemVerExperiments": {
       "configurableModuleFormat": true
     },
