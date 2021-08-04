@@ -20,11 +20,14 @@ app.get('/name/:tokenId', async function (req, res) {
     const result = await getDomain(tokenId);
     res.json(result);
   } catch (error) {
+    let errCode = (error?.code && Number(error.code)) || 500;
     if (error instanceof FetchError) {
-      res.status(404).json({
-        message: error.message,
-      });
-      return;
+      if (errCode !== 404) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+        return;
+      }
     }
     res.status(404).json({
       message: 'No results found.',
@@ -47,10 +50,7 @@ app.get('/name/:name/image', async function (req, res) {
 
 if (process.env.ENV === 'local') {
   app.use(cors());
-  app.use(
-    '/assets', 
-    express.static(path.join(__dirname, '.', 'assets'))
-  );
+  app.use('/assets', express.static(path.join(__dirname, '.', 'assets')));
 }
 
 const PORT = process.env.PORT || 8080;

@@ -40,7 +40,7 @@ function getFontSize(name: string): number {
 
 function b64EncodeUnicode(str: string) {
   return btoa(
-    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (_match, p1) {
       return String.fromCharCode(parseInt(p1, 16));
     })
   );
@@ -136,22 +136,11 @@ export async function getDomain(tokenId: string): Promise<Domain> {
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;
   }
-  console.log(2, { intId, hexId });
   const {
     domain: { name, labelName, labelhash, createdAt, owner, parent, resolver },
   } = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId: hexId });
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
-  console.log({
-    name,
-    labelName,
-    labelhash,
-    createdAt,
-    owner,
-    parent,
-    resolver,
-    hasImageKey,
-  });
   if (hasImageKey) {
     const r = await provider.getResolver(name);
     imageUrl = await r.getText(IMAGE_KEY);
@@ -170,7 +159,6 @@ export async function getDomain(tokenId: string): Promise<Domain> {
     const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
       labelhash,
     });
-    console.log({ registrations });
     const registration = registrations[0];
     if (registration) {
       attributes.push({
