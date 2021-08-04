@@ -20,22 +20,11 @@ export async function getDomain(
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;
   }
-  console.log(2, { intId, hexId });
   const {
     domain: { name, labelName, labelhash, createdAt, owner, parent, resolver },
   } = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId: hexId });
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
-  console.log({
-    name,
-    labelName,
-    labelhash,
-    createdAt,
-    owner,
-    parent,
-    resolver,
-    hasImageKey,
-  });
   const metadata = new Metadata({
     name,
     created_date: createdAt,
@@ -53,7 +42,6 @@ export async function getDomain(
     const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
       labelhash,
     });
-    console.log({ registrations });
     const registration = registrations[0];
     if (registration) {
       metadata.addAttribute({

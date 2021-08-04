@@ -11,7 +11,6 @@ const SERVER_URL =
   ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
 const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`;
 
-console.log({ SERVER_URL, ENV, NETWORK });
 let SUBGRAPH_URL: string;
 
 switch (NETWORK) {
@@ -32,7 +31,7 @@ switch (NETWORK) {
   //   SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens'
   //   break;
   default:
-    throw 'unknown network';
+    throw Error('unknown network');
 }
 
 const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);

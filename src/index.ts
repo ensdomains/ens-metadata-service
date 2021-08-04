@@ -28,15 +28,18 @@ app.get(
       const result = await getDomain(tokenId, version);
       res.json(result);
     } catch (error) {
+      let errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||
         error instanceof ContractMismatchError ||
         error instanceof ContractNotFoundError
       ) {
-        res.status(404).json({
-          message: error.message,
-        });
-        return;
+        if (errCode !== 404) {
+          res.status(errCode).json({
+            message: error.message,
+          });
+          return;
+        }
       }
       res.status(404).json({
         message: 'No results found.',

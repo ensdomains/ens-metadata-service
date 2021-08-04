@@ -89,6 +89,11 @@ function nockInfura(
     .reply(200, response);
 }
 
+function requireUncached(module: string) {
+  delete require.cache[require.resolve(module)];
+  return require(module);
+}
+
 /* Test Setup */
 const test = avaTest as TestInterface<TestContext>;
 const options: OptionsOfJSONResponseBody | OptionsOfTextResponseBody = {
@@ -215,9 +220,11 @@ test('get /name/:tokenId for empty tokenId', async (t: ExecutionContext<TestCont
   t.is(statusCode, 404);
 });
 
-test('raise FetchError from subgraph', async (t: ExecutionContext<TestContext>) => {
+test('raise 404 status from subgraph connection', async (t: ExecutionContext<TestContext>) => {
   const fetchError = {
-    message: 'reason: connect ECONNREFUSED 127.0.0.1:8000',
+    message: 'nothing here',
+    code: '404',
+    statusCode: 404,
   };
   nock(SUBGRAPH_URL.origin)
     .post(SUBGRAPH_URL.pathname, {
@@ -226,16 +233,85 @@ test('raise FetchError from subgraph', async (t: ExecutionContext<TestContext>) 
         tokenId: sub1Wrappertest.namehash,
       },
     })
-    .replyWithError(fetchError.message);
+    .replyWithError(fetchError);
   const {
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
-    () => got(`name/${sub1Wrappertest.namehash}`, options),
+    () => got(`name/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  // Regardless of what is the message in subgraph with status 404 code
+  // user will always see "No results found."" instead
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, fetchError.statusCode);
+});
+
+test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<TestContext>) => {
+  const fetchError = {
+    message: 'connect ECONNREFUSED 127.0.0.1:8000',
+    code: 'ECONNREFUSED',
+    statusCode: 500,
+  };
+  nock(SUBGRAPH_URL.origin)
+    .post(SUBGRAPH_URL.pathname, {
+      query: GET_DOMAINS,
+      variables: {
+        tokenId: sub1Wrappertest.namehash,
+      },
+    })
+    .replyWithError(fetchError);
+  const {
+    response: { body, statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () => got(`name/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
     {
       instanceOf: HTTPError,
     }
   );
   const { message } = JSON.parse(body as string);
   t.assert(message.includes(fetchError.message));
-  t.is(statusCode, 404);
+  t.is(statusCode, fetchError.statusCode);
+});
+
+test('raise Internal Server Error from subgraph', async (t: ExecutionContext<TestContext>) => {
+  const fetchError = {
+    message: 'Internal Server Error',
+    code: '500',
+    statusCode: 500,
+  };
+  nock(SUBGRAPH_URL.origin)
+    .post(SUBGRAPH_URL.pathname, {
+      query: GET_DOMAINS,
+      variables: {
+        tokenId: sub1Wrappertest.namehash,
+      },
+    })
+    .replyWithError(fetchError);
+  const {
+    response: { body, statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () => got(`name/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  t.assert(message.includes(fetchError.message));
+  t.is(statusCode, fetchError.statusCode);
+});
+
+test('should get assets when ENV set for local', async (t: ExecutionContext<TestContext>) => {
+  process.env.ENV = 'local';
+  process.env.PORT = '8081';
+  const _app = requireUncached('../src/index');
+  t.context.server = http.createServer(_app);
+  t.context.prefixUrl = await listen(t.context.server);
+  nock.enableNetConnect('localhost:8081');
+  const result = await got(`assets/font.css`, {
+    prefixUrl: 'http://localhost:8081',
+  }).text();
+  t.assert(result.includes('@font-face'));
 });
