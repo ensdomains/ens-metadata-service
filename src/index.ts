@@ -10,7 +10,7 @@ interface RequestParams {
 
 const app = express();
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('Well done mate!');
 });
 
@@ -50,7 +50,7 @@ app.get('/name/:name/image', async function (req, res) {
 
 if (process.env.ENV === 'local') {
   app.use(cors());
-  app.use('/assets', express.static(path.join(__dirname, '.', 'assets')));
+  app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
 
 const PORT = process.env.PORT || 8080;
