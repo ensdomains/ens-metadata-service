@@ -78,7 +78,6 @@ yarn test:cov
 
 ## TODO
 
-- 404 when the token does not exist for given tokenId
 - Configure for different networks (localhost/rinkeby/ropsten/goerli/mainnet)
 
 <!-- MARKDOWN LINKS & IMAGES -->
