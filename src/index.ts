@@ -15,7 +15,7 @@ interface RequestParams {
 
 const app = express();
 
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('Well done mate!');
 });
 
@@ -24,10 +24,11 @@ app.get(
   async function (req, res) {
     const { contractAddress, tokenId } = req.params;
     try {
-      const version = await checkContract(contractAddress);
+      const version = await checkContract(contractAddress, tokenId);
       const result = await getDomain(tokenId, version);
       res.json(result);
     } catch (error) {
+      console.log('error', error)
       let errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||
@@ -50,10 +51,11 @@ app.get(
 
 app.get(
   '/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/image',
+  /* istanbul ignore next */
   async function (req, res) {
     const { contractAddress, tokenId } = req.params;
     try {
-      const version = await checkContract(contractAddress);
+      const version = await checkContract(contractAddress, tokenId);
       const result = await getDomain(tokenId, version);
       const body = `
       <html>
@@ -83,7 +85,7 @@ app.get(
 
 if (process.env.ENV === 'local') {
   app.use(cors());
-  app.use('/assets', express.static(path.join(__dirname, '.', 'assets')));
+  app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
 
 const PORT = process.env.PORT || 8080;

@@ -23,6 +23,7 @@ export async function getDomain(
   const {
     domain: { name, labelName, labelhash, createdAt, owner, parent, resolver },
   } = await request(SUBGRAPH_URL, GET_DOMAINS, { tokenId: hexId });
+  ethers
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
   const metadata = new Metadata({
@@ -43,6 +44,7 @@ export async function getDomain(
       labelhash,
     });
     const registration = registrations[0];
+    console.log('registration', registration);
     if (registration) {
       metadata.addAttribute({
         trait_type: 'Registration Date',

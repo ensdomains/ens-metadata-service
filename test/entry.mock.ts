@@ -98,6 +98,7 @@ export class MockEntry {
         display_type: 'date',
         value: +randomDate * 1000,
       })
+
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_URL.pathname, {
           query: GET_REGISTRATIONS,
