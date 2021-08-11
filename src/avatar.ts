@@ -34,8 +34,7 @@ export async function getAvatar(name: string): Promise<any> {
     const bufferWithMime = await resolveURI(URI);
     return bufferWithMime;
   } catch (e) {
-    console.log('e', e);
-    throw new ResolverNotFound('There is no avatar set under given address');
+    throw new TextRecordNotFound('There is no avatar set under given address');
   }
 }
 
