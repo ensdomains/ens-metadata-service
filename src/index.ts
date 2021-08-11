@@ -3,6 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { FetchError } from 'node-fetch';
 import { getImage, getDomain } from './domain';
+import { getAvatar, ResolverNotFound, TextRecordNotFound } from './avatar';
 
 interface RequestParams {
   tokenId?: string;
@@ -46,6 +47,33 @@ app.get('/name/:name/image', async function (req, res) {
     </html>
   `;
   res.send(body);
+});
+
+app.get('/avatar/:name', async function (req, res) {
+  const { name } = req.params;
+  try {
+    const [buffer, mimeType] = await getAvatar(name);
+    if (buffer) {
+      const image = Buffer.from(buffer as any, 'base64');
+      res.writeHead(200, {
+        'Content-Type': mimeType.mime,
+        'Content-Length': image.length,
+      });
+      res.end(image);
+    }
+  } catch (error) {
+    let errCode = (error?.code && Number(error.code)) || 500;
+    if (
+      error instanceof FetchError ||
+      error instanceof ResolverNotFound ||
+      error instanceof TextRecordNotFound
+    ) {
+      res.status(errCode).json({
+        message: error.message,
+      });
+      return;
+    }
+  }
 });
 
 if (process.env.ENV === 'local') {
