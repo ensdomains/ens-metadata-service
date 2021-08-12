@@ -1,7 +1,7 @@
 import { request } from 'graphql-request';
 import { ethers } from 'ethers';
 import { GET_REGISTRATIONS, GET_DOMAINS } from './subgraph';
-import { INFURA_URL, SERVER_URL, SUBGRAPH_URL, provider } from './config';
+import { SERVER_URL, SUBGRAPH_URL, provider } from './config';
 
 const MAX_CHAR = 30;
 const btoa = require('btoa');

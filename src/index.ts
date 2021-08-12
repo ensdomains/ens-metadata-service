@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { FetchError } from 'node-fetch';
 import { getImage, getDomain } from './domain';
-import { getAvatar, ResolverNotFound, TextRecordNotFound } from './avatar';
+import { getAvatar, ResolverNotFound, TextRecordNotFound, UnsupportedNamespace, UnsupportedNetwork } from './avatar';
 
 interface RequestParams {
   tokenId?: string;
@@ -61,12 +61,17 @@ app.get('/avatar/:name', async function (req, res) {
       });
       res.end(image);
     }
+    res.status(404).json({
+      message: 'No results found.',
+    });
   } catch (error) {
     let errCode = (error?.code && Number(error.code)) || 500;
     if (
-      error instanceof FetchError ||
-      error instanceof ResolverNotFound ||
-      error instanceof TextRecordNotFound
+      error instanceof FetchError           ||
+      error instanceof ResolverNotFound     ||
+      error instanceof TextRecordNotFound   ||
+      error instanceof UnsupportedNamespace ||
+      error instanceof UnsupportedNetwork
     ) {
       res.status(errCode).json({
         message: error.message,

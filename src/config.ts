@@ -34,4 +34,4 @@ switch (NETWORK) {
     throw Error('unknown network');
 }
 
-export { INFURA_URL, SERVER_URL, SUBGRAPH_URL, provider };
+export { INFURA_API_KEY, INFURA_URL, SERVER_URL, SUBGRAPH_URL, provider };
