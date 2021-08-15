@@ -1,6 +1,5 @@
-import { assert } from 'console';
+import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
-import { fromBuffer as fileTypeFromBuffer } from 'file-type';
 import fetch from 'node-fetch';
 import { INFURA_API_KEY, provider } from './config';
 
@@ -21,47 +20,43 @@ export class ResolverNotFound extends BaseError {}
 export interface TextRecordNotFound {}
 export class TextRecordNotFound extends BaseError {}
 
-export interface UnsupportedNetwork {}
-export class UnsupportedNetwork extends BaseError {}
+export interface RetrieveURIFailed {}
+export class RetrieveURIFailed extends BaseError {}
 
 export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 
-
 export async function getAvatar(name: string): Promise<any> {
-  let resolver;
   try {
     // retrieve resolver by ens name
-    resolver = await provider.getResolver(name);
+    var resolver = await provider.getResolver(name);
   } catch (e) {
     throw new ResolverNotFound('There is no resolver set under given address');
   }
-
   try {
     // determine and return if any avatar URI stored as a text record
-    const URI = await resolver.getText('avatar');
-    const bufferWithMime = await resolveURI(URI);
-    return bufferWithMime;
+    var URI = await resolver.getText('avatar');
   } catch (e) {
     throw new TextRecordNotFound('There is no avatar set under given address');
   }
+  return await resolveURI(URI);
 }
 
 // dummy check
 async function resolveURI(uri: string): Promise<any> {
-    console.log('uri', uri);
   let response;
   if (uri.startsWith('ipfs://')) {
-    response = await fetch(
-      `https://ipfs.io/ipfs/${uri.replace('ipfs://', '')}`
-    );
+    response = await fetch(uri.replace('ipfs://', 'https://ipfs.io/ipfs/'));
   }
   if (uri.startsWith('http')) {
     response = await fetch(uri);
   }
   if (uri.startsWith('eip155')) {
     const { chainID, contractAddress, namespace, tokenID } = parseNFT(uri);
-    const _provider = setupJsonRpcProvider(chainID);
+    const _provider = new ethers.providers.InfuraProvider(
+      Number(chainID),
+      INFURA_API_KEY
+    );
     const tokenURI = await retrieveTokenURI(
       _provider,
       namespace,
@@ -70,25 +65,35 @@ async function resolveURI(uri: string): Promise<any> {
     );
     assert(tokenURI, 'TokenURI is empty');
 
+    const _tokenID = !tokenID.startsWith('0x')
+      ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
+      : tokenID;
+
     const metadata = await (
-      await fetch(tokenURI.replace('0x{id}', tokenID))
+      await fetch(tokenURI.replace('0x{id}', _tokenID))
     ).json();
 
-    const _response = await resolveURI(metadata.image);
-    return _response;
+    return await resolveURI(metadata.image);
   }
 
   assert(response, 'Response is empty');
   const data = await response?.buffer();
-  const mimeType = await fileTypeFromBuffer(data as Buffer);
+  const mimeType = response?.headers.get('Content-Type');
   return [data, mimeType];
 }
 
-function parseNFT(uri: string) {
-  // dummy parser, to do add error cases
-  const [reference, asset_namespace, tokenID] = uri.split('/');
+function parseNFT(uri: string, seperator: string = '/') {
+  assert(uri, 'parameter URI cannot be empty');
+  uri = uri.replace('did:nft:', '');
+
+  const [reference, asset_namespace, tokenID] = uri.split(seperator);
   const [type, chainID] = reference.split(':');
   const [namespace, contractAddress] = asset_namespace.split(':');
+
+  assert(chainID, 'chainID is empty');
+  assert(contractAddress, 'contractAddress is empty');
+  assert(namespace, 'namespace is empty');
+  assert(tokenID, 'tokenID is empty');
 
   return {
     type,
@@ -97,21 +102,6 @@ function parseNFT(uri: string) {
     contractAddress,
     tokenID,
   };
-}
-
-function setupJsonRpcProvider(chainID: string) {
-  let INFURA_URL_TEMPLATE = `https://{chain}.infura.io/v3/${INFURA_API_KEY}`;
-  switch (chainID) {
-    case '1':
-      INFURA_URL_TEMPLATE = INFURA_URL_TEMPLATE.replace('{chain}', 'mainnet');
-      break;
-    case '4':
-      INFURA_URL_TEMPLATE = INFURA_URL_TEMPLATE.replace('{chain}', 'rinkeby');
-      break;
-    default:
-      throw new UnsupportedNetwork('Unsupported network');
-  }
-  return new ethers.providers.JsonRpcProvider(INFURA_URL_TEMPLATE);
 }
 
 async function retrieveTokenURI(
@@ -130,8 +120,11 @@ async function retrieveTokenURI(
         ],
         provider
       );
-       // todo throw error if anything fails
-      result = await contract_721.tokenURI(tokenID);
+      try {
+        result = await contract_721.tokenURI(tokenID);
+      } catch (error) {
+        throw new RetrieveURIFailed(error.message);
+      }
       break;
     }
     case 'erc1155': {
@@ -140,8 +133,11 @@ async function retrieveTokenURI(
         ['function uri(uint256 _id) public view returns (string memory)'],
         provider
       );
-      // todo throw error if anything fails
-      result = await contract_1155.uri(tokenID);
+      try {
+        result = await contract_1155.uri(tokenID);
+      } catch (error) {
+        throw new RetrieveURIFailed(error.message);
+      }
       break;
     }
     default:

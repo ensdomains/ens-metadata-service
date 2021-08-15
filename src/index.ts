@@ -1,13 +1,14 @@
-import path from 'path';
-import cors from 'cors';
-import express from 'express';
-import { FetchError } from 'node-fetch';
+import path                    from 'path';
+import cors                    from 'cors';
+import express                 from 'express';
+import { FetchError }          from 'node-fetch';
 import { getImage, getDomain } from './domain';
-import { getAvatar, ResolverNotFound, TextRecordNotFound, UnsupportedNamespace, UnsupportedNetwork } from './avatar';
-
-interface RequestParams {
-  tokenId?: string;
-}
+import {
+  getAvatar,
+  ResolverNotFound,
+  TextRecordNotFound,
+  UnsupportedNamespace,
+}                              from './avatar';
 
 const app = express();
 
@@ -56,7 +57,7 @@ app.get('/avatar/:name', async function (req, res) {
     if (buffer) {
       const image = Buffer.from(buffer as any, 'base64');
       res.writeHead(200, {
-        'Content-Type': mimeType.mime,
+        'Content-Type': mimeType,
         'Content-Length': image.length,
       });
       res.end(image);
@@ -65,13 +66,12 @@ app.get('/avatar/:name', async function (req, res) {
       message: 'No results found.',
     });
   } catch (error) {
-    let errCode = (error?.code && Number(error.code)) || 500;
+    const errCode = (error?.code && Number(error.code)) || 500;
     if (
-      error instanceof FetchError           ||
-      error instanceof ResolverNotFound     ||
-      error instanceof TextRecordNotFound   ||
-      error instanceof UnsupportedNamespace ||
-      error instanceof UnsupportedNetwork
+      error instanceof FetchError         ||
+      error instanceof ResolverNotFound   ||
+      error instanceof TextRecordNotFound ||
+      error instanceof UnsupportedNamespace
     ) {
       res.status(errCode).json({
         message: error.message,
