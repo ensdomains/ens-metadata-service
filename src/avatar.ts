@@ -36,6 +36,7 @@ export async function getAvatar(name: string): Promise<any> {
   try {
     // determine and return if any avatar URI stored as a text record
     var URI = await resolver.getText('avatar');
+    assert(URI, 'URI is empty')
   } catch (e) {
     throw new TextRecordNotFound('There is no avatar set under given address');
   }
