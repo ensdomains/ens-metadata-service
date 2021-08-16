@@ -62,7 +62,7 @@ export async function checkContract(
     }
     return Version.v1;
   }
-  if (nftOwner_code === BASE_REGISTRAR_BYTECODE.bytecode) {
+  if (nftOwner_code === NAME_WRAPPER_BYTECODE.bytecode) {
     return Version.v1w;
   }
   throw new OwnerNotFoundError('No registered nft');
