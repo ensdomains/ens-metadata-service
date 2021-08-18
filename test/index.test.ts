@@ -27,7 +27,7 @@ import {
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
-const NAME_WRAPPER_ADDRESS = '0x2B74429F8e238693e5909ae6eD4A030DaE262ACa'
+const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
 
 /* Mocks */
 
@@ -108,11 +108,34 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   });
   nockInfura(
     'eth_getCode',
-    ['0x2b74429f8e238693e5909ae6ed4a030dae262aca', 'latest'], //lowercase
+    [NAME_WRAPPER_ADDRESS.toLowerCase(), 'latest'], //lowercase
     {
       jsonrpc: '2.0',
       id: 1,
       result: NAME_WRAPPER_BYTECODE.bytecode,
+    }
+  );
+  nockInfura(
+    'eth_call',
+    [
+      {
+        to: NAME_WRAPPER_ADDRESS.toLowerCase(),
+        data: /^.*$/,
+      },
+      'latest',
+    ],
+    {
+      result:
+        '0x000000000000000000000000f96e15e7ea2b1d862fb8c400c9e64dccc6d56ba4',
+    }
+  );
+  nockInfura(
+    'eth_getCode',
+    ['0xf96e15e7ea2b1d862fb8c400c9e64dccc6d56ba4', 'latest'], //lowercase
+    {
+      jsonrpc: '2.0',
+      id: 1,
+      result: '0x',
     }
   );
   nockInfura(
@@ -169,12 +192,18 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
 });
 
 test('get /:contractAddress/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, options).json();
+  const result = await got(
+    `${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
+    options
+  ).json();
   t.deepEqual(result, sub1Wrappertest.expect);
 });
 
 test('get /:contractAddress/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(`${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`, options).json();
+  const result = await got(
+    `${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`,
+    options
+  ).json();
   t.deepEqual(result, sub2Wrappertest9.expect);
 });
 
@@ -217,9 +246,12 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
 test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionContext<TestContext>) => {
   const {
     response: { statusCode, body },
-  }: HTTPError = await t.throwsAsync(() => got(`${NAME_WRAPPER_ADDRESS}/`, options), {
-    instanceOf: HTTPError,
-  });
+  }: HTTPError = await t.throwsAsync(
+    () => got(`${NAME_WRAPPER_ADDRESS}/`, options),
+    {
+      instanceOf: HTTPError,
+    }
+  );
   t.assert((body as string).includes(`Cannot GET /${NAME_WRAPPER_ADDRESS}/`));
   t.is(statusCode, 404);
 });
@@ -241,7 +273,11 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
   const {
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
-    () => got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
+    () =>
+      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
     {
       instanceOf: HTTPError,
     }
@@ -270,7 +306,11 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
   const {
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
-    () => got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
+    () =>
+      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
     {
       instanceOf: HTTPError,
     }
@@ -297,7 +337,11 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
   const {
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
-    () => got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, { ...options, retry: 0 }),
+    () =>
+      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
     {
       instanceOf: HTTPError,
     }
