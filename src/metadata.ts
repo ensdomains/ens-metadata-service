@@ -50,9 +50,9 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       },
     ];
     this.name_length = name.length;
-    this.short_name = null;
-    this.length = 0;
-    this.url = `https://ens.domains/name/${name}`;
+    this.short_name = null; // not implemented
+    this.length = 0; // not implemented
+    this.url = `https://app.ens.domains/name/${name}`;
     this.version = version;
   }
 

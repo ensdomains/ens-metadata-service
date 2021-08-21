@@ -67,12 +67,3 @@ export async function checkContract(
   }
   throw new OwnerNotFoundError('No registered nft');
 }
-
-
-  // if(contractType == Contract.nameWrapper) {
-  //  v2 hex namehash makoto.eth - 0x412329d38ad88cb88b1bb6d4005cd6aa010b7bdeb55fd28f980943d423725fb1
-  // }
-
-  // if(contractType == Contract.baseRegistrar) {
-  //  v1 int labelhash makoto - 10752601994971649179164517782929867232152319685582174799783555262090660234668
-  // }
