@@ -1,3 +1,4 @@
+import { utils } from 'ethers';
 import nock from 'nock';
 import { SUBGRAPH_URL as subgraph_url } from '../src/config';
 import { Metadata, Version } from '../src/metadata';
@@ -26,7 +27,8 @@ export class MockEntry {
     registration = false,
     statusCode = 200,
     unknown = false,
-    version = Version.v2
+    version = Version.v2,
+    persist = false
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
@@ -43,13 +45,13 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: null,
-        });
+        }).persist(persist);
       return;
     }
 
     const randomDate = this.getRandomDate();
     const labelName = name.split('.')[0];
-    const labelhash = namehash.hash(labelName);
+    const labelhash = utils.keccak256(utils.toUtf8Bytes(labelName));
     const _metadata = new Metadata({
       name,
       created_date: +randomDate,
@@ -108,7 +110,7 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: this.registrationResponse,
-        });
+        }).persist(persist);
     }
 
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
@@ -122,7 +124,7 @@ export class MockEntry {
       })
       .reply(statusCode, {
         data: this.domainResponse,
-      });
+      }).persist(persist);
   }
 
   getRandomDate(
