@@ -1,6 +1,10 @@
 import { request } from 'graphql-request';
 import { ethers } from 'ethers';
-import { GET_REGISTRATIONS, GET_DOMAINS, GET_DOMAINS_BY_LABELHASH } from './subgraph';
+import {
+  GET_REGISTRATIONS,
+  GET_DOMAINS,
+  GET_DOMAINS_BY_LABELHASH,
+} from './subgraph';
 import { provider, SUBGRAPH_URL } from './config';
 import { Metadata, Version } from './metadata';
 
@@ -20,11 +24,13 @@ export async function getDomain(
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;
   }
-  const queryDocument: any = version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
+  const queryDocument: any =
+    version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
   const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
-  const domain = version !== Version.v2 ? result.domains[0] : result.domain
-  const { name, labelName, labelhash, createdAt, owner, parent, resolver } = domain
-  
+  const domain = version !== Version.v2 ? result.domains[0] : result.domain;
+  const { name, labelName, labelhash, createdAt, owner, parent, resolver } =
+    domain;
+
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
   const metadata = new Metadata({

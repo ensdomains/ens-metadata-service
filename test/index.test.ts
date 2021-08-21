@@ -23,11 +23,13 @@ import {
   NetVersionResponse,
   TestContext,
 } from './interface';
+import { ethers } from 'ethers';
 
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
 const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
+const NON_CONTRACT_ADDRESS = '0xab5801a7d398351b8be11c439e05c5b3259aec9b';
 
 /* Mocks */
 
@@ -35,6 +37,7 @@ const wrappertest3 = new MockEntry({
   name: 'wrappertest3.eth',
   registration: true,
   resolver: { texts: null },
+  persist: true
 });
 const sub1Wrappertest = new MockEntry({
   name: 'sub1.wrappertest.eth',
@@ -65,6 +68,7 @@ const longsubdomainconsistof34charactersMdt = new MockEntry({
 });
 
 /* Helper functions */
+
 function nockInfura(
   method: string,
   params: any[],
@@ -87,6 +91,7 @@ function requireUncached(module: string) {
 }
 
 /* Test Setup */
+
 const test = avaTest as TestInterface<TestContext>;
 const options: OptionsOfJSONResponseBody | OptionsOfTextResponseBody = {
   prefixUrl: SERVER_URL.toString(),
@@ -113,6 +118,15 @@ test.before(async (t: ExecutionContext<TestContext>) => {
       jsonrpc: '2.0',
       id: 1,
       result: NAME_WRAPPER_BYTECODE.bytecode,
+    }
+  );
+  nockInfura(
+    'eth_getCode',
+    [NON_CONTRACT_ADDRESS.toLowerCase(), 'latest'], //lowercase
+    {
+      jsonrpc: '2.0',
+      id: 1,
+      result: '0x',
     }
   );
   nockInfura(
@@ -186,6 +200,15 @@ test('get welcome message', async (t: ExecutionContext<TestContext>) => {
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
     `${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
+    options
+  ).json();
+  t.deepEqual(result, wrappertest3.expect);
+});
+
+test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
+  const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
+  const result = await got(
+    `${NAME_WRAPPER_ADDRESS}/${intId}`,
     options
   ).json();
   t.deepEqual(result, wrappertest3.expect);
@@ -349,6 +372,51 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
   const { message } = JSON.parse(body as string);
   t.assert(message.includes(fetchError.message));
   t.is(statusCode, fetchError.statusCode);
+});
+
+test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
+  nock(SUBGRAPH_URL.origin)
+    .post(SUBGRAPH_URL.pathname, {
+      query: GET_DOMAINS,
+      variables: {
+        tokenId: sub1Wrappertest.namehash,
+      },
+    })
+    .delayConnection(2000) // 2 seconds
+    .replyWithError({ code: 'ETIMEDOUT' })
+    .persist(false);
+  const {
+    response: { statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  t.assert(statusCode === 500);
+});
+
+test('raise ContractNotFoundError', async (t: ExecutionContext<TestContext>) => {
+  const {
+    response: { body },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  t.assert(
+    message === `${NON_CONTRACT_ADDRESS.toLowerCase()} is not a contract`
+  );
 });
 
 test('should get assets when ENV set for local', async (t: ExecutionContext<TestContext>) => {
