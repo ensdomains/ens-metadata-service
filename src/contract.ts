@@ -1,10 +1,13 @@
-import { provider } from './config';
-
-import * as BASE_REGISTRAR_BYTECODE from './assets/ENSRegistrar_bc.json';
-import * as NAME_WRAPPER_BYTECODE from './assets/NameWrapper_bc.json';
+import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
-import { Version } from './metadata';
 
+import {
+  ADDRESS_ETH_REGISTRAR,
+  ADDRESS_NAME_WRAPPER,
+  INAMEWRAPPER,
+  provider,
+} from './config';
+import { Version } from './metadata';
 
 export interface BaseError {}
 export class BaseError extends Error {
@@ -26,7 +29,6 @@ export class ContractNotFoundError extends BaseError {}
 export interface OwnerNotFoundError {}
 export class OwnerNotFoundError extends BaseError {}
 
-
 export async function checkContract(
   contractAddress: string,
   tokenId: string
@@ -36,34 +38,41 @@ export async function checkContract(
   if (contract_code === '0x') {
     throw new ContractNotFoundError(`${contractAddress} is not a contract`);
   }
-  // TODO check hexId labelhash or intId namehash
-
   try {
-    const contract = new ethers.Contract(
+    var contract = new ethers.Contract(
       contractAddress,
-      ['function ownerOf(uint256 tokenId) public view returns (address)'],
+      [
+        'function ownerOf(uint256 tokenId) public view returns (address)',
+        'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+      ],
       provider
     );
-    nftOwner = await contract.ownerOf(tokenId);
+    if (contractAddress !== ADDRESS_ETH_REGISTRAR) {
+      assert(await contract.supportsInterface(INAMEWRAPPER));
+    }
   } catch (error) {
-    console.log('err', error.message);
     throw new ContractMismatchError(
       `${contractAddress} does not match with any ENS related contract`
     );
   }
+  
+  try {
+    nftOwner = await contract.ownerOf(tokenId);
+    assert(nftOwner !== '0x')
+  } catch (error) {
+    throw new OwnerNotFoundError(`Checking owner of ${tokenId} failed. Reason: ${error}`);
+  }
 
-  if (nftOwner === '0x') {
-    throw new OwnerNotFoundError('No registered nft');
-  }
-  const nftOwner_code = await provider.getCode(nftOwner);
-  if (nftOwner_code === '0x') {
-    if (contract_code === NAME_WRAPPER_BYTECODE.bytecode) {
-      return Version.v2;
+  if (contractAddress === ADDRESS_NAME_WRAPPER) {
+    return Version.v2;
+  } else if (contractAddress === ADDRESS_ETH_REGISTRAR) {
+    if (nftOwner === ADDRESS_NAME_WRAPPER) {
+      return Version.v1w;
+    } else {
+      return Version.v1;
     }
-    return Version.v1;
   }
-  if (nftOwner_code === NAME_WRAPPER_BYTECODE.bytecode) {
-    return Version.v1w;
-  }
-  throw new OwnerNotFoundError('No registered nft');
+  throw new ContractMismatchError(
+    `${contractAddress} does not match with any ENS related contract`
+  );
 }

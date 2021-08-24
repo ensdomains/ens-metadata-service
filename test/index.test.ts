@@ -15,7 +15,6 @@ import {
   SERVER_URL as server_url,
   SUBGRAPH_URL as subgraph_url,
 } from '../src/config';
-import * as NAME_WRAPPER_BYTECODE from '../src/assets/NameWrapper_bc.json';
 import { MockEntry } from './entry.mock';
 import {
   EthCallResponse,
@@ -117,7 +116,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     {
       jsonrpc: '2.0',
       id: 1,
-      result: NAME_WRAPPER_BYTECODE.bytecode,
+      result: "0x01", // something non-zero as a mock
     }
   );
   nockInfura(
