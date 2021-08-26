@@ -23,9 +23,6 @@ export class BaseError extends Error {
 export interface ContractMismatchError {}
 export class ContractMismatchError extends BaseError {}
 
-export interface ContractNotFoundError {}
-export class ContractNotFoundError extends BaseError {}
-
 export interface OwnerNotFoundError {}
 export class OwnerNotFoundError extends BaseError {}
 
@@ -33,11 +30,6 @@ export async function checkContract(
   contractAddress: string,
   tokenId: string
 ): Promise<Version> {
-  let nftOwner;
-  const contract_code = await provider.getCode(contractAddress);
-  if (contract_code === '0x') {
-    throw new ContractNotFoundError(`${contractAddress} is not a contract`);
-  }
   try {
     var contract = new ethers.Contract(
       contractAddress,
@@ -57,7 +49,7 @@ export async function checkContract(
   }
   
   try {
-    nftOwner = await contract.ownerOf(tokenId);
+    var nftOwner = await contract.ownerOf(tokenId);
     assert(nftOwner !== '0x')
   } catch (error) {
     throw new OwnerNotFoundError(`Checking owner of ${tokenId} failed. Reason: ${error}`);

@@ -6,7 +6,6 @@ import { getDomain } from './domain';
 import {
   checkContract,
   ContractMismatchError,
-  ContractNotFoundError,
 } from './contract';
 
 interface RequestParams {
@@ -32,8 +31,7 @@ app.get(
       let errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||
-        error instanceof ContractMismatchError ||
-        error instanceof ContractNotFoundError
+        error instanceof ContractMismatchError
       ) {
         if (errCode !== 404) {
           res.status(errCode).json({
@@ -68,8 +66,7 @@ app.get(
     } catch (error) {
       if (
         error instanceof FetchError ||
-        error instanceof ContractMismatchError ||
-        error instanceof ContractNotFoundError
+        error instanceof ContractMismatchError
       ) {
         res.status(404).json({
           message: error.message,

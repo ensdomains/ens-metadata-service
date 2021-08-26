@@ -36,7 +36,7 @@ const wrappertest3 = new MockEntry({
   name: 'wrappertest3.eth',
   registration: true,
   resolver: { texts: null },
-  persist: true
+  persist: true,
 });
 const sub1Wrappertest = new MockEntry({
   name: 'sub1.wrappertest.eth',
@@ -111,24 +111,6 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     result: '4',
   });
   nockInfura(
-    'eth_getCode',
-    [NAME_WRAPPER_ADDRESS.toLowerCase(), 'latest'], //lowercase
-    {
-      jsonrpc: '2.0',
-      id: 1,
-      result: "0x01", // something non-zero as a mock
-    }
-  );
-  nockInfura(
-    'eth_getCode',
-    [NON_CONTRACT_ADDRESS.toLowerCase(), 'latest'], //lowercase
-    {
-      jsonrpc: '2.0',
-      id: 1,
-      result: '0x',
-    }
-  );
-  nockInfura(
     'eth_call',
     [
       {
@@ -140,15 +122,6 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     {
       result:
         '0x000000000000000000000000f96e15e7ea2b1d862fb8c400c9e64dccc6d56ba4',
-    }
-  );
-  nockInfura(
-    'eth_getCode',
-    ['0xf96e15e7ea2b1d862fb8c400c9e64dccc6d56ba4', 'latest'], //lowercase
-    {
-      jsonrpc: '2.0',
-      id: 1,
-      result: '0x',
     }
   );
   nockInfura(
@@ -206,10 +179,7 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
 
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
   const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
-  const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${intId}`,
-    options
-  ).json();
+  const result = await got(`${NAME_WRAPPER_ADDRESS}/${intId}`, options).json();
   t.deepEqual(result, wrappertest3.expect);
 });
 
@@ -414,7 +384,8 @@ test('raise ContractNotFoundError', async (t: ExecutionContext<TestContext>) => 
   );
   const { message } = JSON.parse(body as string);
   t.assert(
-    message === `${NON_CONTRACT_ADDRESS.toLowerCase()} is not a contract`
+    message ===
+      `${NON_CONTRACT_ADDRESS.toLowerCase()} does not match with any ENS related contract`
   );
 });
 
