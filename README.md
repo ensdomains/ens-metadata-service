@@ -98,7 +98,7 @@ yarn test:cov
 ## Environment Variables
 
 | Name | Description | Default value | Options |
-| --- | --- | --- | --- | --- |
+| ---- | ----------- | ------------- | ------- |
 | INFURA_API_KEY | API Key provided by Infura. [See here](https://infura.io/docs/gettingStarted/projectSecurity) (Required) | - | - |
 | HOST | Host (ip/domain) address of the running service | localhost | - | No |
 | NETWORK | Ethereum network name, the service will run on | rinkeby | local/rinkeby/ropsten/goerli/mainnet |
