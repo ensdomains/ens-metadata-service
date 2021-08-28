@@ -1,5 +1,7 @@
+import { utils } from 'ethers';
 import nock from 'nock';
 import { SUBGRAPH_URL as subgraph_url } from '../src/config';
+import { Metadata, Version } from '../src/metadata';
 import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/subgraph';
 import {
   DomainResponse,
@@ -14,7 +16,7 @@ export class MockEntry {
   public namehash: string;
   public domainResponse!: DomainResponse | null;
   public registrationResponse: RegistrationResponse | null = null;
-  public expect: object | string;
+  public expect: Metadata | string;
   constructor({
     name,
     hasImageKey = null,
@@ -25,6 +27,8 @@ export class MockEntry {
     registration = false,
     statusCode = 200,
     unknown = false,
+    version = Version.v2,
+    persist = false
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
@@ -41,13 +45,24 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: null,
-        });
+        }).persist(persist);
       return;
     }
 
     const randomDate = this.getRandomDate();
     const labelName = name.split('.')[0];
-    const labelhash = namehash.hash(labelName);
+    const labelhash = utils.keccak256(utils.toUtf8Bytes(labelName));
+    const _metadata = new Metadata({
+      name,
+      created_date: +randomDate,
+      version,
+    });
+
+    if (image) {
+      (_metadata as Metadata).setImage(image);
+    } else {
+      (_metadata as Metadata).generateImage();
+    }
 
     this.domainResponse = {
       domain: {
@@ -64,13 +79,7 @@ export class MockEntry {
         hasImageKey,
       },
     };
-    let attributes = [
-      {
-        trait_type: 'Created Date',
-        display_type: 'date',
-        value: +randomDate * 1000,
-      },
-    ];
+
     if (registration) {
       this.registrationResponse = {
         registrations: [
@@ -81,19 +90,17 @@ export class MockEntry {
           },
         ],
       };
-      attributes = [
-        ...attributes,
-        {
-          trait_type: 'Registration Date',
-          display_type: 'date',
-          value: +randomDate * 1000,
-        },
-        {
-          trait_type: 'Expiration Date',
-          display_type: 'date',
-          value: +randomDate * 1000,
-        },
-      ];
+      _metadata.addAttribute({
+        trait_type: 'Registration Date',
+        display_type: 'date',
+        value: +randomDate * 1000,
+      })
+      _metadata.addAttribute({
+        trait_type: 'Expiration Date',
+        display_type: 'date',
+        value: +randomDate * 1000,
+      })
+
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_URL.pathname, {
           query: GET_REGISTRATIONS,
@@ -103,16 +110,11 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: this.registrationResponse,
-        });
+        }).persist(persist);
     }
-    this.expect = {
-      name,
-      description: name,
-      image,
-      image_url: image,
-      external_link: `https://ens.domains/name/${name}`,
-      attributes,
-    };
+
+    this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
+
     nock(SUBGRAPH_URL.origin)
       .post(SUBGRAPH_URL.pathname, {
         query: GET_DOMAINS,
@@ -122,7 +124,7 @@ export class MockEntry {
       })
       .reply(statusCode, {
         data: this.domainResponse,
-      });
+      }).persist(persist);
   }
 
   getRandomDate(
