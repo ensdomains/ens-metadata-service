@@ -1,4 +1,5 @@
 import * as http from 'http';
+import { Version } from '../src/metadata';
 
 export interface DomainResponse {
   domain: {
@@ -59,4 +60,6 @@ export interface MockEntryBody {
   resolver?: any;
   statusCode?: number;
   unknown?: boolean;
+  version?: Version;
+  persist?: boolean;
 }

@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "tsc --project ./ && cpx 'src/assets/**' 'dist/assets'",
-    "dev": "ENV=local ts-node-dev src/index.ts",
+    "dev": "ENV=local ts-node-dev --inspect -- src/index.ts",
     "start": "node dist/index.js",
     "deploy": "yarn build && ENV=prod gcloud app deploy --project=ens-metadata-service",
     "test": "ava --serial",
