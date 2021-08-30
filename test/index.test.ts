@@ -400,4 +400,6 @@ test('should get assets when ENV set for local', async (t: ExecutionContext<Test
     prefixUrl: 'http://localhost:8081',
   }).text();
   t.assert(result.includes('@font-face'));
+  delete process.env.PORT
+  delete process.env.ENV
 });
