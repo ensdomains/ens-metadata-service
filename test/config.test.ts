@@ -8,6 +8,12 @@ function requireUncached(module: string) {
 
 const test = avaTest as TestInterface<TestContext>;
 
+test.after('cleanup', t => {
+    delete process.env.NETWORK
+    delete process.env.HOST
+    delete process.env.ENV
+});
+
 test('should get SUBGRAPH_URL as local', async (t: ExecutionContext<TestContext>) => {
     process.env.NETWORK = 'local'
     const { SUBGRAPH_URL } = requireUncached('../src/config');
