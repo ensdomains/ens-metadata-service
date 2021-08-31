@@ -2,17 +2,22 @@ import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import { FetchError } from 'node-fetch';
-import { getDomain } from './domain';
+import docUI from 'redoc-express';
+
 import {
   checkContract,
   ContractMismatchError,
 } from './contract';
+import { getDomain } from './domain';
+import endpoints from './endpoint';
 
 interface RequestParams {
   tokenId?: string;
 }
 
 const app = express();
+endpoints(app);
+
 
 app.get('/', (_req, res) => {
   res.send('Well done mate!');
@@ -84,6 +89,14 @@ if (process.env.ENV === 'local') {
   app.use(cors());
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
+
+app.get(
+  '/docs',
+  docUI({
+    title: 'ENS',
+    specUrl: '/assets/doc_output.json'
+  })
+);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

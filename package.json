@@ -15,6 +15,7 @@
     "graphql": "^15.5.0",
     "graphql-request": "^3.4.0",
     "lodash": "^4.17.21",
+    "redoc-express": "^1.0.0",
     "tsc": "^2.0.3",
     "web3": "^1.3.6"
   },
@@ -24,7 +25,8 @@
     "start": "node dist/index.js",
     "deploy": "yarn build && ENV=prod gcloud app deploy --project=ens-metadata-service",
     "test": "ava --serial",
-    "test:cov": "nyc --reporter=json --reporter=text ava --serial"
+    "test:cov": "nyc --reporter=json --reporter=text ava --serial",
+    "docgen": "node docgen.js"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
@@ -37,6 +39,7 @@
     "got": "^11.8.2",
     "nock": "^13.1.1",
     "nyc": "^15.1.0",
+    "swagger-autogen": "^2.11.2",
     "test-listen": "^1.1.0",
     "ts-node": "^10.0.0",
     "ts-node-dev": "^1.1.6",

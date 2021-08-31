@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "0.0.1-alpha.0",
+    "title": "ENS Metadata Service",
+    "description": "Set of endpoints to query ENS metadata and more"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "tags": [],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [],
+  "produces": [],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
+      "get": {
+        "tags": [],
+        "description": "ENS name metadata endpoint",
+        "parameters": [
+          {
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Namehash/Labelhash of your ENS name"
+          },
+          {
+            "name": "{}",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata object"
+          },
+          "404": {
+            "description": "No results found."
+          }
+        }
+      }
+    },
+    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/image": {
+      "get": {
+        "tags": [],
+        "description": "ENS name image endpoint",
+        "parameters": [
+          {
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Namehash/Labelhash of your ENS name"
+          },
+          {
+            "name": "contractAddress",
+            "description": "Contract address which stores the NFT indicated by the tokenId",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image file"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {}
+}
