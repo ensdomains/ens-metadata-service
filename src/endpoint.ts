@@ -1,6 +1,5 @@
 import { Express }                              from 'express';
 import { FetchError }                           from 'node-fetch';
-import docUI                                    from 'redoc-express';
 import { getDomain }                            from './domain';
 import { checkContract, ContractMismatchError } from './contract';
 import {
@@ -122,12 +121,4 @@ export default function (app: Express) {
       }
     }
   });
-
-  app.get(
-    '/docs',
-    docUI({
-      title: 'ENS',
-      specUrl: '/assets/doc_output.json'
-    })
-  );
 }

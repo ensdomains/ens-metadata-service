@@ -1,6 +1,7 @@
 import path               from 'path';
 import cors               from 'cors';
 import express            from 'express';
+import docUI              from 'redoc-express';
 
 import endpoints         from './endpoint';
 
@@ -17,5 +18,14 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`APP_LOG::App listening on port ${PORT}`);
 });
+
+
+app.get(
+  '/docs',
+  docUI({
+    title: 'ENS',
+    specUrl: '/assets/doc_output.json'
+  })
+);
 
 module.exports = app;
