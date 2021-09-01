@@ -29,13 +29,14 @@ export class UnsupportedNamespace extends BaseError {}
 
 export async function getAvatarMeta(name: string): Promise<any> {
   const uri = await getAvatarURI(name)
-
+  const owner = await provider.resolveName(name);
   let response
   if(uri.match(/^eip155/)){
-    response = await parseNFT(uri)
+    response = await parseNFT(uri, owner)
   }else{
     response = { image:uri }
   }
+
   if(response.image){
     response.image = await parseURI(response.image)
   }
@@ -45,6 +46,7 @@ export async function getAvatarMeta(name: string): Promise<any> {
 
 export async function getAvatarImage(name: string): Promise<any> {
   const uri = await getAvatarURI(name)
+
   let image
   if(uri.match(/^eip155/)){
     ({meta:{image}} = await parseNFT(uri))
@@ -73,7 +75,6 @@ export async function getAvatarURI(name: string): Promise<any> {
   } catch (e) {
     throw new TextRecordNotFound('There is no avatar set under given address');
   }
-  console.log({name, URI})
   return URI
 }
 
@@ -87,7 +88,7 @@ async function parseURI(uri: string): Promise<any> {
   }
 }
 
-async function parseNFT(uri: string, seperator: string = '/') {
+async function parseNFT(uri: string, owner?:string, seperator: string = '/') {
   assert(uri, 'parameter URI cannot be empty');
   uri = uri.replace('did:nft:', '');
 
@@ -99,17 +100,17 @@ async function parseNFT(uri: string, seperator: string = '/') {
   assert(contractAddress, 'contractAddress is empty');
   assert(namespace, 'namespace is empty');
   assert(tokenID, 'tokenID is empty');
-  console.log('eip155', {chainID, contractAddress, namespace, tokenID})
 
   const _provider = new ethers.providers.InfuraProvider(
     Number(chainID),
     INFURA_API_KEY
   );
-  const tokenURI = await retrieveTokenURI(
+  const { tokenURI, isOwner} = await retrieveTokenURI(
     _provider,
     namespace,
     contractAddress,
-    tokenID
+    tokenID,
+    owner
   );
   assert(tokenURI, 'TokenURI is empty');
 
@@ -117,7 +118,6 @@ async function parseNFT(uri: string, seperator: string = '/') {
     ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
     : tokenID;
 
-    console.log('eip1552', {tokenURI, _tokenID})
   const meta = await (
     await fetch(tokenURI.replace('0x{id}', _tokenID))
   ).json();
@@ -125,6 +125,7 @@ async function parseNFT(uri: string, seperator: string = '/') {
     contractAddress,
     tokenID,
     image: meta.image,
+    isOwner,
     meta
   }
 }
@@ -133,20 +134,26 @@ async function retrieveTokenURI(
   provider: any,
   namespace: string,
   contractAddress: string,
-  tokenID: string
+  tokenID: string,
+  owner?: string
 ) {
-  let result;
+  let tokenURI
+  let isOwner = false
   switch (namespace) {
     case 'erc721': {
       const contract_721 = new ethers.Contract(
         contractAddress,
         [
           'function tokenURI(uint256 tokenId) external view returns (string memory)',
+          'function ownerOf(uint256 tokenId) public view returns (address)'
         ],
         provider
       );
       try {
-        result = await contract_721.tokenURI(tokenID);
+        tokenURI = await contract_721.tokenURI(tokenID);
+        if(owner){
+          isOwner = (await contract_721.ownerOf(tokenID)) === owner;
+        }
       } catch (error) {
         throw new RetrieveURIFailed(error.message);
       }
@@ -155,11 +162,17 @@ async function retrieveTokenURI(
     case 'erc1155': {
       const contract_1155 = new ethers.Contract(
         contractAddress,
-        ['function uri(uint256 _id) public view returns (string memory)'],
+        [
+          'function uri(uint256 _id) public view returns (string memory)',
+          'function balanceOf(address account, uint256 id) public view returns (uint256)'
+        ],
         provider
       );
       try {
-        result = await contract_1155.uri(tokenID);
+        tokenURI = await contract_1155.uri(tokenID);
+        if(owner){
+          isOwner = (await contract_1155.balanceOf(owner, tokenID)).gt(0);
+        }
       } catch (error) {
         throw new RetrieveURIFailed(error.message);
       }
@@ -168,5 +181,5 @@ async function retrieveTokenURI(
     default:
       throw new UnsupportedNamespace(`Unsupported namespace: ${namespace}`);
   }
-  return result;
+  return { tokenURI, isOwner };
 }
