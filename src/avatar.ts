@@ -121,9 +121,27 @@ async function parseNFT(uri: string, owner?:string, seperator: string = '/') {
   const meta = await (
     await fetch(tokenURI.replace('0x{id}', _tokenID))
   ).json();
+
+  let referenceUrl;
+  switch(parseInt(chainID)) {
+    case 1:
+      referenceUrl = `https://opensea.io/assets/${contractAddress}/${tokenID}`;
+      break;
+    case 42:
+      referenceUrl = `https://testnets.opensea.io/assets/${contractAddress}/${tokenID}`;
+      break;
+    case 137:
+      referenceUrl = `https://opensea.io/assets/matic/${contractAddress}/${tokenID}`;
+      break;
+      default:
+  }
+
   return {
+    chainID,
+    namespace,
     contractAddress,
     tokenID,
+    referenceUrl,
     image: meta.image,
     isOwner,
     meta
