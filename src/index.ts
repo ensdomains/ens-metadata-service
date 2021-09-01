@@ -18,6 +18,11 @@ import {
 
 const app = express();
 
+if (process.env.ENV === 'local') {
+  app.use(cors());
+  app.use('/assets', express.static(path.join(__dirname, 'assets')));
+}
+
 app.get('/', (_req, res) => {
   res.send('Well done mate!');
 });
@@ -127,11 +132,6 @@ app.get('/avatar/:name', async function (req, res) {
     }
   }
 });
-
-if (process.env.ENV === 'local') {
-  app.use(cors());
-  app.use('/assets', express.static(path.join(__dirname, 'assets')));
-}
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
