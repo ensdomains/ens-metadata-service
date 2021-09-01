@@ -2,6 +2,7 @@ const swaggerAutogen = require('swagger-autogen')({ openapi: '3.0.0' });
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || 'localhost';
+const ENV = process.env.ENV || 'local'; // local/prod
 const SERVER_URL =
   ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
 
