@@ -87,7 +87,6 @@ app.get(
 
 app.get('/avatar/:name/meta', async function (req, res) {
   const { name } = req.params;
-  console.log({name})
   const meta = await getAvatarMeta(name);
   if (meta) {
     res.status(200).json(meta);
