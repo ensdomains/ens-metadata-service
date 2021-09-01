@@ -113,7 +113,7 @@ async function retrieveTokenURI(
 ) {
   let result;
   switch (namespace) {
-    case 'erc712': {
+    case 'erc721': {
       const contract_721 = new ethers.Contract(
         contractAddress,
         [
