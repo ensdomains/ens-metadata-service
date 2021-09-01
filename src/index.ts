@@ -4,7 +4,8 @@ import express                 from 'express';
 import { FetchError }          from 'node-fetch';
 import { getImage, getDomain } from './domain';
 import {
-  getAvatar,
+  getAvatarImage,
+  getAvatarMeta,
   ResolverNotFound,
   TextRecordNotFound,
   UnsupportedNamespace,
@@ -50,10 +51,24 @@ app.get('/name/:name/image', async function (req, res) {
   res.send(body);
 });
 
+
+app.get('/avatar/:name/meta', async function (req, res) {
+  const { name } = req.params;
+  console.log({name})
+  const meta = await getAvatarMeta(name);
+  if (meta) {
+    res.status(200).json(meta);
+  }else{
+    res.status(404).json({
+      message: 'No results found.',
+    });  
+  }
+});
+
 app.get('/avatar/:name', async function (req, res) {
   const { name } = req.params;
   try {
-    const [buffer, mimeType] = await getAvatar(name);
+    const [buffer, mimeType] = await getAvatarImage(name);
     if (buffer) {
       const image = Buffer.from(buffer as any, 'base64');
       res.writeHead(200, {

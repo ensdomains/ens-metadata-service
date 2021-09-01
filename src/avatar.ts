@@ -26,7 +26,41 @@ export class RetrieveURIFailed extends BaseError {}
 export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 
-export async function getAvatar(name: string): Promise<any> {
+
+export async function getAvatarMeta(name: string): Promise<any> {
+  const uri = await getAvatarURI(name)
+
+  let response
+  if(uri.match(/^eip155/)){
+    response = await parseNFT(uri)
+  }else{
+    response = { image:uri }
+  }
+  if(response.image){
+    response.image = await parseURI(response.image)
+  }
+  return response
+}
+
+
+export async function getAvatarImage(name: string): Promise<any> {
+  const uri = await getAvatarURI(name)
+  let image
+  if(uri.match(/^eip155/)){
+    ({meta:{image}} = await parseNFT(uri))
+  }else{
+    image = uri
+  }
+  const parsed = await parseURI(image)
+
+  const response = await fetch(parsed);
+  assert(response, 'Response is empty');
+  const data = await response?.buffer();
+  const mimeType = response?.headers.get('Content-Type');
+  return [data, mimeType];
+}
+
+export async function getAvatarURI(name: string): Promise<any> {
   try {
     // retrieve resolver by ens name
     var resolver = await provider.getResolver(name);
@@ -39,50 +73,21 @@ export async function getAvatar(name: string): Promise<any> {
   } catch (e) {
     throw new TextRecordNotFound('There is no avatar set under given address');
   }
-  return await resolveURI(URI);
+  console.log({name, URI})
+  return URI
 }
 
 // dummy check
-async function resolveURI(uri: string): Promise<any> {
+async function parseURI(uri: string): Promise<any> {
   let response;
   if (uri.startsWith('ipfs://')) {
-    response = await fetch(uri.replace('ipfs://', 'https://ipfs.io/ipfs/'));
+    return uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+  } else {
+    return uri;
   }
-  if (uri.startsWith('http')) {
-    response = await fetch(uri);
-  }
-  if (uri.startsWith('eip155')) {
-    const { chainID, contractAddress, namespace, tokenID } = parseNFT(uri);
-    const _provider = new ethers.providers.InfuraProvider(
-      Number(chainID),
-      INFURA_API_KEY
-    );
-    const tokenURI = await retrieveTokenURI(
-      _provider,
-      namespace,
-      contractAddress,
-      tokenID
-    );
-    assert(tokenURI, 'TokenURI is empty');
-
-    const _tokenID = !tokenID.startsWith('0x')
-      ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
-      : tokenID;
-
-    const metadata = await (
-      await fetch(tokenURI.replace('0x{id}', _tokenID))
-    ).json();
-
-    return await resolveURI(metadata.image);
-  }
-
-  assert(response, 'Response is empty');
-  const data = await response?.buffer();
-  const mimeType = response?.headers.get('Content-Type');
-  return [data, mimeType];
 }
 
-function parseNFT(uri: string, seperator: string = '/') {
+async function parseNFT(uri: string, seperator: string = '/') {
   assert(uri, 'parameter URI cannot be empty');
   uri = uri.replace('did:nft:', '');
 
@@ -94,14 +99,34 @@ function parseNFT(uri: string, seperator: string = '/') {
   assert(contractAddress, 'contractAddress is empty');
   assert(namespace, 'namespace is empty');
   assert(tokenID, 'tokenID is empty');
+  console.log('eip155', {chainID, contractAddress, namespace, tokenID})
 
-  return {
-    type,
-    chainID,
+  const _provider = new ethers.providers.InfuraProvider(
+    Number(chainID),
+    INFURA_API_KEY
+  );
+  const tokenURI = await retrieveTokenURI(
+    _provider,
     namespace,
     contractAddress,
+    tokenID
+  );
+  assert(tokenURI, 'TokenURI is empty');
+
+  const _tokenID = !tokenID.startsWith('0x')
+    ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
+    : tokenID;
+
+    console.log('eip1552', {tokenURI, _tokenID})
+  const meta = await (
+    await fetch(tokenURI.replace('0x{id}', _tokenID))
+  ).json();
+  return {
+    contractAddress,
     tokenID,
-  };
+    image: meta.image,
+    meta
+  }
 }
 
 async function retrieveTokenURI(
@@ -112,7 +137,7 @@ async function retrieveTokenURI(
 ) {
   let result;
   switch (namespace) {
-    case 'erc712': {
+    case 'erc721': {
       const contract_721 = new ethers.Contract(
         contractAddress,
         [
