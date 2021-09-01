@@ -1,10 +1,14 @@
-import { Express } from 'express';
-import { FetchError } from 'node-fetch';
-import { getDomain } from './domain';
+import { Express }                              from 'express';
+import { FetchError }                           from 'node-fetch';
+import docUI                                    from 'redoc-express';
+import { getDomain }                            from './domain';
+import { checkContract, ContractMismatchError } from './contract';
 import {
-  checkContract,
-  ContractMismatchError,
-} from './contract';
+  getAvatar,
+  ResolverNotFound,
+  TextRecordNotFound,
+  UnsupportedNamespace,
+}                                               from './avatar';
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -20,7 +24,7 @@ export default function (app: Express) {
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
-        const result = await getDomain(tokenId, version);
+        const result  = await getDomain(tokenId, version);
         /* #swagger.responses[200] = { 
                description: 'Metadata object' 
         } */
@@ -86,5 +90,44 @@ export default function (app: Express) {
         });
       }
     }
+  );
+
+  app.get('/avatar/:name', async function (req, res) {
+    const { name } = req.params;
+    try {
+      const [buffer, mimeType] = await getAvatar(name);
+      if (buffer) {
+        const image = Buffer.from(buffer as any, 'base64');
+        res.writeHead(200, {
+          'Content-Type': mimeType,
+          'Content-Length': image.length,
+        });
+        res.end(image);
+      }
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    } catch (error) {
+      const errCode = (error?.code && Number(error.code)) || 500;
+      if (
+        error instanceof FetchError         ||
+        error instanceof ResolverNotFound   ||
+        error instanceof TextRecordNotFound ||
+        error instanceof UnsupportedNamespace
+      ) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+        return;
+      }
+    }
+  });
+
+  app.get(
+    '/docs',
+    docUI({
+      title: 'ENS',
+      specUrl: '/assets/doc_output.json'
+    })
   );
 }

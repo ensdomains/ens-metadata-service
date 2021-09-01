@@ -23,7 +23,7 @@
     "build": "tsc --project ./ && cpx 'src/assets/**' 'dist/assets'",
     "dev": "ENV=local ts-node-dev --inspect -- src/index.ts",
     "start": "node dist/index.js",
-    "deploy": "yarn build && ENV=prod gcloud app deploy --project=ens-metadata-service",
+    "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
     "test": "ava --serial",
     "test:cov": "nyc --reporter=json --reporter=text ava --serial",
     "docgen": "node docgen.js"
