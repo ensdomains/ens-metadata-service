@@ -14,6 +14,12 @@ const doc = {
     version: '0.0.1-alpha.0',
     title: 'ENS Metadata Service',
     description: 'Set of endpoints to query ENS metadata and more',
+    contact: "contact@ens.domains",
+    license: "MIT License",
+    x_logo: {
+        "url": "./src/assets/logo.svg",
+        "backgroundColor": "#FFFFFF"
+    }
   },
   host: SERVER_URL,
 };
