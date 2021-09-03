@@ -11,15 +11,15 @@ import {
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
-    res.send('Well done mate!');
+    res.send('Well done mate To see more go to "/docs"!');
   });
 
   app.get(
     '/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId',
     async function (req, res) {
-      // #swagger.description = 'ENS name metadata endpoint'
+      // #swagger.description = 'ENS NFT metadata'
       // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId' }
-      // #swagger.parameters['tokenId'] = { description: 'Namehash/Labelhash of your ENS name' }
+      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name' }
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
@@ -56,9 +56,9 @@ export default function (app: Express) {
     '/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/image',
     /* istanbul ignore next */
     async function (req, res) {
-      // #swagger.description = 'ENS name image endpoint'
+      // #swagger.description = 'ENS NFT image'
       // #swagger.parameters['contractAddress'] = { description: 'Contract address which stores the NFT indicated by the tokenId' }
-      // #swagger.parameters['tokenId'] = { description: 'Namehash/Labelhash of your ENS name' }
+      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name' }
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
@@ -92,11 +92,16 @@ export default function (app: Express) {
   );
 
   app.get('/avatar/:name', async function (req, res) {
+    // #swagger.description = 'ENS avatar record'
+    // #swagger.parameters['name'] = { description: 'ENS name' }
     const { name } = req.params;
     try {
       const [buffer, mimeType] = await getAvatar(name);
       if (buffer) {
         const image = Buffer.from(buffer as any, 'base64');
+        /* #swagger.responses[200] = { 
+               description: 'Avatar image file' 
+        } */
         res.writeHead(200, {
           'Content-Type': mimeType,
           'Content-Length': image.length,
