@@ -1,13 +1,14 @@
-import { Express }                              from 'express';
-import { FetchError }                           from 'node-fetch';
-import { getDomain }                            from './domain';
+import { Express } from 'express';
+import { FetchError } from 'node-fetch';
+import { getDomain } from './domain';
 import { checkContract, ContractMismatchError } from './contract';
 import {
-  getAvatar,
+  getAvatarImage,
+  getAvatarMeta,
   ResolverNotFound,
   TextRecordNotFound,
   UnsupportedNamespace,
-}                                               from './avatar';
+} from './avatar';
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -23,7 +24,7 @@ export default function (app: Express) {
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
-        const result  = await getDomain(tokenId, version);
+        const result = await getDomain(tokenId, version);
         /* #swagger.responses[200] = { 
                description: 'Metadata object' 
         } */
@@ -63,17 +64,20 @@ export default function (app: Express) {
       try {
         const version = await checkContract(contractAddress, tokenId);
         const result = await getDomain(tokenId, version);
-        const body = `
-            <html>
-              <object data=${result.image_url} type="image/svg+xml">
-                <img src=${result.image_url} />
-              </object>
-            </html>
-          `;
+        if (result.image_url) {
+          const base64 = result.image_url.replace('data:image/svg+xml;base64,', '')
+          const buffer = Buffer.from(base64, 'base64');
+          res.writeHead(200, {
+            'Content-Type': 'image/svg+xml',
+            'Content-Length': buffer.length,
+          });
+          res.end(buffer);
+        } else {
+          throw Error("Image URL is missing.");
+        }
         /* #swagger.responses[200] = { 
                description: 'Image file' 
         } */
-        res.send(body);
       } catch (error) {
         if (
           error instanceof FetchError ||
@@ -91,22 +95,32 @@ export default function (app: Express) {
     }
   );
 
+  app.get('/avatar/:name/meta', async function (req, res) {
+    // #swagger.description = 'ENS avatar metadata'
+    // #swagger.parameters['name'] = { description: 'ENS name' }
+    const { name } = req.params;
+    const meta = await getAvatarMeta(name);
+    if (meta) {
+      res.status(200).json(meta);
+    } else {
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    }
+  });
+
   app.get('/avatar/:name', async function (req, res) {
     // #swagger.description = 'ENS avatar record'
     // #swagger.parameters['name'] = { description: 'ENS name' }
     const { name } = req.params;
     try {
-      const [buffer, mimeType] = await getAvatar(name);
+      const [buffer, mimeType] = await getAvatarImage(name);
       if (buffer) {
-        const image = Buffer.from(buffer as any, 'base64');
-        /* #swagger.responses[200] = { 
-               description: 'Avatar image file' 
-        } */
         res.writeHead(200, {
           'Content-Type': mimeType,
-          'Content-Length': image.length,
+          'Content-Length': buffer.length,
         });
-        res.end(image);
+        res.end(buffer);
       }
       res.status(404).json({
         message: 'No results found.',
@@ -114,8 +128,8 @@ export default function (app: Express) {
     } catch (error) {
       const errCode = (error?.code && Number(error.code)) || 500;
       if (
-        error instanceof FetchError         ||
-        error instanceof ResolverNotFound   ||
+        error instanceof FetchError ||
+        error instanceof ResolverNotFound ||
         error instanceof TextRecordNotFound ||
         error instanceof UnsupportedNamespace
       ) {

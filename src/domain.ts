@@ -7,7 +7,7 @@ import {
 } from './subgraph';
 import { provider, SUBGRAPH_URL } from './config';
 import { Metadata, Version } from './metadata';
-import { getAvatar } from './avatar';
+import { getAvatarImage } from './avatar';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
@@ -41,7 +41,7 @@ export async function getDomain(
   });
 
   try {
-    const [ buffer, mimeType ] = await getAvatar(name);
+    const [ buffer, mimeType ] = await getAvatarImage(name);
     const base64 = buffer.toString('base64')
     metadata.setBackground(base64, mimeType)
   } catch {}
