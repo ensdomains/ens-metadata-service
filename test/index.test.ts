@@ -168,7 +168,7 @@ test.after.always((t: ExecutionContext<TestContext>) => {
 
 test('get welcome message', async (t: ExecutionContext<TestContext>) => {
   const result = await got('', options).text();
-  t.deepEqual(result, 'Well done mate!');
+  t.deepEqual(result, 'Well done mate To see more go to "/docs"!');
 });
 
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
