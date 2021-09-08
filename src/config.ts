@@ -13,7 +13,7 @@ const ADDRESS_NAME_WRAPPER = process.env.ADDRESS_NAME_WRAPPER || '0x4D83cea620E3
 const SERVER_URL =
   ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
 const INFURA_URL = `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`;
-const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+const provider = new ethers.providers.StaticJsonRpcProvider(INFURA_URL);
 
 let SUBGRAPH_URL: string;
 

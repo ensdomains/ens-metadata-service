@@ -29,7 +29,7 @@ export default function (app: Express) {
                description: 'Metadata object' 
         } */
         res.json(result);
-      } catch (error) {
+      } catch (error: any) {
         console.log('error', error);
         let errCode = (error?.code && Number(error.code)) || 500;
         if (
@@ -125,7 +125,7 @@ export default function (app: Express) {
       res.status(404).json({
         message: 'No results found.',
       });
-    } catch (error) {
+    } catch (error: any) {
       const errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||

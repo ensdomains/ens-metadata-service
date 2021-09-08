@@ -81,7 +81,6 @@ export async function getAvatarURI(name: string): Promise<any> {
 
 // dummy check
 async function parseURI(uri: string): Promise<any> {
-  let response;
   if (uri.startsWith('ipfs://')) {
     return uri.replace('ipfs://', 'https://ipfs.io/ipfs/')
   } else {
@@ -173,7 +172,7 @@ async function retrieveTokenURI(
         if(owner){
           isOwner = (await contract_721.ownerOf(tokenID)) === owner;
         }
-      } catch (error) {
+      } catch (error: any) {
         throw new RetrieveURIFailed(error.message);
       }
       break;
@@ -192,7 +191,7 @@ async function retrieveTokenURI(
         if(owner){
           isOwner = (await contract_1155.balanceOf(owner, tokenID)).gt(0);
         }
-      } catch (error) {
+      } catch (error: any) {
         throw new RetrieveURIFailed(error.message);
       }
       break;
