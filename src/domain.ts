@@ -57,7 +57,7 @@ export async function getDomain(
     }
   } else {
     metadata.setBackground(`https://metadata.ens.domains/avatar/${name}`)
-    metadata.setImage(`https://metadata.ens.domains/${contractAddress}/${tokenId}/image`);
+    metadata.setImage(`https://metadata.ens.domains/${contractAddress}/${hexId}/image`);
   }
 
   if (parent.id === eth) {
