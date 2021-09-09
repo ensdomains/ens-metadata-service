@@ -58,11 +58,9 @@ export class MockEntry {
       version,
     });
 
-    if (image) {
-      (_metadata as Metadata).setImage(image);
-    } else {
-      (_metadata as Metadata).generateImage();
-    }
+    (_metadata as Metadata).setImage(`https://metadata.ens.domains/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`);
+    (_metadata as Metadata).setBackground(`https://metadata.ens.domains/avatar/${name}`)
+
 
     this.domainResponse = {
       domain: {

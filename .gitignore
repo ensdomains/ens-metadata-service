@@ -1,6 +1,6 @@
+.env
 .nyc_output
 coverage
 node_modules
 yarn-error.log
 dist/
-.env

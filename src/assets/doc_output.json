@@ -1,0 +1,129 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "0.0.1-alpha.0",
+    "title": "ENS Metadata Service",
+    "description": "Set of endpoints to query ENS metadata and more",
+    "x-logo": {
+      "url": "/assets/logo.svg",
+      "altText": "Ethereum Name Service"
+    }
+  },
+  "host": "http://localhost:8080",
+  "basePath": "/",
+  "tags": [],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [],
+  "produces": [],
+  "paths": {
+    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
+      "get": {
+        "tags": [],
+        "description": "ENS NFT metadata",
+        "parameters": [
+          {
+            "name": "contractAddress",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Contract Address of your stored NFT"
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metadata object"
+          },
+          "404": {
+            "description": "No results found."
+          }
+        }
+      }
+    },
+    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/image": {
+      "get": {
+        "tags": [],
+        "description": "ENS NFT image",
+        "parameters": [
+          {
+            "name": "contractAddress",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Contract Address of your stored NFT"
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image file"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/avatar/{name}/meta": {
+      "get": {
+        "tags": [],
+        "description": "ENS avatar metadata",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ENS name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avatar metadata object"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/avatar/{name}": {
+      "get": {
+        "tags": [],
+        "description": "ENS avatar image",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ENS name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avatar image file"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {}
+}

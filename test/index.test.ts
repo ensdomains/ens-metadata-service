@@ -160,13 +160,15 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 test.after.always((t: ExecutionContext<TestContext>) => {
   t.context.server.close();
   nock.enableNetConnect();
+  delete process.env.PORT
+  delete process.env.ENV
 });
 
 /* Tests */
 
 test('get welcome message', async (t: ExecutionContext<TestContext>) => {
   const result = await got('', options).text();
-  t.deepEqual(result, 'Well done mate!');
+  t.deepEqual(result, 'Well done mate To see more go to "/docs"!');
 });
 
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
