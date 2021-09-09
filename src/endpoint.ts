@@ -24,7 +24,12 @@ export default function (app: Express) {
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
-        const result = await getDomain(tokenId, version);
+        const result = await getDomain(
+          contractAddress,
+          tokenId,
+          version,
+          false
+        );
         /* #swagger.responses[200] = { 
                description: 'Metadata object' 
         } */
@@ -63,9 +68,12 @@ export default function (app: Express) {
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
-        const result = await getDomain(tokenId, version);
+        const result = await getDomain(contractAddress, tokenId, version);
         if (result.image_url) {
-          const base64 = result.image_url.replace('data:image/svg+xml;base64,', '')
+          const base64 = result.image_url.replace(
+            'data:image/svg+xml;base64,',
+            ''
+          );
           const buffer = Buffer.from(base64, 'base64');
           res.writeHead(200, {
             'Content-Type': 'image/svg+xml',
@@ -73,7 +81,7 @@ export default function (app: Express) {
           });
           res.end(buffer);
         } else {
-          throw Error("Image URL is missing.");
+          throw Error('Image URL is missing.');
         }
         /* #swagger.responses[200] = { 
                description: 'Image file' 
@@ -98,14 +106,29 @@ export default function (app: Express) {
   app.get('/avatar/:name/meta', async function (req, res) {
     // #swagger.description = 'ENS avatar metadata'
     // #swagger.parameters['name'] = { description: 'ENS name' }
-    const { name } = req.params;
-    const meta = await getAvatarMeta(name);
-    if (meta) {
-      res.status(200).json(meta);
-    } else {
-      res.status(404).json({
-        message: 'No results found.',
-      });
+    try {
+      const { name } = req.params;
+      const meta = await getAvatarMeta(name);
+      if (meta) {
+        res.status(200).json(meta);
+      } else {
+        res.status(404).json({
+          message: 'No results found.',
+        });
+      }
+    } catch (error: any) {
+      const errCode = (error?.code && Number(error.code)) || 500;
+      if (
+        error instanceof FetchError ||
+        error instanceof ResolverNotFound ||
+        error instanceof TextRecordNotFound ||
+        error instanceof UnsupportedNamespace
+      ) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+        return;
+      }
     }
   });
 

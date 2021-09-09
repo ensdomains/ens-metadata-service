@@ -14,8 +14,10 @@ const eth =
 const IMAGE_KEY = 'domains.ens.nft.image';
 
 export async function getDomain(
+  contractAddress: string,
   tokenId: string,
-  version: Version
+  version: Version,
+  loadImages: boolean = true
 ): Promise<Metadata> {
   let hexId, intId;
   if (!tokenId.match(/^0x/)) {
@@ -39,19 +41,23 @@ export async function getDomain(
     created_date: createdAt,
     version,
   });
+  if ( loadImages ) {
+    try {
+      const [ buffer, mimeType ] = await getAvatarImage(name);
+      const base64 = buffer.toString('base64')
+      metadata.setBackground(base64, mimeType)
+    } catch {}
 
-  try {
-    const [ buffer, mimeType ] = await getAvatarImage(name);
-    const base64 = buffer.toString('base64')
-    metadata.setBackground(base64, mimeType)
-  } catch {}
-
-  if (hasImageKey) {
-    const r = await provider.getResolver(name);
-    const image = await r.getText(IMAGE_KEY);
-    metadata.setImage(image);
+    if (hasImageKey) {
+      const r = await provider.getResolver(name);
+      const image = await r.getText(IMAGE_KEY);
+      metadata.setImage(image);
+    } else {
+      metadata.generateImage();
+    }
   } else {
-    metadata.generateImage();
+    metadata.setBackground(`https://metadata.ens.domains/avatar/${name}`)
+    metadata.setImage(`https://metadata.ens.domains/${contractAddress}/${hexId}/image`);
   }
 
   if (parent.id === eth) {

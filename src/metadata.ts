@@ -66,7 +66,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     this.image_url = image_url;
   }
 
-  setBackground(base64: string, mimeType: string) {
+  setBackground(base64: string, mimeType?: string) {
     this.background_image = base64
     this.mimeType = mimeType
   }
