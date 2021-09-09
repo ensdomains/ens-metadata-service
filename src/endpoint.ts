@@ -20,7 +20,7 @@ export default function (app: Express) {
     async function (req, res) {
       // #swagger.description = 'ENS NFT metadata'
       // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId' }
-      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name' }
+      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names' }
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);
@@ -59,7 +59,7 @@ export default function (app: Express) {
     async function (req, res) {
       // #swagger.description = 'ENS NFT image'
       // #swagger.parameters['contractAddress'] = { description: 'Contract address which stores the NFT indicated by the tokenId' }
-      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name' }
+      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names' }
       const { contractAddress, tokenId } = req.params;
       try {
         const version = await checkContract(contractAddress, tokenId);

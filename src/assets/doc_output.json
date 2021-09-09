@@ -35,7 +35,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Namehash(v1) /Labelhash(v2) of your ENS name"
+            "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
           }
         ],
         "responses": {
@@ -65,7 +65,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Namehash(v1) /Labelhash(v2) of your ENS name"
+            "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
           }
         ],
         "responses": {
