@@ -27,11 +27,11 @@ export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 
 interface HostMeta {
-  chainID?: number;
+  chain_id?: number;
   namespace?: string;
-  contractAddress?: string;
-  tokenID?: string;
-  referenceUrl?: string;
+  contract_address?: string;
+  token_id?: string;
+  reference_url?: string;
 }
 
 export interface AvatarMetadata {
@@ -49,8 +49,8 @@ export interface AvatarMetadata {
   image?: string;
   animation_url?: string;
   hostType: string;
-  hostMeta: HostMeta;
-  isOwned: boolean;
+  host_meta: HostMeta;
+  is_owner: boolean;
 }
 
 export class AvatarMetadata {
@@ -59,32 +59,33 @@ export class AvatarMetadata {
   }
 
   _setHostMeta(meta: HostMeta) {
-    switch (meta.chainID) {
+    const { chain_id, contract_address, token_id } = meta;
+    switch (chain_id) {
       case 1:
         meta[
-          'referenceUrl'
-        ] = `https://opensea.io/assets/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://opensea.io/assets/${contract_address}/${token_id}`;
         break;
       case 42:
         meta[
-          'referenceUrl'
-        ] = `https://testnets.opensea.io/assets/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://testnets.opensea.io/assets/${contract_address}/${token_id}`;
         break;
       case 137:
         meta[
-          'referenceUrl'
-        ] = `https://opensea.io/assets/matic/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://opensea.io/assets/matic/${contract_address}/${token_id}`;
         break;
       default:
     }
-    this.hostMeta = meta;
+    this.host_meta = meta;
   }
 
   async _retrieveTokenURI(
     provider: any,
     namespace: string,
-    contractAddress: string,
-    tokenID: string,
+    contract_address: string,
+    token_id: string,
     owner?: string
   ) {
     let tokenURI;
@@ -92,7 +93,7 @@ export class AvatarMetadata {
     switch (namespace) {
       case 'erc721': {
         const contract_721 = new ethers.Contract(
-          contractAddress,
+          contract_address,
           [
             'function tokenURI(uint256 tokenId) external view returns (string memory)',
             'function ownerOf(uint256 tokenId) public view returns (address)',
@@ -100,9 +101,9 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_721.tokenURI(tokenID);
+          tokenURI = await contract_721.tokenURI(token_id);
           if (owner) {
-            isOwner = (await contract_721.ownerOf(tokenID)) === owner;
+            isOwner = (await contract_721.ownerOf(token_id)) === owner;
           }
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
@@ -111,7 +112,7 @@ export class AvatarMetadata {
       }
       case 'erc1155': {
         const contract_1155 = new ethers.Contract(
-          contractAddress,
+          contract_address,
           [
             'function uri(uint256 _id) public view returns (string memory)',
             'function balanceOf(address account, uint256 id) public view returns (uint256)',
@@ -119,9 +120,9 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_1155.uri(tokenID);
+          tokenURI = await contract_1155.uri(token_id);
           if (owner) {
-            isOwner = (await contract_1155.balanceOf(owner, tokenID)).gt(0);
+            isOwner = (await contract_1155.balanceOf(owner, token_id)).gt(0);
           }
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
@@ -131,34 +132,34 @@ export class AvatarMetadata {
       default:
         throw new UnsupportedNamespace(`Unsupported namespace: ${namespace}`);
     }
-    this.isOwned = isOwner;
+    this.is_owner = isOwner;
     return tokenURI;
   }
 
   async _retrieveMetadata({
-    chainID,
-    tokenID,
-    contractAddress,
+    chain_id,
+    token_id,
+    contract_address,
     namespace
   }: HostMeta) {
     const owner = await provider.resolveName(this.uri);
     const _provider = new ethers.providers.InfuraProvider(
-      chainID,
+      chain_id,
       INFURA_API_KEY
     );
 
     const tokenURI = await this._retrieveTokenURI(
       _provider,
       namespace as string,
-      contractAddress as string,
-      tokenID as string,
+      contract_address as string,
+      token_id as string,
       owner
     );
     assert(tokenURI, 'TokenURI is empty');
 
-    const _tokenID = !tokenID?.startsWith('0x')
-      ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
-      : tokenID;
+    const _tokenID = !token_id?.startsWith('0x')
+      ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
+      : token_id;
 
     const meta = await (
       await fetch(tokenURI.replace('0x{id}', _tokenID))
@@ -262,20 +263,20 @@ export class AvatarMetadata {
     assert(uri, 'parameter URI cannot be empty');
     uri = uri.replace('did:nft:', '');
 
-    const [reference, asset_namespace, tokenID] = uri.split(seperator);
-    const [type, chainID] = reference.split(':');
-    const [namespace, contractAddress] = asset_namespace.split(':');
+    const [reference, asset_namespace, token_id] = uri.split(seperator);
+    const [type, chain_id] = reference.split(':');
+    const [namespace, contract_address] = asset_namespace.split(':');
 
-    assert(chainID, 'chainID is empty');
-    assert(contractAddress, 'contractAddress is empty');
+    assert(chain_id, 'chainID is empty');
+    assert(contract_address, 'contractAddress is empty');
     assert(namespace, 'namespace is empty');
-    assert(tokenID, 'tokenID is empty');
+    assert(token_id, 'tokenID is empty');
 
     return {
-      chainID: Number(chainID),
+      chain_id: Number(chain_id),
       namespace,
-      contractAddress,
-      tokenID,
+      contract_address,
+      token_id,
     };
   }
 }
