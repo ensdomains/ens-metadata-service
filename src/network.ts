@@ -14,6 +14,8 @@ const NETWORK = {
 };
 
 export default function getNetwork(network: string): any {
+  // currently subgraphs used under this function are outdated,
+  // we will have namewrapper support and more attributes when latest subgraph goes to production
   let SUBGRAPH_URL: string;
   let INFURA_URL: string;
   switch (network) {
