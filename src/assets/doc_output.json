@@ -18,11 +18,18 @@
   "consumes": [],
   "produces": [],
   "paths": {
-    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
+    "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
       "get": {
         "tags": [],
         "description": "ENS NFT metadata",
         "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+          },
           {
             "name": "contractAddress",
             "in": "path",
@@ -48,11 +55,18 @@
         }
       }
     },
-    "/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/image": {
+    "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/image": {
       "get": {
         "tags": [],
         "description": "ENS NFT image",
         "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+          },
           {
             "name": "contractAddress",
             "in": "path",
@@ -74,15 +88,25 @@
           },
           "404": {
             "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
           }
         }
       }
     },
-    "/avatar/{name}/meta": {
+    "/{networkName}/avatar/{name}/meta": {
       "get": {
         "tags": [],
         "description": "ENS avatar metadata",
         "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+          },
           {
             "name": "name",
             "in": "path",
@@ -101,11 +125,18 @@
         }
       }
     },
-    "/avatar/{name}": {
+    "/{networkName}/avatar/{name}": {
       "get": {
         "tags": [],
         "description": "ENS avatar image",
         "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+          },
           {
             "name": "name",
             "in": "path",

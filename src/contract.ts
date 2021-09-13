@@ -1,24 +1,13 @@
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
+import { BaseError } from './base';
 
 import {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_NAME_WRAPPER,
   INAMEWRAPPER,
-  provider,
 } from './config';
 import { Version } from './metadata';
-
-export interface BaseError {}
-export class BaseError extends Error {
-  __proto__: Error;
-  constructor(message?: string) {
-    const trueProto = new.target.prototype;
-    super(message);
-
-    this.__proto__ = trueProto;
-  }
-}
 
 export interface ContractMismatchError {}
 export class ContractMismatchError extends BaseError {}
@@ -27,6 +16,7 @@ export interface OwnerNotFoundError {}
 export class OwnerNotFoundError extends BaseError {}
 
 export async function checkContract(
+  provider: any,
   contractAddress: string,
   tokenId: string
 ): Promise<Version> {

@@ -1,18 +1,8 @@
 import { strict as assert } from 'assert';
-import { ethers } from 'ethers';
-import fetch from 'node-fetch';
-import { INFURA_API_KEY, provider } from './config';
-
-export interface BaseError {}
-export class BaseError extends Error {
-  __proto__: Error;
-  constructor(message?: string) {
-    const trueProto = new.target.prototype;
-    super(message);
-
-    this.__proto__ = trueProto;
-  }
-}
+import { ethers }           from 'ethers';
+import fetch                from 'node-fetch';
+import { BaseError }        from './base';
+import { INFURA_API_KEY }   from './config';
 
 export interface ResolverNotFound {}
 export class ResolverNotFound extends BaseError {}
@@ -27,15 +17,15 @@ export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 
 interface HostMeta {
-  chainID?: number;
+  chain_id?: number;
   namespace?: string;
-  contractAddress?: string;
-  tokenID?: string;
-  referenceUrl?: string;
+  contract_address?: string;
+  token_id?: string;
+  reference_url?: string;
 }
 
 export interface AvatarMetadata {
-  uri: string,
+  uri: string;
   animation: string;
   animation_details: {};
   attributes: any[];
@@ -49,42 +39,45 @@ export interface AvatarMetadata {
   image?: string;
   animation_url?: string;
   hostType: string;
-  hostMeta: HostMeta;
-  isOwned: boolean;
+  host_meta: HostMeta;
+  is_owner: boolean;
 }
 
 export class AvatarMetadata {
-  constructor(uri: string) {
+  defaultProvider: any;
+  constructor(provider: any, uri: string) {
+    this.defaultProvider = provider;
     this.uri = uri;
   }
 
   _setHostMeta(meta: HostMeta) {
-    switch (meta.chainID) {
+    const { chain_id, contract_address, token_id } = meta;
+    switch (chain_id) {
       case 1:
         meta[
-          'referenceUrl'
-        ] = `https://opensea.io/assets/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://opensea.io/assets/${contract_address}/${token_id}`;
         break;
       case 42:
         meta[
-          'referenceUrl'
-        ] = `https://testnets.opensea.io/assets/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://testnets.opensea.io/assets/${contract_address}/${token_id}`;
         break;
       case 137:
         meta[
-          'referenceUrl'
-        ] = `https://opensea.io/assets/matic/${meta.contractAddress}/${meta.tokenID}`;
+          'reference_url'
+        ] = `https://opensea.io/assets/matic/${contract_address}/${token_id}`;
         break;
       default:
     }
-    this.hostMeta = meta;
+    this.host_meta = meta;
   }
 
   async _retrieveTokenURI(
     provider: any,
     namespace: string,
-    contractAddress: string,
-    tokenID: string,
+    contract_address: string,
+    token_id: string,
     owner?: string
   ) {
     let tokenURI;
@@ -92,7 +85,7 @@ export class AvatarMetadata {
     switch (namespace) {
       case 'erc721': {
         const contract_721 = new ethers.Contract(
-          contractAddress,
+          contract_address,
           [
             'function tokenURI(uint256 tokenId) external view returns (string memory)',
             'function ownerOf(uint256 tokenId) public view returns (address)',
@@ -100,9 +93,9 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_721.tokenURI(tokenID);
+          tokenURI = await contract_721.tokenURI(token_id);
           if (owner) {
-            isOwner = (await contract_721.ownerOf(tokenID)) === owner;
+            isOwner = (await contract_721.ownerOf(token_id)) === owner;
           }
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
@@ -111,7 +104,7 @@ export class AvatarMetadata {
       }
       case 'erc1155': {
         const contract_1155 = new ethers.Contract(
-          contractAddress,
+          contract_address,
           [
             'function uri(uint256 _id) public view returns (string memory)',
             'function balanceOf(address account, uint256 id) public view returns (uint256)',
@@ -119,9 +112,9 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_1155.uri(tokenID);
+          tokenURI = await contract_1155.uri(token_id);
           if (owner) {
-            isOwner = (await contract_1155.balanceOf(owner, tokenID)).gt(0);
+            isOwner = (await contract_1155.balanceOf(owner, token_id)).gt(0);
           }
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
@@ -131,34 +124,34 @@ export class AvatarMetadata {
       default:
         throw new UnsupportedNamespace(`Unsupported namespace: ${namespace}`);
     }
-    this.isOwned = isOwner;
+    this.is_owner = isOwner;
     return tokenURI;
   }
 
   async _retrieveMetadata({
-    chainID,
-    tokenID,
-    contractAddress,
-    namespace
+    chain_id,
+    token_id,
+    contract_address,
+    namespace,
   }: HostMeta) {
-    const owner = await provider.resolveName(this.uri);
+    const owner = await this.defaultProvider.resolveName(this.uri);
     const _provider = new ethers.providers.InfuraProvider(
-      chainID,
+      chain_id,
       INFURA_API_KEY
     );
 
     const tokenURI = await this._retrieveTokenURI(
       _provider,
       namespace as string,
-      contractAddress as string,
-      tokenID as string,
+      contract_address as string,
+      token_id as string,
       owner
     );
     assert(tokenURI, 'TokenURI is empty');
 
-    const _tokenID = !tokenID?.startsWith('0x')
-      ? ethers.utils.hexValue(ethers.BigNumber.from(tokenID))
-      : tokenID;
+    const _tokenID = !token_id?.startsWith('0x')
+      ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
+      : token_id;
 
     const meta = await (
       await fetch(tokenURI.replace('0x{id}', _tokenID))
@@ -179,26 +172,26 @@ export class AvatarMetadata {
       name,
     } = meta;
 
-    this.animation = animation;
+    this.animation         = animation;
     this.animation_details = animation_details;
-    this.animation_url = animation_url;
-    this.attributes = attributes;
-    this.created_by = created_by;
-    this.description = description;
-    this.event = event;
-    this.external_link = external_link;
-    this.image = image;
-    this.image_url = image_url;
-    this.image_details = image_details;
-    this.name = name;
-    this.description = description;
-    this.external_link = external_link;
-    this.image = image;
-    this.animation_url = animation_url;
+    this.animation_url     = animation_url;
+    this.attributes        = attributes;
+    this.created_by        = created_by;
+    this.description       = description;
+    this.event             = event;
+    this.external_link     = external_link;
+    this.image             = image;
+    this.image_url         = image_url;
+    this.image_details     = image_details;
+    this.name              = name;
+    this.description       = description;
+    this.external_link     = external_link;
+    this.image             = image;
+    this.animation_url     = animation_url;
   }
 
   async getImage() {
-    const uri = await AvatarMetadata.getAvatarURI(this.uri);
+    const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       const spec = AvatarMetadata.parseNFT(uri);
       await this._retrieveMetadata(spec);
@@ -216,7 +209,7 @@ export class AvatarMetadata {
   }
 
   async getMeta() {
-    const uri = await AvatarMetadata.getAvatarURI(this.uri);
+    const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       const spec = AvatarMetadata.parseNFT(uri);
       this._setHostMeta(spec);
@@ -226,13 +219,14 @@ export class AvatarMetadata {
       this.image = uri;
     }
     await AvatarMetadata.parseURI(this.image as string);
-    return this;
+    const { defaultProvider, ...rest } = this;
+    return rest;
   }
 
-  static async getAvatarURI(uri: string): Promise<any> {
+  async getAvatarURI(uri: string): Promise<any> {
     try {
       // retrieve resolver by ens name
-      var resolver = await provider.getResolver(uri);
+      var resolver = await this.defaultProvider.getResolver(uri);
     } catch (e) {
       throw new ResolverNotFound(
         'There is no resolver set under given address'
@@ -262,30 +256,33 @@ export class AvatarMetadata {
     assert(uri, 'parameter URI cannot be empty');
     uri = uri.replace('did:nft:', '');
 
-    const [reference, asset_namespace, tokenID] = uri.split(seperator);
-    const [type, chainID] = reference.split(':');
-    const [namespace, contractAddress] = asset_namespace.split(':');
+    const [reference, asset_namespace, token_id] = uri.split(seperator);
+    const [type, chain_id] = reference.split(':');
+    const [namespace, contract_address] = asset_namespace.split(':');
 
-    assert(chainID, 'chainID is empty');
-    assert(contractAddress, 'contractAddress is empty');
+    assert(chain_id, 'chainID is empty');
+    assert(contract_address, 'contractAddress is empty');
     assert(namespace, 'namespace is empty');
-    assert(tokenID, 'tokenID is empty');
+    assert(token_id, 'tokenID is empty');
 
     return {
-      chainID: Number(chainID),
+      chain_id: Number(chain_id),
       namespace,
-      contractAddress,
-      tokenID,
+      contract_address,
+      token_id,
     };
   }
 }
 
-export async function getAvatarMeta(name: string): Promise<any> {
-  const avatar = new AvatarMetadata(name);
+export async function getAvatarMeta(provider: any, name: string): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
   return await avatar.getMeta();
 }
 
-export async function getAvatarImage(name: string): Promise<any> {
-  const avatar = new AvatarMetadata(name);
+export async function getAvatarImage(
+  provider: any,
+  name: string
+): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
   return await avatar.getImage();
 }
