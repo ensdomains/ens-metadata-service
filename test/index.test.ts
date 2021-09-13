@@ -10,11 +10,7 @@ import listen from 'test-listen';
 
 import * as app from '../src/index';
 import { GET_DOMAINS } from '../src/subgraph';
-import {
-  INFURA_URL as infura_url,
-  SERVER_URL as server_url,
-  SUBGRAPH_URL as subgraph_url,
-} from '../src/config';
+import { SERVER_URL as server_url } from '../src/config';
 import { MockEntry } from './entry.mock';
 import {
   EthCallResponse,
@@ -23,10 +19,15 @@ import {
   TestContext,
 } from './interface';
 import { ethers } from 'ethers';
+import getNetwork from '../src/network';
 
+const { INFURA_URL: infura_url, SUBGRAPH_URL: subgraph_url } =
+  getNetwork('rinkeby');
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
+console.log('SERVER_URL', SERVER_URL)
 const SUBGRAPH_URL = new URL(subgraph_url);
+console.log('SUBGRAPH_URL', SUBGRAPH_URL)
 const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
 const NON_CONTRACT_ADDRESS = '0xab5801a7d398351b8be11c439e05c5b3259aec9b';
 
@@ -160,8 +161,8 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 test.after.always((t: ExecutionContext<TestContext>) => {
   t.context.server.close();
   nock.enableNetConnect();
-  delete process.env.PORT
-  delete process.env.ENV
+  delete process.env.PORT;
+  delete process.env.ENV;
 });
 
 /* Tests */
@@ -173,21 +174,25 @@ test('get welcome message', async (t: ExecutionContext<TestContext>) => {
 
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
     options
   ).json();
+  console.log("pelik", result);
   t.deepEqual(result, wrappertest3.expect);
 });
 
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
   const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
-  const result = await got(`${NAME_WRAPPER_ADDRESS}/${intId}`, options).json();
+  const result = await got(
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${intId}`,
+    options
+  ).json();
   t.deepEqual(result, wrappertest3.expect);
 });
 
 test('get /:contractAddress/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
     options
   ).json();
   t.deepEqual(result, sub1Wrappertest.expect);
@@ -195,7 +200,7 @@ test('get /:contractAddress/:tokenId for subdomain returns auto generated image'
 
 test('get /:contractAddress/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`,
     options
   ).json();
   t.deepEqual(result, sub2Wrappertest9.expect);
@@ -203,7 +208,7 @@ test('get /:contractAddress/:tokenId for subdomain returns image from text recor
 
 test('get /:contractAddress/:tokenId for a 21 char long domain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${handle21character.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${handle21character.namehash}`,
     options
   ).json();
   t.deepEqual(result, handle21character.expect);
@@ -211,7 +216,7 @@ test('get /:contractAddress/:tokenId for a 21 char long domain', async (t: Execu
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long domain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${supercalifragilisticexpialidocious.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${supercalifragilisticexpialidocious.namehash}`,
     options
   ).json();
   t.deepEqual(result, supercalifragilisticexpialidocious.expect);
@@ -219,7 +224,7 @@ test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long domain', a
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long subdomain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `${NAME_WRAPPER_ADDRESS}/${longsubdomainconsistof34charactersMdt.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${longsubdomainconsistof34charactersMdt.namehash}`,
     options
   ).json();
   t.deepEqual(result, longsubdomainconsistof34charactersMdt.expect);
@@ -229,7 +234,7 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
   const {
     response: { statusCode, body },
   }: HTTPError = await t.throwsAsync(
-    () => got(`${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
+    () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
     { instanceOf: HTTPError }
   );
   const message = JSON.parse(body as string)?.message;
@@ -241,12 +246,12 @@ test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionCont
   const {
     response: { statusCode, body },
   }: HTTPError = await t.throwsAsync(
-    () => got(`${NAME_WRAPPER_ADDRESS}/`, options),
+    () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/`, options),
     {
       instanceOf: HTTPError,
     }
   );
-  t.assert((body as string).includes(`Cannot GET /${NAME_WRAPPER_ADDRESS}/`));
+  t.assert((body as string).includes(`Cannot GET /rinkeby/${NAME_WRAPPER_ADDRESS}/`));
   t.is(statusCode, 404);
 });
 
@@ -268,7 +273,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -301,7 +306,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -332,7 +337,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -360,7 +365,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
     response: { statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -376,7 +381,7 @@ test('raise ContractNotFoundError', async (t: ExecutionContext<TestContext>) => 
     response: { body },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`rinkeby/${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),

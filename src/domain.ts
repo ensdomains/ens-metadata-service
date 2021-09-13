@@ -5,7 +5,6 @@ import {
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
 } from './subgraph';
-import { provider, SUBGRAPH_URL } from './config';
 import { Metadata, Version } from './metadata';
 import { getAvatarImage } from './avatar';
 
@@ -14,6 +13,9 @@ const eth =
 const IMAGE_KEY = 'domains.ens.nft.image';
 
 export async function getDomain(
+  provider: any,
+  networkName: string,
+  SUBGRAPH_URL: string,
   contractAddress: string,
   tokenId: string,
   version: Version,
@@ -41,11 +43,11 @@ export async function getDomain(
     created_date: createdAt,
     version,
   });
-  if ( loadImages ) {
+  if (loadImages) {
     try {
-      const [ buffer, mimeType ] = await getAvatarImage(name);
-      const base64 = buffer.toString('base64')
-      metadata.setBackground(base64, mimeType)
+      const [buffer, mimeType] = await getAvatarImage(provider, name);
+      const base64 = buffer.toString('base64');
+      metadata.setBackground(base64, mimeType);
     } catch {}
 
     if (hasImageKey) {
@@ -56,8 +58,12 @@ export async function getDomain(
       metadata.generateImage();
     }
   } else {
-    metadata.setBackground(`https://metadata.ens.domains/avatar/${name}`)
-    metadata.setImage(`https://metadata.ens.domains/${contractAddress}/${hexId}/image`);
+    metadata.setBackground(
+      `https://metadata.ens.domains/${networkName}/avatar/${name}`
+    );
+    metadata.setImage(
+      `https://metadata.ens.domains/${networkName}/${contractAddress}/${hexId}/image`
+    );
   }
 
   if (parent.id === eth) {

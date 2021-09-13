@@ -1,18 +1,8 @@
 import { strict as assert } from 'assert';
-import { ethers } from 'ethers';
-import fetch from 'node-fetch';
-import { INFURA_API_KEY, provider } from './config';
-
-export interface BaseError {}
-export class BaseError extends Error {
-  __proto__: Error;
-  constructor(message?: string) {
-    const trueProto = new.target.prototype;
-    super(message);
-
-    this.__proto__ = trueProto;
-  }
-}
+import { ethers }           from 'ethers';
+import fetch                from 'node-fetch';
+import { BaseError }        from './base';
+import { INFURA_API_KEY }   from './config';
 
 export interface ResolverNotFound {}
 export class ResolverNotFound extends BaseError {}
@@ -35,7 +25,7 @@ interface HostMeta {
 }
 
 export interface AvatarMetadata {
-  uri: string,
+  uri: string;
   animation: string;
   animation_details: {};
   attributes: any[];
@@ -54,7 +44,9 @@ export interface AvatarMetadata {
 }
 
 export class AvatarMetadata {
-  constructor(uri: string) {
+  defaultProvider: any;
+  constructor(provider: any, uri: string) {
+    this.defaultProvider = provider;
     this.uri = uri;
   }
 
@@ -140,9 +132,9 @@ export class AvatarMetadata {
     chain_id,
     token_id,
     contract_address,
-    namespace
+    namespace,
   }: HostMeta) {
-    const owner = await provider.resolveName(this.uri);
+    const owner = await this.defaultProvider.resolveName(this.uri);
     const _provider = new ethers.providers.InfuraProvider(
       chain_id,
       INFURA_API_KEY
@@ -180,26 +172,26 @@ export class AvatarMetadata {
       name,
     } = meta;
 
-    this.animation = animation;
+    this.animation         = animation;
     this.animation_details = animation_details;
-    this.animation_url = animation_url;
-    this.attributes = attributes;
-    this.created_by = created_by;
-    this.description = description;
-    this.event = event;
-    this.external_link = external_link;
-    this.image = image;
-    this.image_url = image_url;
-    this.image_details = image_details;
-    this.name = name;
-    this.description = description;
-    this.external_link = external_link;
-    this.image = image;
-    this.animation_url = animation_url;
+    this.animation_url     = animation_url;
+    this.attributes        = attributes;
+    this.created_by        = created_by;
+    this.description       = description;
+    this.event             = event;
+    this.external_link     = external_link;
+    this.image             = image;
+    this.image_url         = image_url;
+    this.image_details     = image_details;
+    this.name              = name;
+    this.description       = description;
+    this.external_link     = external_link;
+    this.image             = image;
+    this.animation_url     = animation_url;
   }
 
   async getImage() {
-    const uri = await AvatarMetadata.getAvatarURI(this.uri);
+    const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       const spec = AvatarMetadata.parseNFT(uri);
       await this._retrieveMetadata(spec);
@@ -217,7 +209,7 @@ export class AvatarMetadata {
   }
 
   async getMeta() {
-    const uri = await AvatarMetadata.getAvatarURI(this.uri);
+    const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       const spec = AvatarMetadata.parseNFT(uri);
       this._setHostMeta(spec);
@@ -227,13 +219,14 @@ export class AvatarMetadata {
       this.image = uri;
     }
     await AvatarMetadata.parseURI(this.image as string);
-    return this;
+    const { defaultProvider, ...rest } = this;
+    return rest;
   }
 
-  static async getAvatarURI(uri: string): Promise<any> {
+  async getAvatarURI(uri: string): Promise<any> {
     try {
       // retrieve resolver by ens name
-      var resolver = await provider.getResolver(uri);
+      var resolver = await this.defaultProvider.getResolver(uri);
     } catch (e) {
       throw new ResolverNotFound(
         'There is no resolver set under given address'
@@ -281,12 +274,15 @@ export class AvatarMetadata {
   }
 }
 
-export async function getAvatarMeta(name: string): Promise<any> {
-  const avatar = new AvatarMetadata(name);
+export async function getAvatarMeta(provider: any, name: string): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
   return await avatar.getMeta();
 }
 
-export async function getAvatarImage(name: string): Promise<any> {
-  const avatar = new AvatarMetadata(name);
+export async function getAvatarImage(
+  provider: any,
+  name: string
+): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
   return await avatar.getImage();
 }

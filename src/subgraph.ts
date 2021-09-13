@@ -10,7 +10,6 @@ export const GET_DOMAINS = gql`
       labelName
       labelhash
       name
-      createdAt
       owner {
         id
       }
@@ -36,7 +35,6 @@ export const GET_DOMAINS_BY_LABELHASH = gql`
       labelName
       labelhash
       name
-      createdAt
       owner {
         id
       }

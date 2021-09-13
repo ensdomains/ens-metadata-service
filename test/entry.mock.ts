@@ -1,13 +1,14 @@
 import { utils } from 'ethers';
 import nock from 'nock';
-import { SUBGRAPH_URL as subgraph_url } from '../src/config';
 import { Metadata, Version } from '../src/metadata';
+import getNetwork from '../src/network';
 import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/subgraph';
 import {
   DomainResponse,
   MockEntryBody,
   RegistrationResponse,
 } from './interface';
+const { SUBGRAPH_URL: subgraph_url } = getNetwork('rinkeby');
 const SUBGRAPH_URL = new URL(subgraph_url);
 const namehash = require('eth-ens-namehash'); // no types
 
@@ -58,8 +59,8 @@ export class MockEntry {
       version,
     });
 
-    (_metadata as Metadata).setImage(`https://metadata.ens.domains/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`);
-    (_metadata as Metadata).setBackground(`https://metadata.ens.domains/avatar/${name}`)
+    (_metadata as Metadata).setImage(`https://metadata.ens.domains/rinkeby/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`);
+    (_metadata as Metadata).setBackground(`https://metadata.ens.domains/rinkeby/avatar/${name}`)
 
 
     this.domainResponse = {
