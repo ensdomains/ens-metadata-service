@@ -37,17 +37,16 @@ export async function checkContract(
       `${contractAddress} does not match with any ENS related contract`
     );
   }
-  
-  try {
-    var nftOwner = await contract.ownerOf(tokenId);
-    assert(nftOwner !== '0x')
-  } catch (error) {
-    throw new OwnerNotFoundError(`Checking owner of ${tokenId} failed. Reason: ${error}`);
-  }
 
   if (contractAddress === ADDRESS_NAME_WRAPPER) {
     return Version.v2;
   } else if (contractAddress === ADDRESS_ETH_REGISTRAR) {
+    try {
+      var nftOwner = await contract.ownerOf(tokenId);
+      assert(nftOwner !== '0x')
+    } catch (error) {
+      throw new OwnerNotFoundError(`Checking owner of ${tokenId} failed. Reason: ${error}`);
+    }
     if (nftOwner === ADDRESS_NAME_WRAPPER) {
       return Version.v1w;
     } else {
