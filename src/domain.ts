@@ -21,7 +21,7 @@ export async function getDomain(
   version: Version,
   loadImages: boolean = true
 ): Promise<Metadata> {
-  let hexId, intId;
+  let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
     hexId = ethers.utils.hexValue(ethers.BigNumber.from(tokenId));
@@ -43,46 +43,70 @@ export async function getDomain(
     created_date: createdAt,
     version,
   });
-  if (loadImages) {
+
+  async function requestAvatar() {
     try {
       const [buffer, mimeType] = await getAvatarImage(provider, name);
       const base64 = buffer.toString('base64');
-      metadata.setBackground(base64, mimeType);
-    } catch {}
+      return [base64, mimeType];
+    } catch {
+      /* do nothing */
+    }
+  }
 
+  async function requestNFTImage() {
     if (hasImageKey) {
       const r = await provider.getResolver(name);
       const image = await r.getText(IMAGE_KEY);
-      metadata.setImage(image);
-    } else {
-      metadata.generateImage();
+      return image;
     }
-  } else {
-    metadata.setBackground(
-      `https://metadata.ens.domains/${networkName}/avatar/${name}`
-    );
-    metadata.setImage(
-      `https://metadata.ens.domains/${networkName}/${contractAddress}/${hexId}/image`
-    );
   }
 
-  if (parent.id === eth) {
-    const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
-      labelhash,
-    });
-    const registration = registrations[0];
-    if (registration) {
-      metadata.addAttribute({
-        trait_type: 'Registration Date',
-        display_type: 'date',
-        value: registration.registrationDate * 1000,
-      });
-      metadata.addAttribute({
-        trait_type: 'Expiration Date',
-        display_type: 'date',
-        value: registration.expiryDate * 1000,
-      });
+  async function requestMedia() {
+    if (loadImages) {
+      const [avatar, imageNFT] = await Promise.all([
+        requestAvatar(),
+        requestNFTImage(),
+      ]);
+      if (imageNFT) {
+        metadata.setImage(imageNFT);
+      } else {
+        if (avatar) {
+          const [base64, mimeType] = avatar;
+          metadata.setBackground(base64, mimeType);
+        }
+        metadata.generateImage();
+      }
+    } else {
+      metadata.setBackground(
+        `https://metadata.ens.domains/${networkName}/avatar/${name}`
+      );
+      metadata.setImage(
+        `https://metadata.ens.domains/${networkName}/${contractAddress}/${hexId}/image`
+      );
     }
   }
+
+  async function requestAttributes() {
+    if (parent.id === eth) {
+      const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
+        labelhash,
+      });
+      const registration = registrations[0];
+      if (registration) {
+        metadata.addAttribute({
+          trait_type: 'Registration Date',
+          display_type: 'date',
+          value: registration.registrationDate * 1000,
+        });
+        metadata.addAttribute({
+          trait_type: 'Expiration Date',
+          display_type: 'date',
+          value: registration.expiryDate * 1000,
+        });
+      }
+    }
+  }
+  await Promise.all([requestMedia(), requestAttributes()]);
   return metadata;
 }

@@ -93,10 +93,12 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_721.tokenURI(token_id);
-          if (owner) {
-            isOwner = (await contract_721.ownerOf(token_id)) === owner;
-          }
+          const [_tokenURI, _isOwner] = await Promise.all([
+            contract_721.tokenURI(token_id),
+            () => owner && contract_721.ownerOf(token_id),
+          ]);
+          tokenURI = _tokenURI;
+          isOwner = !!_isOwner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -112,10 +114,12 @@ export class AvatarMetadata {
           provider
         );
         try {
-          tokenURI = await contract_1155.uri(token_id);
-          if (owner) {
-            isOwner = (await contract_1155.balanceOf(owner, token_id)).gt(0);
-          }
+          const [_tokenURI, _isOwner] = await Promise.all([
+            contract_1155.uri(token_id),
+            () => owner && contract_1155.balanceOf(owner, token_id).gt(0),
+          ]);
+          tokenURI = _tokenURI;
+          isOwner = !!_isOwner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }

@@ -151,6 +151,11 @@ export default function (app: Express) {
         });
         return;
       }
+      if (error instanceof UnsupportedNetwork) {
+        res.status(501).json({
+          message: error.message,
+        });
+      }
     }
   });
 
@@ -184,6 +189,11 @@ export default function (app: Express) {
           message: error.message,
         });
         return;
+      }
+      if (error instanceof UnsupportedNetwork) {
+        res.status(501).json({
+          message: error.message,
+        });
       }
     }
   });
