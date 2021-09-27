@@ -56,6 +56,7 @@ export class MockEntry {
     const _metadata = new Metadata({
       name,
       created_date: +randomDate,
+      tokenId: this.namehash,
       version,
     });
 
