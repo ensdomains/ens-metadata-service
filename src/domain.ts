@@ -41,6 +41,7 @@ export async function getDomain(
   const metadata = new Metadata({
     name,
     created_date: createdAt,
+    tokenId: hexId,
     version,
   });
 
