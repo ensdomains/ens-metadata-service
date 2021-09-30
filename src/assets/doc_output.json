@@ -4,9 +4,11 @@
     "version": "0.0.1-alpha.0",
     "title": "ENS Metadata Service",
     "description": "Set of endpoints to query ENS metadata and more",
-    "x-logo": {
-      "url": "/assets/logo.svg",
-      "altText": "Ethereum Name Service"
+    "contact": "contact@ens.domains",
+    "license": "MIT License",
+    "x_logo": {
+      "url": "./src/assets/logo.svg",
+      "backgroundColor": "#FFFFFF"
     }
   },
   "host": "http://localhost:8080",
@@ -18,6 +20,14 @@
   "consumes": [],
   "produces": [],
   "paths": {
+    "/": {
+      "get": {
+        "tags": [],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
     "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
       "get": {
         "tags": [],
@@ -28,14 +38,13 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "description": "Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)"
           },
           {
-            "name": "contractAddress",
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Contract Address of your stored NFT"
+            "type": "string"
           },
           {
             "name": "tokenId",
@@ -43,6 +52,11 @@
             "required": true,
             "type": "string",
             "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "{}",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -65,14 +79,13 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "description": "Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)"
           },
           {
-            "name": "contractAddress",
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Contract Address of your stored NFT"
+            "type": "string"
           },
           {
             "name": "tokenId",
@@ -80,6 +93,12 @@
             "required": true,
             "type": "string",
             "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "contractAddress",
+            "description": "Contract address which stores the NFT indicated by the tokenId",
+            "in": "query",
+            "type": "string"
           }
         ],
         "responses": {
@@ -105,7 +124,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "description": "Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)"
           },
           {
             "name": "name",
@@ -117,10 +136,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Avatar metadata object"
+            "description": "OK"
           },
           "404": {
             "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
           }
         }
       }
@@ -128,14 +150,44 @@
     "/{networkName}/avatar/{name}": {
       "get": {
         "tags": [],
-        "description": "ENS avatar image",
+        "description": "ENS avatar record",
         "parameters": [
           {
             "name": "networkName",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "description": "Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "ENS name"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
+          }
+        }
+      }
+    },
+    "/{networkName}/keybase/{name}": {
+      "get": {
+        "tags": [],
+        "description": "ENS Keybase signatures",
+        "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)"
           },
           {
             "name": "name",
@@ -147,10 +199,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Avatar image file"
+            "description": "OK"
           },
           "404": {
             "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
           }
         }
       }

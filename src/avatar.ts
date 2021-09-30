@@ -3,18 +3,7 @@ import { ethers }           from 'ethers';
 import fetch                from 'node-fetch';
 import { BaseError }        from './base';
 import { INFURA_API_KEY }   from './config';
-
-export interface ResolverNotFound {}
-export class ResolverNotFound extends BaseError {}
-
-export interface TextRecordNotFound {}
-export class TextRecordNotFound extends BaseError {}
-
-export interface RetrieveURIFailed {}
-export class RetrieveURIFailed extends BaseError {}
-
-export interface UnsupportedNamespace {}
-export class UnsupportedNamespace extends BaseError {}
+import { ResolverNotFound, TextRecordNotFound, RetrieveURIFailed, UnsupportedNamespace } from './error'
 
 interface HostMeta {
   chain_id?: number;

@@ -5,11 +5,14 @@ import { checkContract, ContractMismatchError } from './contract';
 import {
   getAvatarImage,
   getAvatarMeta,
+} from './avatar';
+import {
   ResolverNotFound,
   TextRecordNotFound,
   UnsupportedNamespace,
-} from './avatar';
+} from './error';
 import getNetwork, { UnsupportedNetwork } from './network';
+import {getKeybaseSignatures} from './keybase'
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -193,6 +196,36 @@ export default function (app: Express) {
       if (error instanceof UnsupportedNetwork) {
         res.status(501).json({
           message: error.message,
+        });
+      }
+    }
+  });
+
+  app.get('/:networkName/keybase/:name', async function (req, res) {
+    // #swagger.description = 'ENS Keybase signatures'
+    // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
+    // #swagger.parameters['name'] = { description: 'ENS name' }
+    const { name, networkName } = req.params;
+    try {
+      const { provider } = getNetwork(networkName);
+      const meta = await getKeybaseSignatures(provider, name);
+
+      res.status(200).json(meta);
+    } catch (error: any) {
+      if (
+        error instanceof ResolverNotFound ||
+        error instanceof TextRecordNotFound
+      ) {
+        res.status(404).json({
+          message: error.message,
+        });
+      } else if (error instanceof UnsupportedNetwork) {
+        res.status(501).json({
+          message: error.message,
+        });
+      } else {
+        res.status(500).json({
+          message: 'something went wrong',
         });
       }
     }
