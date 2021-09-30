@@ -47,10 +47,10 @@ export class Keybase {
 
   async getSignatures(): Promise<KeybaseSignatures> {
     const record = await this.getRecord();
-    const parts = record.split(';');
+    const parts = record.split(':');
 
     if (parts.length !== 2) {
-      throw new InvalidKeybaseSignatureFormat("signature should have `username;hash` format")
+      throw new InvalidKeybaseSignatureFormat("signature should have `username:hash` format")
     }
 
     const username = parts[0];
