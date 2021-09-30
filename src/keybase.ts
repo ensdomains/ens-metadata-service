@@ -1,6 +1,11 @@
 import { strict as assert } from 'assert';
 import { ethers }           from 'ethers';
 import { ResolverNotFound, TextRecordNotFound } from './error'
+import {BaseError} from './base'
+
+
+export interface InvalidKeybaseSignatureFormat {}
+export class InvalidKeybaseSignatureFormat extends BaseError {}
 
 export interface KeybaseSignatures {
   signatures: KeybaseSignature[];
@@ -43,6 +48,10 @@ export class Keybase {
   async getSignatures(): Promise<KeybaseSignatures> {
     const record = await this.getRecord();
     const parts = record.split(';');
+
+    if (parts.length !== 2) {
+      throw new InvalidKeybaseSignatureFormat("signature should have `username;hash` format")
+    }
 
     const username = parts[0];
     const hash = parts[1];

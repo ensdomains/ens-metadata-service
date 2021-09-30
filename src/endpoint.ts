@@ -12,7 +12,7 @@ import {
   UnsupportedNamespace,
 } from './error';
 import getNetwork, { UnsupportedNetwork } from './network';
-import {getKeybaseSignatures} from './keybase'
+import {getKeybaseSignatures, InvalidKeybaseSignatureFormat} from './keybase'
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -221,6 +221,10 @@ export default function (app: Express) {
         });
       } else if (error instanceof UnsupportedNetwork) {
         res.status(501).json({
+          message: error.message,
+        });
+      } else if (error instanceof InvalidKeybaseSignatureFormat) {
+        res.status(400).json({
           message: error.message,
         });
       } else {
