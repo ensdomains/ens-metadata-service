@@ -1,5 +1,6 @@
 import { strict as assert } from 'assert';
 import { ethers }           from 'ethers';
+import { cid as isCID }     from 'is-ipfs';
 import fetch                from 'node-fetch';
 import { BaseError }        from './base';
 import { INFURA_API_KEY }   from './config';
@@ -251,6 +252,8 @@ export class AvatarMetadata {
   static parseURI(uri: string): string {
     if (uri.startsWith('ipfs://')) {
       return uri.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    } else if (isCID(uri)) {
+      return 'https://ipfs.io/ipfs/' + uri
     } else {
       return uri;
     }

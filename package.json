@@ -14,6 +14,7 @@
     "express": "^4.17.1",
     "graphql": "^15.5.0",
     "graphql-request": "^3.4.0",
+    "is-ipfs": "^6.0.2",
     "lodash": "^4.17.21",
     "redoc-express": "^1.0.0",
     "tsc": "^2.0.3",
