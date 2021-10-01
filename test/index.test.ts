@@ -29,7 +29,7 @@ console.log('SERVER_URL', SERVER_URL)
 const SUBGRAPH_URL = new URL(subgraph_url);
 console.log('SUBGRAPH_URL', SUBGRAPH_URL)
 const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
-const NON_CONTRACT_ADDRESS = '0xab5801a7d398351b8be11c439e05c5b3259aec9b';
+const NON_CONTRACT_ADDRESS = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B';
 
 /* Mocks */
 
@@ -376,7 +376,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
   t.assert(statusCode === 500);
 });
 
-test('raise ContractNotFoundError', async (t: ExecutionContext<TestContext>) => {
+test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => {
   const {
     response: { body },
   }: HTTPError = await t.throwsAsync(
@@ -390,9 +390,10 @@ test('raise ContractNotFoundError', async (t: ExecutionContext<TestContext>) => 
     }
   );
   const { message } = JSON.parse(body as string);
+  console.log('message', message);
   t.assert(
     message ===
-      `${NON_CONTRACT_ADDRESS.toLowerCase()} does not match with any ENS related contract`
+      `${NON_CONTRACT_ADDRESS} does not match with any ENS related contract`
   );
 });
 
