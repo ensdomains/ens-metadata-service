@@ -24,7 +24,7 @@ export async function getDomain(
   let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
-    hexId = ethers.utils.hexValue(ethers.BigNumber.from(tokenId));
+    hexId = ethers.utils.hexlify(ethers.BigNumber.from(tokenId));
   } else {
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;
