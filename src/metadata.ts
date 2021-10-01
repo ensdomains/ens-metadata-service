@@ -27,7 +27,7 @@ export interface Metadata {
   image_url?: string;
   background_image?: string;
   mimeType?: string;
-  url?: string;
+  url?: string | null;
   version: Version;
 }
 
@@ -41,7 +41,11 @@ export class Metadata {
     version,
   }: MetadataInit) {
     this.name = this._filterUnformalized(name, tokenId);
-    this.description = description || `${name}, an ENS name.`;
+    const isUnformal = this.name.includes('...');
+
+    this.description =
+      description ||
+      `${this.name}, an ENS name.${isUnformal ? ` (${name})` : ''}`;
     if (Metadata._hasNonAscii(name)) {
       this.description +=
         ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
@@ -61,7 +65,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     this.name_length = name.length;
     this.short_name = null; // not implemented
     this.length = 0; // not implemented
-    this.url = `https://app.ens.domains/name/${name}`;
+    this.url = !isUnformal ? `https://app.ens.domains/name/${name}` : null;
     this.version = version;
   }
 
@@ -70,12 +74,16 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   setImage(image_url: string) {
-    this.image_url = image_url;
+    if (!this.name.includes('...')) {
+      this.image_url = image_url;
+    }
   }
 
   setBackground(base64: string, mimeType?: string) {
-    this.background_image = base64;
-    this.mimeType = mimeType;
+    if (!this.name.includes('...')) {
+      this.background_image = base64;
+      this.mimeType = mimeType;
+    }
   }
 
   generateImage() {
@@ -182,7 +190,10 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     // for now it does check only for uppercase names
     return name === name.toLowerCase()
       ? name
-      : tokenId.replace(new RegExp('^(.{0,6}).*(.{4})$', 'im'), '[$1...$2].eth');
+      : tokenId.replace(
+          new RegExp('^(.{0,6}).*(.{4})$', 'im'),
+          '[$1...$2].eth'
+        );
   }
 
   private _renderSVG(
