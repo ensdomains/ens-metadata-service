@@ -255,11 +255,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
             letter-spacing:-0.01em;
           }
         </style>
-        <linearGradient id="paint0_linear" x1="0" y1="0" x2="269.553" y2="285.527" gradientUnits="userSpaceOnUse">
+        <linearGradient id="paint0_linear" x1="190.5" y1="302" x2="-64" y2="-172.5" gradientUnits="userSpaceOnUse">
         ${
           version !== Version.v1w
-            ? `<stop stop-color="#5BCAC3"/>
-          <stop offset="1" stop-color="#4D79CF"/>`
+            ? `<stop stop-color="#44BCF0"/>
+            <stop offset="0.428185" stop-color="#628BF3"/>
+            <stop offset="1" stop-color="#A099FF"/>`
             : `<stop stop-color="#C1C1C1"/>
           <stop offset="1" stop-color="#4F4F4F"/>`
         }
