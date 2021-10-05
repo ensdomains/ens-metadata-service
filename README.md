@@ -11,57 +11,54 @@
 
 
 ### Request
-
-contactAddress: accepts contractAddress of the NFT which represented by the tokenId
-NFT v1 - tokenId: accepts labelhash of ENS name in both hex and int format
-NFT v2 - tokenId: accepts namehash of ENS name in both hex and int format
+- __network:__ Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)
+- __contactAddress:__ accepts contractAddress of the NFT which represented by the tokenId
+- __NFT v1 - tokenId:__ accepts labelhash of ENS name in both hex and int format
+- __NFT v2 - tokenId:__ accepts namehash of ENS name in both hex and int format
 
 ```
-/{contractAddress}/{tokenId}
+/{networkName}/{contractAddress}/{tokenId}
 ```
 
-Examples
+Request (example)
 
-- [Default image](https://testnets.opensea.io/assets/0x9029c1574f91696026358d4edB0De773d0E04aeD/0x2517c0dfe3a4eebac3456a409c53f824f86070c73d48794d8268ec5c007ee683)
-- [Custom image](https://testnets.opensea.io/assets/0x9029c1574f91696026358d4edB0De773d0E04aeD/84120850835537414527020398714431393504535329440173489282076403473842759587505)
+https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/42219085255511335250589442208301538195142221433306354426240614732612795430543/
 
-
-### Response
+### Response (example)
 
 ```json
 {
-  "name":"nftest1.eth",
-  "description":"nftest1.eth, an ENS name.",
-  "attributes":[
+  "name": "nick.eth",
+  "description": "nick.eth, an ENS name.",
+  "attributes": [
     {
-      "trait_type":"Created Date",
-      "display_type":"date",
-      "value":1626897331000
+      "trait_type": "Created Date",
+      "display_type": "date",
+      "value": 1580803395000
     },
     {
-      "trait_type":"Registration Date",
-      "display_type":"date",
-      "value":1626897331000
+      "trait_type": "Registration Date",
+      "display_type": "date",
+      "value": 1580803395000
     },
     {
-      "trait_type":"Expiration Date",
-      "display_type":"date",
-      "value":1658454283000
+      "trait_type": "Expiration Date",
+      "display_type": "date",
+      "value": 1698131707000
     }
   ],
-  "name_length":11,
-  "length":0,
-  "url":"https://app.ens.domains/name/nftest1.eth",
-  "version":1,
-  "image_url":"data:image/svg+xml;base64,CiAgICA8c3ZnIHdpZHRoPSI..."
+  "name_length": 4,
+  "short_name": null,
+  "length": 0,
+  "url": "https://app.ens.domains/name/nick.eth",
+  "version": 0,
+  "background_image": "https://metadata.ens.domains/mainnet/avatar/nick.eth",
+  "image_url": "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image"
 }
+
 ```
 
-Attributes include
-
-- Created Date
-- Registration Date (only .eth secondary domain)
-- Expiration Date   (only .eth secondary domain)
+More info and list of all endpoints: https://metadata.ens.domains/docs
 
 
 ## How to setup
@@ -101,15 +98,11 @@ yarn test:cov
 | ---- | ----------- | ------------- | ------- |
 | INFURA_API_KEY | API Key provided by Infura. [See here](https://infura.io/docs/gettingStarted/projectSecurity) (Required) | - | - |
 | HOST | Host (ip/domain) address of the running service | localhost | - | No |
-| NETWORK | Ethereum network name, the service will run on | rinkeby | local/rinkeby/ropsten/goerli/mainnet |
 | ENV | Project scope | local | local/prod |
 | INAMEWRAPPER | InterfaceId of NameWrapper Contract | 0x1aa28a1e | - |
 | ADDRESS_ETH_REGISTRAR | Ethereum address of ENSBaseRegistrar Contract | 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 | - |
 | ADDRESS_NAME_WRAPPER | Ethereum address of NameWrapper Contract | 0x4D83cea620E3864F912046b73bB3a6c04Da75990 | - |
 
-## TODO
-
-- Configure for different networks (localhost/rinkeby/ropsten/goerli/mainnet)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
