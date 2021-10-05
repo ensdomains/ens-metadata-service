@@ -20,27 +20,28 @@ export async function checkContract(
   contractAddress: string,
   tokenId: string
 ): Promise<Version> {
+  const _contractAddress = ethers.utils.getAddress(contractAddress);
   try {
     var contract = new ethers.Contract(
-      contractAddress,
+      _contractAddress,
       [
         'function ownerOf(uint256 tokenId) public view returns (address)',
         'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
       ],
       provider
     );
-    if (contractAddress !== ADDRESS_ETH_REGISTRAR) {
+    if (_contractAddress !== ADDRESS_ETH_REGISTRAR) {
       assert(await contract.supportsInterface(INAMEWRAPPER));
     }
   } catch (error) {
     throw new ContractMismatchError(
-      `${contractAddress} does not match with any ENS related contract`
+      `${_contractAddress} does not match with any ENS related contract`
     );
   }
 
-  if (contractAddress === ADDRESS_NAME_WRAPPER) {
+  if (_contractAddress === ADDRESS_NAME_WRAPPER) {
     return Version.v2;
-  } else if (contractAddress === ADDRESS_ETH_REGISTRAR) {
+  } else if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
     try {
       var nftOwner = await contract.ownerOf(tokenId);
       assert(nftOwner !== '0x')
@@ -54,6 +55,6 @@ export async function checkContract(
     }
   }
   throw new ContractMismatchError(
-    `${contractAddress} does not match with any ENS related contract`
+    `${_contractAddress} does not match with any ENS related contract`
   );
 }
