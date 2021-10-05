@@ -45,7 +45,7 @@ export class Metadata {
 
     this.description =
       description ||
-      `${this.name}, an ENS name.${isUnformal ? ` (${name})` : ''}`;
+      `${this.name}, an ENS name.${isUnformal ? ` (${name} is not in normalized form)` : ''}`;
     if (Metadata._hasNonAscii(name)) {
       this.description +=
         ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
