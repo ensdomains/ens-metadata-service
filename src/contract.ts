@@ -1,13 +1,12 @@
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
-import { BaseError } from './base';
+import { BaseError, Version } from './base';
 
 import {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_NAME_WRAPPER,
   INAMEWRAPPER,
 } from './config';
-import { Version } from './metadata';
 
 export interface ContractMismatchError {}
 export class ContractMismatchError extends BaseError {}

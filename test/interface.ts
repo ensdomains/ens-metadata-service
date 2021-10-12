@@ -1,5 +1,5 @@
 import * as http from 'http';
-import { Version } from '../src/metadata';
+import { Version } from '../src/base';
 
 export interface DomainResponse {
   domain: {
