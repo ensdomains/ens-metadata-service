@@ -1,5 +1,6 @@
 const btoa = require('btoa');
 import { SERVER_URL } from './config';
+const { createCanvas } = require('canvas');
 
 export enum Version {
   v1,
@@ -32,7 +33,7 @@ export interface Metadata {
 }
 
 export class Metadata {
-  static MAX_CHAR = 30;
+  static MAX_CHAR = 60;
   constructor({
     name,
     description,
@@ -111,10 +112,14 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     } else {
       domain = name;
     }
-    if (Metadata._getCharLength(domain) > Metadata.MAX_CHAR) {
-      domain = Metadata._textEllipsis(domain);
-    }
+    const charLength = Metadata._getCharLength(domain);
     domainFontSize = Metadata._getFontSize(domain);
+    if (charLength > Metadata.MAX_CHAR) {
+      domain = Metadata._textEllipsis(domain);
+    } else if(charLength > 25) {
+      domain = this._addSpan(domain, domain.length / 2);
+      domainFontSize *= 2
+    }
     const svg = this._generateByVersion(
       domainFontSize,
       subdomainText,
@@ -130,6 +135,13 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     }
   }
 
+  private _addSpan(str: string, index: number){
+    return `
+    <tspan x="40" dy="-1.2em">${str.substring(0, index)}</tspan>
+    <tspan x="40" dy="1.2em">${str.substring(index, str.length)}</tspan>
+    `;
+  }
+  
   private _generateByVersion(
     ...args: [
       domainFontSize: number,
@@ -163,21 +175,13 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getFontSize(name: string): number {
-    // For multi byte unicode chars
-    const length = this._getCharLength(name);
-    let size;
-    if (length <= 8) {
-      size = 35;
-    } else if (length <= 15) {
-      size = 27;
-    } else if (length <= 18) {
-      size = 24;
-    } else if (length <= 21) {
-      size = 13;
-    } else {
-      size = 8;
-    }
-    return size;
+    const canvas = createCanvas(286, 270)
+    const ctx = canvas.getContext('2d');
+    ctx.font = "20px PlusJakartaSans";
+    const text = ctx.measureText(name);
+    // some nasty hack on calculation
+    const fontSize = Math.floor(20 * ((210 - name.length) / text.width));
+    return fontSize < 34 ? fontSize : 32;
   }
 
   static _hasNonAscii = (name: string) => {
@@ -237,7 +241,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
           ${domain}
       </text>
       <defs>
-        <style type="text/css">@import url('${SERVER_URL}/assets/font.css');</style>
+        <style type="text/css">@import url("${SERVER_URL}/assets/font.css");</style>
         <style>
           text {
             font-family:PlusJakartaSans;
