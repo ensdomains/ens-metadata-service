@@ -5,8 +5,9 @@ import {
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
 } from './subgraph';
-import { Metadata, Version } from './metadata';
+import { Metadata } from './metadata';
 import { getAvatarImage } from './avatar';
+import { Version } from './base';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
