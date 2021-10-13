@@ -130,7 +130,7 @@ export class AvatarMetadata {
         throw new UnsupportedNamespace(`Unsupported namespace: ${namespace}`);
     }
     this.is_owner = isOwner;
-    return tokenURI;
+    return AvatarMetadata.parseURI(tokenURI);
   }
 
   async _retrieveMetadata({
