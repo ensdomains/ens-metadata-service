@@ -130,6 +130,7 @@ export class AvatarMetadata {
         throw new UnsupportedNamespace(`Unsupported namespace: ${namespace}`);
     }
     this.is_owner = isOwner;
+    assert(tokenURI, 'TokenURI is empty');
     return AvatarMetadata.parseURI(tokenURI);
   }
 
@@ -152,7 +153,6 @@ export class AvatarMetadata {
       token_id as string,
       owner
     );
-    assert(tokenURI, 'TokenURI is empty');
 
     const _tokenID = !token_id?.startsWith('0x')
       ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
