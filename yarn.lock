@@ -4537,7 +4537,7 @@ multicodec@^1.0.0:
     buffer "^5.6.0"
     varint "^5.0.0"
 
-multiformats@^9.0.0, multiformats@^9.4.2, multiformats@^9.4.5:
+multiformats@^9.0.0, multiformats@^9.4.2, multiformats@^9.4.5, multiformats@^9.4.8:
   version "9.4.8"
   resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-9.4.8.tgz#46f74ec116f7871f2a334cc6d4ad3d810dbac341"
   integrity sha512-EOJL02/kv+FD5hoItMhKgkYUUruJYMYFq4NQ6YkCh3jVQ5CuHo+OKdHeR50hAxEQmXQ9yvrM9BxLIk42xtfwnQ==
