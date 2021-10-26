@@ -30,16 +30,9 @@ export default function createSVGfromTemplate({
           <pattern id="backImg" patternUnits="userSpaceOnUse" x="0" y="0" width="270" height="270">
             <image href="data:${mimeType};base64,${background_image}" width="270" height="270" />
           </pattern>
-          <filter id="shadowy">
-            <feDiffuseLighting in="SourceGraphic" result="light"
-                lighting-color="white">
-              <feDistantLight azimuth="240" elevation="40"/>
-            </feDiffuseLighting>
-            <feComposite in="SourceGraphic" in2="light"
-                        operator="arithmetic" k1="1" k2="0" k3="0" k4="0"/>
-          </filter>
         </defs>
-        <rect width="270" height="270" fill="url(#backImg)" filter="url(#shadowy)"/>`
+        <rect width="270" height="270" fill="url(#backImg)"/>
+        <rect width="270" height="270" fill="#000" fill-opacity="0.1"/>`
         : `<rect width="270" height="270" fill="url(#paint0_linear)"/>`
     }
     <defs>
