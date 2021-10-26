@@ -44,7 +44,7 @@ export default function createSVGfromTemplate({
     }
     <defs>
       <filter id='dropShadow' color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse" height="270" width="270">
-        <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.5" width="200%" height="200%"/>
+        <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.225" width="200%" height="200%"/>
       </filter>
     </defs>
     <path d="M38.0397 51.0875C38.5012 52.0841 39.6435 54.0541 39.6435 54.0541L52.8484 32L39.9608 41.0921C39.1928 41.6096 38.5628 42.3102 38.1263 43.1319C37.5393 44.3716 37.2274 45.7259 37.2125 47.1C37.1975 48.4742 37.4799 49.8351 38.0397 51.0875Z" fill="white" filter="url(#dropShadow)" width="100px"/>
