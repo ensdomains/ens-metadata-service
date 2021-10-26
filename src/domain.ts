@@ -5,8 +5,9 @@ import {
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
 } from './subgraph';
-import { Metadata, Version } from './metadata';
+import { Metadata } from './metadata';
 import { getAvatarImage } from './avatar';
+import { Version } from './base';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
@@ -24,7 +25,10 @@ export async function getDomain(
   let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
-    hexId = ethers.utils.hexlify(ethers.BigNumber.from(tokenId));
+    hexId = ethers.utils.hexZeroPad(
+      ethers.utils.hexlify(ethers.BigNumber.from(tokenId)),
+      32
+    );
   } else {
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;

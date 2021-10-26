@@ -1,6 +1,7 @@
 import { utils } from 'ethers';
 import nock from 'nock';
-import { Metadata, Version } from '../src/metadata';
+import { Version } from '../src/base';
+import { Metadata } from '../src/metadata';
 import getNetwork from '../src/network';
 import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/subgraph';
 import {
