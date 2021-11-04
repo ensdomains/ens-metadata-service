@@ -96,10 +96,10 @@ export class AvatarMetadata {
         try {
           const [_tokenURI, _isOwner] = await Promise.all([
             contract_721.tokenURI(token_id),
-            () => owner && contract_721.ownerOf(token_id),
+            owner && contract_721.ownerOf(token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!_isOwner;
+          isOwner = !!owner && _isOwner === owner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -117,10 +117,10 @@ export class AvatarMetadata {
         try {
           const [_tokenURI, _isOwner] = await Promise.all([
             contract_1155.uri(token_id),
-            () => owner && contract_1155.balanceOf(owner, token_id).gt(0),
+            owner && contract_1155.balanceOf(owner, token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!_isOwner;
+          isOwner = !!owner && _isOwner.gt(0) === owner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -211,7 +211,11 @@ export class AvatarMetadata {
       await this._retrieveMetadata(spec);
     }
     if (!this.image) {
-      this.image = uri;
+      if (this.image_url) {
+        this.image = this.image_url;
+      } else {
+        this.image = uri;
+      }
     }
     assert(this.image, 'Image is not available');
     const parsed = AvatarMetadata.parseURI(this.image);
@@ -272,6 +276,8 @@ export class AvatarMetadata {
   static parseURI(uri: string): string {
     if (uri.startsWith('data:') || uri.startsWith('http')) {
       return uri;
+    } else if (uri.startsWith('ipfs://ipfs/')) {
+      return uri.replace('ipfs://ipfs/', IPFS_GATEWAY);
     } else if (uri.startsWith('ipfs://')) {
       return uri.replace('ipfs://', IPFS_GATEWAY);
     } else if (uri.startsWith('ipfs/')) {
