@@ -4,7 +4,7 @@ import createSVGfromTemplate from "./svg-template";
 const btoa = require('btoa');
 const { createCanvas, registerFont } = require('canvas');
 
-registerFont('./src/assets/PlusJakartaSans-Bold.woff', {family: "Plus Jakarta Sans", weight: "600", style: "normal"})
+// registerFont('./src/assets/PlusJakartaSans-Bold.woff', {family: "Plus Jakarta Sans", weight: "600", style: "normal"})
 
 export interface MetadataInit {
   name: string;
@@ -174,12 +174,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(270, 270);
+    const canvas = createCanvas(270, 270)
     const ctx = canvas.getContext('2d');
-    ctx.font = "20px Plus Jakarta Sans";
+    ctx.font = "20px PlusJakartaSans";
     const text = ctx.measureText(name);
     // some nasty hack on calculation
-    const fontSize = Math.floor(20 * (196 / text.width));
+    const fontSize = Math.floor(20 * ((196 - name.length) / text.width));
     return fontSize < 34 ? fontSize : 32;
   }
 
