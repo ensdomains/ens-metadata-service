@@ -3,6 +3,7 @@ import createSVGfromTemplate from "./svg-template";
 
 const btoa = require('btoa');
 const { createCanvas, registerFont } = require('canvas');
+const namehash = require('@ensdomains/eth-ens-namehash');
 
 // registerFont('./src/assets/PlusJakartaSans-Bold.woff', {family: "Plus Jakarta Sans", weight: "600", style: "normal"})
 
@@ -191,7 +192,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   private _filterUnformalized(name: string, tokenId: string) {
     // this method can be used to filter many unformal name type
     // for now it does check only for uppercase names
-    return name === name.toLowerCase()
+    return name === namehash.normalize(name)
       ? name
       : tokenId.replace(
           new RegExp('^(.{0,6}).*(.{4})$', 'im'),
