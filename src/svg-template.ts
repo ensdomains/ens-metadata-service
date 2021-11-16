@@ -30,7 +30,7 @@ export default function createSVGfromTemplate({
       backgroundImage
         ? `<defs>
           <pattern id="backImg" patternUnits="userSpaceOnUse" x="0" y="0" width="270" height="270">
-            <image href="data:${mimeType};base64,${background_image}" width="270" height="270" />
+            <image href="data:${mimeType};base64,${backgroundImage}" width="270" height="270" />
           </pattern>
           <filter id="shadowy">
             <feDiffuseLighting in="SourceGraphic" result="light"
