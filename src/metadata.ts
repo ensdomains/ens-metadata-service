@@ -2,7 +2,9 @@ import { Version } from "./base";
 import createSVGfromTemplate from "./svg-template";
 
 const btoa = require('btoa');
-const { createCanvas } = require('canvas');
+const { createCanvas, registerFont } = require('canvas');
+
+// registerFont('./src/assets/PlusJakartaSans-Bold.woff', {family: "Plus Jakarta Sans", weight: "600", style: "normal"})
 
 export interface MetadataInit {
   name: string;
@@ -110,7 +112,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     domainFontSize = Metadata._getFontSize(domain);
     if (charLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
-    } else if(charLength > 25) {
+    }
+    if (charLength > 25) {
       domain = this._addSpan(domain, domain.length / 2);
       domainFontSize *= 2
     }
@@ -131,8 +134,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
 
   private _addSpan(str: string, index: number){
     return `
-    <tspan x="40" dy="-1.2em">${str.substring(0, index)}</tspan>
-    <tspan x="40" dy="1.2em">${str.substring(index, str.length)}</tspan>
+    <tspan x="32" dy="-1.2em">${str.substring(0, index)}</tspan>
+    <tspan x="32" dy="1.2em">${str.substring(index, str.length)}</tspan>
     `;
   }
   
@@ -169,12 +172,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(286, 270)
+    const canvas = createCanvas(270, 270)
     const ctx = canvas.getContext('2d');
     ctx.font = "20px PlusJakartaSans";
     const text = ctx.measureText(name);
     // some nasty hack on calculation
-    const fontSize = Math.floor(20 * ((210 - name.length) / text.width));
+    const fontSize = Math.floor(20 * ((196 - name.length) / text.width));
     return fontSize < 34 ? fontSize : 32;
   }
 

@@ -1,9 +1,9 @@
-import { strict as assert } from 'assert';
-import { ethers }           from 'ethers';
-import { cid as isCID }     from 'is-ipfs';
-import fetch                from 'node-fetch';
-import { BaseError }        from './base';
-import { INFURA_API_KEY }   from './config';
+import { strict as assert }             from 'assert';
+import { ethers }                       from 'ethers';
+import { CID }                          from 'multiformats/cid';
+import fetch                            from 'node-fetch';
+import { BaseError }                    from './base';
+import { INFURA_API_KEY, IPFS_GATEWAY } from './config';
 
 export interface ResolverNotFound {}
 export class ResolverNotFound extends BaseError {}
@@ -83,7 +83,7 @@ export class AvatarMetadata {
   ) {
     let tokenURI;
     let isOwner = false;
-    switch (namespace) {
+    switch (namespace.toLowerCase()) { // lowercase the namespace in case of uppercase formats
       case 'erc721': {
         const contract_721 = new ethers.Contract(
           contract_address,
@@ -96,10 +96,10 @@ export class AvatarMetadata {
         try {
           const [_tokenURI, _isOwner] = await Promise.all([
             contract_721.tokenURI(token_id),
-            () => owner && contract_721.ownerOf(token_id),
+            owner && contract_721.ownerOf(token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!_isOwner;
+          isOwner = !!owner && _isOwner === owner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -117,10 +117,10 @@ export class AvatarMetadata {
         try {
           const [_tokenURI, _isOwner] = await Promise.all([
             contract_1155.uri(token_id),
-            () => owner && contract_1155.balanceOf(owner, token_id).gt(0),
+            owner && contract_1155.balanceOf(owner, token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!_isOwner;
+          isOwner = !!owner && _isOwner.gt(0) === owner;
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -158,9 +158,17 @@ export class AvatarMetadata {
       ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
       : token_id;
 
-    const meta = await (
-      await fetch(tokenURI.replace('0x{id}', _tokenID))
-    ).json();
+    let meta;
+    if(tokenURI.startsWith('data:')) {
+      // metadata stored as base64
+      const base64data = tokenURI.split('base64,')[1];
+      assert(base64data, "base64 format is incorrect: empty data");
+      meta = JSON.parse(
+        Buffer.from(base64data, 'base64').toString()
+      )
+    } else {
+      meta = await (await fetch(tokenURI.replace('0x{id}', _tokenID))).json();
+    }
 
     const {
       animation,
@@ -198,14 +206,29 @@ export class AvatarMetadata {
   async getImage() {
     const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
+      // means the background is an NFT
       const spec = AvatarMetadata.parseNFT(uri);
       await this._retrieveMetadata(spec);
     }
     if (!this.image) {
-      this.image = uri;
+      if (this.image_url) {
+        this.image = this.image_url;
+      } else {
+        this.image = uri;
+      }
     }
     assert(this.image, 'Image is not available');
     const parsed = AvatarMetadata.parseURI(this.image);
+    if (parsed.startsWith('data:')) {
+      // base64 image
+      const mimeType = parsed.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
+      const base64data = parsed.split('base64,')[1];
+
+      assert(base64data, "base64 format is incorrect: empty data");
+      assert(mimeType, 'base64 format is incorrect: no mimetype');
+
+      return [Buffer.from(base64data, 'base64'), mimeType[0]];
+    }
     const response = await fetch(parsed);
     assert(response, 'Response is empty');
     const data = await response?.buffer();
@@ -216,6 +239,7 @@ export class AvatarMetadata {
   async getMeta() {
     const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
+      // means the background is an NFT
       const spec = AvatarMetadata.parseNFT(uri);
       this._setHostMeta(spec);
       await this._retrieveMetadata(spec);
@@ -250,21 +274,29 @@ export class AvatarMetadata {
   }
 
   static parseURI(uri: string): string {
-    if (uri.startsWith('ipfs://')) {
-      return uri.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    if (uri.startsWith('data:') || uri.startsWith('http')) {
+      return uri;
+    } else if (uri.startsWith('ipfs://ipfs/')) {
+      return uri.replace('ipfs://ipfs/', IPFS_GATEWAY);
+    } else if (uri.startsWith('ipfs://')) {
+      return uri.replace('ipfs://', IPFS_GATEWAY);
+    } else if (uri.startsWith('ipfs/')) {
+      return uri.replace('ipfs/', IPFS_GATEWAY);
     } else if (isCID(uri)) {
-      return 'https://ipfs.io/ipfs/' + uri
+      return IPFS_GATEWAY + uri;
     } else {
+      // we may want to throw error here
       return uri;
     }
   }
 
   static parseNFT(uri: string, seperator: string = '/') {
     assert(uri, 'parameter URI cannot be empty');
-    uri = uri.replace('did:nft:', '');
+    // trim in case of whitespace on format
+    uri = uri.replace(/ /g, '').replace('did:nft:', ''); 
 
     const [reference, asset_namespace, token_id] = uri.split(seperator);
-    const [type, chain_id] = reference.split(':');
+    const [_type, chain_id] = reference.split(':');
     const [namespace, contract_address] = asset_namespace.split(':');
 
     assert(chain_id, 'chainID is empty');
@@ -292,4 +324,17 @@ export async function getAvatarImage(
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
   return await avatar.getImage();
+}
+
+export function isCID(hash: any) {
+  // check if given string or object is a valid IPFS CID
+  try {
+    if (typeof hash === 'string') {
+      return Boolean(CID.parse(hash));
+    }
+
+    return Boolean(CID.asCID(hash));
+  } catch (e) {
+    return false;
+  }
 }
