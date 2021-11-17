@@ -22,9 +22,8 @@ export interface Metadata {
   description?: string;
   attributes: object[];
   name_length?: number;
-  short_name?: string | null;
-  length?: number;
   image_url?: string;
+  is_normalized: boolean;
   background_image?: string;
   mimeType?: string;
   url?: string | null;
@@ -40,12 +39,17 @@ export class Metadata {
     tokenId,
     version,
   }: MetadataInit) {
-    this.name = this._filterUnformalized(name, tokenId);
-    const isUnformal = this.name.includes('...');
-
+    this.is_normalized = this._checkNormalized(name);
+    this.name = this.is_normalized ? name
+    : tokenId.replace(
+        new RegExp('^(.{0,6}).*(.{4})$', 'im'),
+        '[$1...$2].eth'
+    );
     this.description =
       description ||
-      `${this.name}, an ENS name.${isUnformal ? ` (${name} is not in normalized form)` : ''}`;
+      `${this.name}, an ENS name.${
+        !this.is_normalized ? ` (${name} is not in normalized form)` : ''
+      }`;
     if (Metadata._hasNonAscii(name)) {
       this.description +=
         ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
@@ -62,10 +66,15 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
         value: created_date * 1000,
       },
     ];
-    this.name_length = name.length;
-    this.short_name = null; // not implemented
-    this.length = 0; // not implemented
-    this.url = !isUnformal ? `https://app.ens.domains/name/${name}` : null;
+    this.name_length = this._labelLength(name);
+    this.addAttribute({
+      trait_type: 'Length',
+      display_type: 'number',
+      value: this.name_length,
+    })
+    this.url = this.is_normalized
+      ? `https://app.ens.domains/name/${name}`
+      : null;
     this.version = version;
   }
 
@@ -74,13 +83,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   setImage(image_url: string) {
-    if (!this.name.includes('...')) {
-      this.image_url = image_url;
-    }
+    this.image_url = image_url;
   }
 
   setBackground(base64: string, mimeType?: string) {
-    if (!this.name.includes('...')) {
+    if (this.is_normalized) {
       this.background_image = base64;
       this.mimeType = mimeType;
     }
@@ -189,15 +196,16 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     return !ascii.test(decodeURI(name));
   };
 
-  private _filterUnformalized(name: string, tokenId: string) {
+  private _checkNormalized(name: string) {
     // this method can be used to filter many unformal name type
-    // for now it does check only for uppercase names
     return name === namehash.normalize(name)
-      ? name
-      : tokenId.replace(
-          new RegExp('^(.{0,6}).*(.{4})$', 'im'),
-          '[$1...$2].eth'
-        );
+  }
+
+  private _labelLength(name: string): number {
+    const parts = name.split('.');
+    const label = parts[parts.length - 2];
+    if (!label) throw Error('Label cannot be empty!');
+    return [...label].length;
   }
 
   private _renderSVG(
@@ -208,9 +216,10 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     version: Version
   ) {
     return createSVGfromTemplate({
-      background_image: this.background_image,
+      backgroundImage: this.background_image,
       domain,
       domainFontSize,
+      isNormalized: this.is_normalized,
       isSubdomain,
       mimeType: this.mimeType,
       subdomainText,
