@@ -67,6 +67,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       },
     ];
     this.name_length = this._labelLength(name);
+    this.addAttribute({
+      trait_type: 'Length',
+      display_type: 'number',
+      value: this.name_length,
+    })
     this.url = this.is_normalized
       ? `https://app.ens.domains/name/${name}`
       : null;
@@ -200,7 +205,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     const parts = name.split('.');
     const label = parts[parts.length - 2];
     if (!label) throw Error('Label cannot be empty!');
-    return label.length;
+    return [...label].length;
   }
 
   private _renderSVG(
