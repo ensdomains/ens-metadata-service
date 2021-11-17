@@ -11,6 +11,5 @@ handlers:
   http_headers:
     Access-Control-Allow-Origin: "*"
 - url: /.*
-  secure: always
-  redirect_http_response_code: 301
+  secure: optional
   script: auto

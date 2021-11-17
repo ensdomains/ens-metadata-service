@@ -11,7 +11,7 @@ import {
 } from './interface';
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('rinkeby');
 const SUBGRAPH_URL = new URL(subgraph_url);
-const namehash = require('eth-ens-namehash'); // no types
+const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 export class MockEntry {
   public name: string;

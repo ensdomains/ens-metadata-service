@@ -6,6 +6,7 @@ import {
   getAvatarImage,
   getAvatarMeta,
   ResolverNotFound,
+  RetrieveURIFailed,
   TextRecordNotFound,
   UnsupportedNamespace,
 } from './avatar';
@@ -143,6 +144,7 @@ export default function (app: Express) {
       if (
         error instanceof FetchError ||
         error instanceof ResolverNotFound ||
+        error instanceof RetrieveURIFailed ||
         error instanceof TextRecordNotFound ||
         error instanceof UnsupportedNamespace
       ) {
@@ -182,6 +184,7 @@ export default function (app: Express) {
       if (
         error instanceof FetchError ||
         error instanceof ResolverNotFound ||
+        error instanceof RetrieveURIFailed ||
         error instanceof TextRecordNotFound ||
         error instanceof UnsupportedNamespace
       ) {
