@@ -247,7 +247,7 @@ export class AvatarMetadata {
     if (!this.image) {
       this.image = uri;
     }
-    await AvatarMetadata.parseURI(this.image as string);
+    this.image = AvatarMetadata.parseURI(this.image as string);
     const { defaultProvider, ...rest } = this;
     return rest;
   }
