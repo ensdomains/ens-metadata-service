@@ -26,6 +26,7 @@
     "dev": "ENV=local ts-node-dev --inspect -- src/index.ts",
     "start": "node dist/index.js",
     "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
+    "deploy:test": "ENV=prod yarn build && gcloud app deploy --no-promote --project=ens-metadata-service",
     "test": "ava --serial",
     "test:cov": "nyc --reporter=json --reporter=text ava --serial",
     "docgen": "node docgen.js"
@@ -45,7 +46,7 @@
     "test-listen": "^1.1.0",
     "ts-node": "^10.0.0",
     "ts-node-dev": "^1.1.6",
-    "typescript": "^4.3.2"
+    "typescript": "^4.5.2"
   },
   "ava": {
     "extensions": {
@@ -62,5 +63,8 @@
     "nodeArguments": [
       "--loader=ts-node/esm"
     ]
+  },
+  "volta": {
+    "node": "16.13.0"
   }
 }
