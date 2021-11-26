@@ -245,9 +245,12 @@ export class AvatarMetadata {
       await this._retrieveMetadata(spec);
     }
     if (!this.image) {
-      this.image = uri;
+      if (this.image_url) {
+        this.image = this.image_url;
+      } else {
+        this.image = uri;
+      }
     }
-    await AvatarMetadata.parseURI(this.image as string);
     const { defaultProvider, ...rest } = this;
     return rest;
   }
@@ -270,7 +273,8 @@ export class AvatarMetadata {
         'There is no avatar set under given address'
       );
     }
-    return URI;
+    // trim in case of whitespace on format
+    return URI.replace(/ /g, '');
   }
 
   static parseURI(uri: string): string {
@@ -292,8 +296,7 @@ export class AvatarMetadata {
 
   static parseNFT(uri: string, seperator: string = '/') {
     assert(uri, 'parameter URI cannot be empty');
-    // trim in case of whitespace on format
-    uri = uri.replace(/ /g, '').replace('did:nft:', ''); 
+    uri = uri.replace('did:nft:', '');
 
     const [reference, asset_namespace, token_id] = uri.split(seperator);
     const [_type, chain_id] = reference.split(':');
