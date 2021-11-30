@@ -1,9 +1,15 @@
 import { strict as assert }             from 'assert';
+import createDOMPurify                  from 'dompurify';
+import { JSDOM }                        from 'jsdom';
 import { ethers }                       from 'ethers';
+import isSVG                            from 'is-svg';
 import { CID }                          from 'multiformats/cid';
 import fetch                            from 'node-fetch';
 import { BaseError }                    from './base';
 import { INFURA_API_KEY, IPFS_GATEWAY } from './config';
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window as any);
 
 export interface ResolverNotFound {}
 export class ResolverNotFound extends BaseError {}
@@ -32,6 +38,7 @@ export interface AvatarMetadata {
   attributes: any[];
   created_by: string;
   event: string;
+  image_data: string;
   image_url: string;
   image_details: string;
   name: string;
@@ -49,6 +56,12 @@ export class AvatarMetadata {
   constructor(provider: any, uri: string) {
     this.defaultProvider = provider;
     this.uri = uri;
+  }
+
+  _sanitize(data: Buffer, mimeType: string | null): Buffer {
+    if (!(mimeType === 'image/svg+xml' || isSVG(data.toString()))) return data;
+    const cleanDOM = DOMPurify.sanitize(data.toString());
+    return Buffer.from(cleanDOM)
   }
 
   _setHostMeta(meta: HostMeta) {
@@ -181,6 +194,7 @@ export class AvatarMetadata {
       external_link,
       image,
       image_url,
+      image_data,
       image_details,
       name,
     } = meta;
@@ -194,6 +208,7 @@ export class AvatarMetadata {
     this.event             = event;
     this.external_link     = external_link;
     this.image             = image;
+    this.image_data        = image_data;
     this.image_url         = image_url;
     this.image_details     = image_details;
     this.name              = name;
@@ -213,12 +228,25 @@ export class AvatarMetadata {
     if (!this.image) {
       if (this.image_url) {
         this.image = this.image_url;
+      } else if (this.image_data) {
+        this.image = this.image_data;
       } else {
         this.image = uri;
       }
     }
     assert(this.image, 'Image is not available');
     const parsed = AvatarMetadata.parseURI(this.image);
+
+    if (parsed.startsWith('http')) {
+      const response = await fetch(parsed);
+
+      assert(response, 'Response is empty');
+
+      const mimeType = response?.headers.get('Content-Type');
+      const data = this._sanitize(await response?.buffer(), mimeType);
+      return [data, mimeType];
+    }
+
     if (parsed.startsWith('data:')) {
       // base64 image
       const mimeType = parsed.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
@@ -227,16 +255,20 @@ export class AvatarMetadata {
       assert(base64data, "base64 format is incorrect: empty data");
       assert(mimeType, 'base64 format is incorrect: no mimetype');
 
-      return [Buffer.from(base64data, 'base64'), mimeType[0]];
+      const bufferData = Buffer.from(base64data, 'base64');
+      const data = this._sanitize(bufferData, mimeType[0]);
+      return [data, mimeType[0]];
     }
-    const response = await fetch(parsed);
-    assert(response, 'Response is empty');
-    const data = await response?.buffer();
-    const mimeType = response?.headers.get('Content-Type');
-    return [data, mimeType];
+
+    if (isSVG(parsed)) {
+      // svg - image_data
+      const data = this._sanitize(Buffer.from(parsed), 'image/svg+xml');
+      return [data, 'image/svg+xml'];
+    }
+    throw new RetrieveURIFailed('Unknown type/protocol given for the image source.');
   }
 
-  async getMeta() {
+  async getMeta(networkName?: string) {
     const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       // means the background is an NFT
@@ -245,10 +277,15 @@ export class AvatarMetadata {
       await this._retrieveMetadata(spec);
     }
     if (!this.image) {
-      this.image = uri;
+      if (this.image_url) {
+        this.image = this.image_url;
+      } else if (this.image_data) {
+        this.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
+      } else {
+        this.image = uri;
+      }
     }
-    this.image = AvatarMetadata.parseURI(this.image as string);
-    const { defaultProvider, ...rest } = this;
+    const { defaultProvider, image_data, ...rest } = this;
     return rest;
   }
 
@@ -270,7 +307,8 @@ export class AvatarMetadata {
         'There is no avatar set under given address'
       );
     }
-    return URI;
+    // trim in case of whitespace on format
+    return URI.replace(/ /g, '');
   }
 
   static parseURI(uri: string): string {
@@ -292,8 +330,7 @@ export class AvatarMetadata {
 
   static parseNFT(uri: string, seperator: string = '/') {
     assert(uri, 'parameter URI cannot be empty');
-    // trim in case of whitespace on format
-    uri = uri.replace(/ /g, '').replace('did:nft:', ''); 
+    uri = uri.replace('did:nft:', '');
 
     const [reference, asset_namespace, token_id] = uri.split(seperator);
     const [_type, chain_id] = reference.split(':');
@@ -313,9 +350,9 @@ export class AvatarMetadata {
   }
 }
 
-export async function getAvatarMeta(provider: any, name: string): Promise<any> {
+export async function getAvatarMeta(provider: any, name: string, networkName?: string): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getMeta();
+  return await avatar.getMeta(networkName);
 }
 
 export async function getAvatarImage(
