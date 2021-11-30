@@ -8,7 +8,7 @@ const namehash                       = require('@ensdomains/eth-ens-namehash');
 const { validate }                   = require('@ensdomains/ens-validation');
 
 registerFont(
-  './dist/assets/PlusJakartaSans-Bold.woff', 
+  './src/assets/PlusJakartaSans-Bold.woff', 
   {family: "Plus Jakarta Sans", weight: "600", style: "normal"}
 );
 
