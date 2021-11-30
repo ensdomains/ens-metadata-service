@@ -5,6 +5,7 @@
   "author": "Makoto Inoue <2630+makoto@users.noreply.github.com>",
   "license": "MIT",
   "dependencies": {
+    "@ensdomains/ens-validation": "^0.1.0",
     "@ensdomains/eth-ens-namehash": "^2.0.15",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",

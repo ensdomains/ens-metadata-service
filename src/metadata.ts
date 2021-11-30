@@ -1,4 +1,3 @@
-import { validate }          from '@ensdomains/ens-validation';
 import { Version }           from './base';
 import createSVGfromTemplate from './svg-template';
 
@@ -6,6 +5,7 @@ import createSVGfromTemplate from './svg-template';
 const btoa                           = require('btoa');
 const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
+const { validate }                   = require('@ensdomains/ens-validation');
 
 registerFont(
   './dist/assets/PlusJakartaSans-Bold.woff', 
