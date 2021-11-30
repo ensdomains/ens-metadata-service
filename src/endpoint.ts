@@ -131,7 +131,7 @@ export default function (app: Express) {
     const { name, networkName } = req.params;
     try {
       const { provider } = getNetwork(networkName);
-      const meta = await getAvatarMeta(provider, name);
+      const meta = await getAvatarMeta(provider, name, networkName);
       if (meta) {
         res.status(200).json(meta);
       } else {
