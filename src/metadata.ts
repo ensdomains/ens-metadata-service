@@ -1,4 +1,5 @@
 import { Version }           from './base';
+import { CANVAS_FONT_PATH }  from './config';
 import createSVGfromTemplate from './svg-template';
 
 // no ts decleration files
@@ -8,7 +9,7 @@ const namehash                       = require('@ensdomains/eth-ens-namehash');
 const { validate }                   = require('@ensdomains/ens-validation');
 
 registerFont(
-  './src/assets/PlusJakartaSans-Bold.woff', 
+  CANVAS_FONT_PATH, 
   {family: "Plus Jakarta Sans", weight: "600", style: "normal"}
 );
 

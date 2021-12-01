@@ -404,8 +404,8 @@ test('should get assets when ENV set for local', async (t: ExecutionContext<Test
   t.context.server = http.createServer(_app);
   t.context.prefixUrl = await listen(t.context.server);
   nock.enableNetConnect('localhost:8081');
-  const result = await got(`assets/font.css`, {
+  const result = await got(`assets/doc_output.json`, {
     prefixUrl: 'http://localhost:8081',
   }).text();
-  t.assert(result.includes('@font-face'));
+  t.assert(result.includes('basePath'));
 });
