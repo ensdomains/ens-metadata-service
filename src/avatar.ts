@@ -293,6 +293,7 @@ export class AvatarMetadata {
     try {
       // retrieve resolver by ens name
       var resolver = await this.defaultProvider.getResolver(uri);
+      assert(resolver, 'resolver is empty');
     } catch (e) {
       throw new ResolverNotFound(
         'There is no resolver set under given address'
