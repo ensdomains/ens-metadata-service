@@ -95,6 +95,7 @@ export default function createSVGfromTemplate({
           font-weight:bold;
           font-style: normal;
           line-height: 34px;
+          letter-spacing: -0.0005em; /* Prevents dots in "i"s from being cut off with Jakarta font */
         }
       </style>
       <linearGradient id="paint0_linear" x1="190.5" y1="302" x2="-64" y2="-172.5" gradientUnits="userSpaceOnUse">
