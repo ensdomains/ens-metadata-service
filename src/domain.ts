@@ -6,7 +6,7 @@ import {
   GET_DOMAINS_BY_LABELHASH,
 } from './subgraph';
 import { Metadata } from './metadata';
-import { getAvatarImage } from './avatar';
+import { getAvatar } from './avatar';
 import { Version } from './base';
 
 const eth =
@@ -49,16 +49,6 @@ export async function getDomain(
     version,
   });
 
-  async function requestAvatar() {
-    try {
-      const [buffer, mimeType] = await getAvatarImage(provider, name);
-      const base64 = buffer.toString('base64');
-      return [base64, mimeType];
-    } catch {
-      /* do nothing */
-    }
-  }
-
   async function requestNFTImage() {
     if (hasImageKey) {
       const r = await provider.getResolver(name);
@@ -70,15 +60,16 @@ export async function getDomain(
   async function requestMedia() {
     if (loadImages) {
       const [avatar, imageNFT] = await Promise.all([
-        requestAvatar(),
+        getAvatar(provider, name),
         requestNFTImage(),
       ]);
       if (imageNFT) {
         metadata.setImage(imageNFT);
       } else {
         if (avatar) {
-          const [base64, mimeType] = avatar;
-          metadata.setBackground(base64, mimeType);
+          const [buffer, mimeType] = await avatar.getImage();
+          metadata.setBackground(buffer.toString('base64'), mimeType);
+          metadata.setBackgroundColor(avatar.background_color);
         }
         metadata.generateImage();
       }

@@ -24,6 +24,7 @@ export interface Metadata {
   name_length?: number;
   image_url?: string;
   is_normalized: boolean;
+  background_color?: string;
   background_image?: string;
   mimeType?: string;
   url?: string | null;
@@ -84,6 +85,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
 
   setImage(image_url: string) {
     this.image_url = image_url;
+  }
+
+  setBackgroundColor(hex: string) {
+    if (hex) {
+      this.background_color = `#${hex}`;
+    }
   }
 
   setBackground(base64: string, mimeType?: string) {
@@ -148,7 +155,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     <tspan x="32" dy="1.2em">${str.substring(index, str.length)}</tspan>
     `;
   }
-  
+
   private _generateByVersion(
     ...args: [
       domainFontSize: number,
@@ -216,6 +223,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     version: Version
   ) {
     return createSVGfromTemplate({
+      backgroundColor: this.background_color,
       backgroundImage: this.background_image,
       domain,
       domainFontSize,
