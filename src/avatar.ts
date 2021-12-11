@@ -133,7 +133,7 @@ export class AvatarMetadata {
             owner && contract_1155.balanceOf(owner, token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!owner && _isOwner.gt(0) === owner;
+          isOwner = !!owner && _isOwner.gt(0);
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
