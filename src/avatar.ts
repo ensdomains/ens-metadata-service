@@ -279,21 +279,16 @@ export class AvatarMetadata {
   }
 
   async getMeta(networkName?: string) {
-    const uri = await this.getAvatarURI(this.uri);
-    if (uri.match(/^eip155/)) {
-      // means the background is an NFT
-      await this.parseNFTAvatar(uri);
-    }
     if (!this.image) {
       if (this.image_url) {
         this.image = this.image_url;
       } else if (this.image_data) {
         this.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
       } else {
-        this.image = uri;
+        this.image = this.avatarURI;
       }
     }
-    const { defaultProvider, image_data, ...rest } = this;
+    const { avatarURI, defaultProvider, image_data, ...rest } = this;
     return rest;
   }
 
@@ -372,11 +367,6 @@ export class AvatarMetadata {
     this._setHostMeta(spec);
     return this._retrieveMetadata(spec);
   }
-}
-
-export async function getAvatarMeta(provider: any, name: string, networkName?: string): Promise<any> {
-  const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getMeta(networkName);
 }
 
 export async function getAvatar(

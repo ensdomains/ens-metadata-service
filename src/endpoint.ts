@@ -4,7 +4,6 @@ import { getDomain } from './domain';
 import { checkContract, ContractMismatchError } from './contract';
 import {
   getAvatar,
-  getAvatarMeta,
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
@@ -131,7 +130,8 @@ export default function (app: Express) {
     const { name, networkName } = req.params;
     try {
       const { provider } = getNetwork(networkName);
-      const meta = await getAvatarMeta(provider, name, networkName);
+      const avatar = await getAvatar(provider, name);
+      const meta = await avatar.getMeta(networkName);
       if (meta) {
         res.status(200).json(meta);
       } else {
