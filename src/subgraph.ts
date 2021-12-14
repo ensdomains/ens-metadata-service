@@ -7,12 +7,8 @@ export const GET_DOMAINS = gql`
   query getDomains($tokenId: String) {
     domain(id: $tokenId) {
       id
-      labelName
       labelhash
       name
-      owner {
-        id
-      }
       parent {
         id
       }
@@ -32,12 +28,8 @@ export const GET_DOMAINS_BY_LABELHASH = gql`
       }
     ) {
       id
-      labelName
       labelhash
       name
-      owner {
-        id
-      }
       parent {
         id
       }

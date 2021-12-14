@@ -37,8 +37,7 @@ export async function getDomain(
     version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
   const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
   const domain = version !== Version.v2 ? result.domains[0] : result.domain;
-  const { name, labelName, labelhash, createdAt, owner, parent, resolver } =
-    domain;
+  const { name, labelhash, createdAt, parent, resolver } = domain;
 
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
