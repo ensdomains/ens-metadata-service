@@ -6,7 +6,7 @@ import isSVG                            from 'is-svg';
 import { CID }                          from 'multiformats/cid';
 import fetch                            from 'node-fetch';
 import { BaseError }                    from './base';
-import { INFURA_API_KEY, IPFS_GATEWAY } from './config';
+import { INFURA_API_KEY, IPFS_GATEWAY, IPNS_GATEWAY } from './config';
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window as any);
@@ -133,7 +133,7 @@ export class AvatarMetadata {
             owner && contract_1155.balanceOf(owner, token_id),
           ]);
           tokenURI = _tokenURI;
-          isOwner = !!owner && _isOwner.gt(0) === owner;
+          isOwner = !!owner && _isOwner.gt(0);
         } catch (error: any) {
           throw new RetrieveURIFailed(error.message);
         }
@@ -293,6 +293,7 @@ export class AvatarMetadata {
     try {
       // retrieve resolver by ens name
       var resolver = await this.defaultProvider.getResolver(uri);
+      assert(resolver, 'resolver is empty');
     } catch (e) {
       throw new ResolverNotFound(
         'There is no resolver set under given address'
@@ -316,12 +317,25 @@ export class AvatarMetadata {
       return uri;
     } else if (uri.startsWith('ipfs://ipfs/')) {
       return uri.replace('ipfs://ipfs/', IPFS_GATEWAY);
+    } else if (uri.startsWith('ipfs://ipns/')) {
+      return uri.replace('ipfs://ipns/', IPNS_GATEWAY);
     } else if (uri.startsWith('ipfs://')) {
       return uri.replace('ipfs://', IPFS_GATEWAY);
+    } else if (uri.startsWith('/ipfs/')) {
+      return uri.replace('/ipfs/', IPFS_GATEWAY);
     } else if (uri.startsWith('ipfs/')) {
       return uri.replace('ipfs/', IPFS_GATEWAY);
     } else if (isCID(uri)) {
+      // Assume that it's a regular IPFS CID and not an IPNS key
       return IPFS_GATEWAY + uri;
+    } else if (uri.startsWith('ipns://ipns/')) {
+      return uri.replace('ipns://ipns/', IPNS_GATEWAY);
+    } else if (uri.startsWith('ipns://')) {
+      return uri.replace('ipns://', IPNS_GATEWAY);
+    } else if (uri.startsWith('/ipns/')) {
+      return uri.replace('/ipns/', IPNS_GATEWAY);
+    } else if (uri.startsWith('ipns/')) {
+      return uri.replace('ipns/', IPNS_GATEWAY);
     } else {
       // we may want to throw error here
       return uri;
