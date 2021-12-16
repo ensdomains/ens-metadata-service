@@ -3,8 +3,7 @@ import { FetchError } from 'node-fetch';
 import { getDomain } from './domain';
 import { checkContract, ContractMismatchError } from './contract';
 import {
-  getAvatarImage,
-  getAvatarMeta,
+  getAvatar,
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
@@ -131,7 +130,8 @@ export default function (app: Express) {
     const { name, networkName } = req.params;
     try {
       const { provider } = getNetwork(networkName);
-      const meta = await getAvatarMeta(provider, name, networkName);
+      const avatar = await getAvatar(provider, name);
+      const meta = await avatar.getMeta(networkName);
       if (meta) {
         res.status(200).json(meta);
       } else {
@@ -168,7 +168,8 @@ export default function (app: Express) {
     const { name, networkName } = req.params;
     try {
       const { provider } = getNetwork(networkName);
-      const [buffer, mimeType] = await getAvatarImage(provider, name);
+      const avatar = await getAvatar(provider, name);
+      const [buffer, mimeType] = await avatar.getImage();
       if (buffer) {
         res.writeHead(200, {
           'Content-Type': mimeType,

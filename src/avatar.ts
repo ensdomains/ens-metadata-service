@@ -33,9 +33,11 @@ interface HostMeta {
 
 export interface AvatarMetadata {
   uri: string;
+  avatarURI: string;
   animation: string;
   animation_details: {};
   attributes: any[];
+  background_color: string;
   created_by: string;
   event: string;
   image_data: string;
@@ -188,6 +190,7 @@ export class AvatarMetadata {
       animation_details,
       animation_url,
       attributes,
+      background_color,
       created_by,
       description,
       event,
@@ -203,6 +206,7 @@ export class AvatarMetadata {
     this.animation_details = animation_details;
     this.animation_url     = animation_url;
     this.attributes        = attributes;
+    this.background_color  = background_color;
     this.created_by        = created_by;
     this.description       = description;
     this.event             = event;
@@ -218,20 +222,26 @@ export class AvatarMetadata {
     this.animation_url     = animation_url;
   }
 
-  async getImage() {
+  async load() {
     const uri = await this.getAvatarURI(this.uri);
     if (uri.match(/^eip155/)) {
       // means the background is an NFT
-      const spec = AvatarMetadata.parseNFT(uri);
-      await this._retrieveMetadata(spec);
+      await this.parseNFTAvatar(uri);
     }
+
+    this.avatarURI = uri;
+
+    return this;
+  }
+
+  async getImage() {
     if (!this.image) {
       if (this.image_url) {
         this.image = this.image_url;
       } else if (this.image_data) {
         this.image = this.image_data;
       } else {
-        this.image = uri;
+        this.image = this.avatarURI;
       }
     }
     assert(this.image, 'Image is not available');
@@ -269,23 +279,16 @@ export class AvatarMetadata {
   }
 
   async getMeta(networkName?: string) {
-    const uri = await this.getAvatarURI(this.uri);
-    if (uri.match(/^eip155/)) {
-      // means the background is an NFT
-      const spec = AvatarMetadata.parseNFT(uri);
-      this._setHostMeta(spec);
-      await this._retrieveMetadata(spec);
-    }
     if (!this.image) {
       if (this.image_url) {
         this.image = this.image_url;
       } else if (this.image_data) {
         this.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
       } else {
-        this.image = uri;
+        this.image = this.avatarURI;
       }
     }
-    const { defaultProvider, image_data, ...rest } = this;
+    const { avatarURI, defaultProvider, image_data, ...rest } = this;
     return rest;
   }
 
@@ -342,7 +345,7 @@ export class AvatarMetadata {
     }
   }
 
-  static parseNFT(uri: string, seperator: string = '/') {
+  parseNFTAvatar(uri: string, seperator: string = '/') {
     assert(uri, 'parameter URI cannot be empty');
     uri = uri.replace('did:nft:', '');
 
@@ -355,26 +358,25 @@ export class AvatarMetadata {
     assert(namespace, 'namespace is empty');
     assert(token_id, 'tokenID is empty');
 
-    return {
+    const spec = {
       chain_id: Number(chain_id),
       namespace,
       contract_address,
       token_id,
     };
+    this._setHostMeta(spec);
+    return this._retrieveMetadata(spec);
   }
 }
 
-export async function getAvatarMeta(provider: any, name: string, networkName?: string): Promise<any> {
-  const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getMeta(networkName);
-}
-
-export async function getAvatarImage(
+export async function getAvatar(
   provider: any,
   name: string
 ): Promise<any> {
-  const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getImage();
+  try {
+    const avatar = new AvatarMetadata(provider, name);
+    return await avatar.load();
+  } catch (e) {}
 }
 
 export function isCID(hash: any) {
