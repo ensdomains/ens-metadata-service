@@ -1,5 +1,9 @@
 import { Version }           from './base';
-import { CANVAS_FONT_PATH }  from './config';
+import { 
+  CANVAS_FONT_PATH, 
+  CANVAS_EMOJI_FONT_PATH, 
+  CANVAS_FALLBACK_FONT_PATH 
+}                            from './config';
 import createSVGfromTemplate from './svg-template';
 
 // no ts decleration files
@@ -10,7 +14,17 @@ const { validate }                   = require('@ensdomains/ens-validation');
 
 registerFont(
   CANVAS_FONT_PATH, 
-  {family: "Plus Jakarta Sans", weight: "600", style: "normal"}
+  { family: "Plus Jakarta Sans" }
+);
+
+registerFont(
+  CANVAS_EMOJI_FONT_PATH, 
+  { family: "Noto Color Emoji" }
+);
+
+registerFont(
+  CANVAS_FALLBACK_FONT_PATH, 
+  { family: "DejaVu Sans" }
 );
 
 declare namespace Intl {
@@ -138,7 +152,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       domain = Metadata._textEllipsis(domain);
     }
     if (charLength > 25) {
-      domain = this._addSpan(domain, domain.length / 2);
+      domain = this._addSpan(domain, charLength / 2);
       domainFontSize *= 2;
     }
     const svg = this._generateByVersion(
@@ -196,11 +210,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   static _getFontSize(name: string): number {
     const canvas = createCanvas(270, 270);
     const ctx = canvas.getContext('2d');
-    ctx.font = '20px Plus Jakarta Sans';
-    const text = ctx.measureText(name);
+    ctx.font = "20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji";
+    const fontMetrics = ctx.measureText(name);
     // some nasty hack on calculation
     // 270 - (32.5 px padding both sides * 2)
-    const fontSize = Math.floor(20 * (205 / text.width));
+    const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
   }
 
