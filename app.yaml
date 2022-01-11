@@ -7,7 +7,7 @@ handlers:
 - url: /stylesheets
   static_dir: stylesheets
 - url: /assets
-  static_dir: src/assets
+  static_dir: dist/assets
   http_headers:
     Access-Control-Allow-Origin: "*"
 - url: /.*
