@@ -12,6 +12,21 @@
 # below:
 .git
 .gitignore
+.DS_Store
 
 # Node.js dependencies:
 node_modules/
+
+# Source code:
+src/
+.env.org
+.travis.yml
+docgen.js
+generateEmojiRange.js
+tsconfig.json
+yarn-error.log
+
+# Test files and artifacts:
+.nyc_output/
+coverage/
+test/

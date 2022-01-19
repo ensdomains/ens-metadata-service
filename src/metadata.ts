@@ -1,33 +1,59 @@
-import { Version } from "./base";
-import createSVGfromTemplate from "./svg-template";
+import { Version }           from './base';
+import { 
+  CANVAS_FONT_PATH, 
+  CANVAS_EMOJI_FONT_PATH, 
+  CANVAS_FALLBACK_FONT_PATH 
+}                            from './config';
+import createSVGfromTemplate from './svg-template';
 
-const btoa = require('btoa');
+// no ts decleration files
+const btoa                           = require('btoa');
 const { createCanvas, registerFont } = require('canvas');
-const namehash = require('@ensdomains/eth-ens-namehash');
+const namehash                       = require('@ensdomains/eth-ens-namehash');
+const { validate }                   = require('@ensdomains/ens-validation');
 
-// registerFont('./src/assets/PlusJakartaSans-Bold.woff', {family: "Plus Jakarta Sans", weight: "600", style: "normal"})
+registerFont(
+  CANVAS_FONT_PATH, 
+  { family: "Plus Jakarta Sans" }
+);
+
+registerFont(
+  CANVAS_EMOJI_FONT_PATH, 
+  { family: "Noto Color Emoji" }
+);
+
+registerFont(
+  CANVAS_FALLBACK_FONT_PATH, 
+  { family: "DejaVu Sans" }
+);
+
+declare namespace Intl {
+  class Segmenter {
+    public segment: (name: string) => string;
+  }
+}
 
 export interface MetadataInit {
-  name: string;
-  description?: string;
-  created_date: number;
+  name            : string;
+  description?    : string;
+  created_date    : number;
   registered_date?: Date | null;
   expiration_date?: Date | null;
-  tokenId: string;
-  version: Version;
+  tokenId         : string;
+  version         : Version;
 }
 
 export interface Metadata {
-  name: string;
-  description?: string;
-  attributes: object[];
-  name_length?: number;
-  image_url?: string;
-  is_normalized: boolean;
+  name             : string;
+  description?     : string;
+  attributes       : object[];
+  name_length?     : number;
+  image_url?       : string;
+  is_normalized    : boolean;
   background_image?: string;
-  mimeType?: string;
-  url?: string | null;
-  version: Version;
+  mimeType?        : string;
+  url?             : string | null;
+  version          : Version;
 }
 
 export class Metadata {
@@ -39,18 +65,20 @@ export class Metadata {
     tokenId,
     version,
   }: MetadataInit) {
-    this.is_normalized = this._checkNormalized(name);
-    this.name = this.is_normalized ? name
-    : tokenId.replace(
-        new RegExp('^(.{0,6}).*(.{4})$', 'im'),
-        '[$1...$2].eth'
-    );
+    const is_valid = validate(name);
+    this.is_normalized = is_valid && this._checkNormalized(name);
+    this.name = this.is_normalized
+      ? name
+      : tokenId.replace(
+          new RegExp('^(.{0,6}).*(.{4})$', 'im'),
+          '[$1...$2].eth'
+        );
     this.description =
       description ||
       `${this.name}, an ENS name.${
         !this.is_normalized ? ` (${name} is not in normalized form)` : ''
       }`;
-    if (Metadata._hasNonAscii(name)) {
+    if (!is_valid) {
       this.description +=
         ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
 Please be aware that there are characters that look identical or very \
@@ -71,7 +99,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       trait_type: 'Length',
       display_type: 'number',
       value: this.name_length,
-    })
+    });
     this.url = this.is_normalized
       ? `https://app.ens.domains/name/${name}`
       : null;
@@ -124,8 +152,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       domain = Metadata._textEllipsis(domain);
     }
     if (charLength > 25) {
-      domain = this._addSpan(domain, domain.length / 2);
-      domainFontSize *= 2
+      domain = this._addSpan(domain, charLength / 2);
+      domainFontSize *= 2;
     }
     const svg = this._generateByVersion(
       domainFontSize,
@@ -142,13 +170,13 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     }
   }
 
-  private _addSpan(str: string, index: number){
+  private _addSpan(str: string, index: number) {
     return `
     <tspan x="32" dy="-1.2em">${str.substring(0, index)}</tspan>
     <tspan x="32" dy="1.2em">${str.substring(index, str.length)}</tspan>
     `;
   }
-  
+
   private _generateByVersion(
     ...args: [
       domainFontSize: number,
@@ -176,36 +204,30 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getCharLength(name: string): number {
-    let byteLength = Buffer.byteLength(name);
-    byteLength = byteLength === name.length ? byteLength : byteLength / 1.6;
-    return Math.floor(byteLength);
+    return [...new Intl.Segmenter().segment(name)].length;
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(270, 270)
+    const canvas = createCanvas(270, 270);
     const ctx = canvas.getContext('2d');
-    ctx.font = "20px PlusJakartaSans";
-    const text = ctx.measureText(name);
+    ctx.font = "20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji";
+    const fontMetrics = ctx.measureText(name);
     // some nasty hack on calculation
-    const fontSize = Math.floor(20 * ((196 - name.length) / text.width));
+    // 270 - (32.5 px padding both sides * 2)
+    const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
   }
 
-  static _hasNonAscii = (name: string) => {
-    const ascii = /^[ -~]+$/;
-    return !ascii.test(decodeURI(name));
-  };
-
   private _checkNormalized(name: string) {
     // this method can be used to filter many unformal name type
-    return name === namehash.normalize(name)
+    return name === namehash.normalize(name);
   }
 
   private _labelLength(name: string): number {
     const parts = name.split('.');
     const label = parts[parts.length - 2];
     if (!label) throw Error('Label cannot be empty!');
-    return [...label].length;
+    return Metadata._getCharLength(label);
   }
 
   private _renderSVG(
@@ -223,7 +245,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       isSubdomain,
       mimeType: this.mimeType,
       subdomainText,
-      version
+      version,
     });
   }
 }

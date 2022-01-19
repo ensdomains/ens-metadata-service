@@ -177,7 +177,6 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
     `rinkeby/${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
     options
   ).json();
-  console.log("pelik", result);
   t.deepEqual(result, wrappertest3.expect);
 });
 
@@ -315,8 +314,8 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     }
   );
   const { message } = JSON.parse(body as string);
-  t.assert(message.includes(fetchError.message));
-  t.is(statusCode, fetchError.statusCode);
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, 404);
 });
 
 test('raise Internal Server Error from subgraph', async (t: ExecutionContext<TestContext>) => {
@@ -346,8 +345,8 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     }
   );
   const { message } = JSON.parse(body as string);
-  t.assert(message.includes(fetchError.message));
-  t.is(statusCode, fetchError.statusCode);
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, 404);
 });
 
 test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
@@ -373,7 +372,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
       instanceOf: HTTPError,
     }
   );
-  t.assert(statusCode === 500);
+  t.assert(statusCode === 404);
 });
 
 test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => {
@@ -390,7 +389,6 @@ test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => 
     }
   );
   const { message } = JSON.parse(body as string);
-  console.log('message', message);
   t.assert(
     message ===
       `${NON_CONTRACT_ADDRESS} does not match with any ENS related contract`
@@ -400,12 +398,12 @@ test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => 
 test('should get assets when ENV set for local', async (t: ExecutionContext<TestContext>) => {
   process.env.ENV = 'local';
   process.env.PORT = '8081';
+  nock.enableNetConnect('localhost:8081');
   const _app = requireUncached('../src/index');
   t.context.server = http.createServer(_app);
   t.context.prefixUrl = await listen(t.context.server);
-  nock.enableNetConnect('localhost:8081');
-  const result = await got(`assets/font.css`, {
+  const result = await got(`assets/doc_output.json`, {
     prefixUrl: 'http://localhost:8081',
   }).text();
-  t.assert(result.includes('@font-face'));
+  t.assert(result.includes('basePath'));
 });
