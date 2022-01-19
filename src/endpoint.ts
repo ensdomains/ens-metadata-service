@@ -5,12 +5,14 @@ import { checkContract, ContractMismatchError } from './contract';
 import {
   getAvatarImage,
   getAvatarMeta,
+  NFTURIParsingError,
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
   UnsupportedNamespace,
 } from './avatar';
 import getNetwork, { UnsupportedNetwork } from './network';
+import { rasterize } from './rasterize';
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -124,6 +126,35 @@ export default function (app: Express) {
     }
   );
 
+  app.get(
+    '/:networkName/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/rasterize',
+    /* istanbul ignore next */
+    async function (req, res) {
+      // #swagger.description = 'ENS NFT image rasterization endpoint'
+      // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
+      // #swagger.parameters['contractAddress'] = { description: 'Contract address which stores the NFT indicated by the tokenId' }
+      // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names' }
+      const { contractAddress, networkName, tokenId } = req.params;
+      try {
+        const raster = await rasterize(contractAddress, networkName, tokenId);
+          const base64 = raster.replace(
+            'data:image/png;base64,',
+            ''
+          );
+          const buffer = Buffer.from(base64, 'base64');
+          res.writeHead(200, {
+            'Content-Type': 'image/png',
+            'Content-Length': buffer.length,
+          });
+          res.end(buffer);
+      } catch (error) {
+        res.status(500).json({
+          message: error,
+        });
+      }
+    }
+  );
+
   app.get('/:networkName/avatar/:name/meta', async function (req, res) {
     // #swagger.description = 'ENS avatar metadata'
     // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
@@ -143,6 +174,7 @@ export default function (app: Express) {
       const errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||
+        error instanceof NFTURIParsingError ||
         error instanceof ResolverNotFound ||
         error instanceof RetrieveURIFailed ||
         error instanceof TextRecordNotFound ||
@@ -183,6 +215,7 @@ export default function (app: Express) {
       const errCode = (error?.code && Number(error.code)) || 500;
       if (
         error instanceof FetchError ||
+        error instanceof NFTURIParsingError ||
         error instanceof ResolverNotFound ||
         error instanceof RetrieveURIFailed ||
         error instanceof TextRecordNotFound ||

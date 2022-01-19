@@ -23,6 +23,9 @@ export class RetrieveURIFailed extends BaseError {}
 export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 
+export interface NFTURIParsingError {}
+export class NFTURIParsingError extends BaseError {}
+
 interface HostMeta {
   chain_id?: number;
   namespace?: string;
@@ -343,24 +346,28 @@ export class AvatarMetadata {
   }
 
   static parseNFT(uri: string, seperator: string = '/') {
-    assert(uri, 'parameter URI cannot be empty');
-    uri = uri.replace('did:nft:', '');
+    try {
+      assert(uri, 'parameter URI cannot be empty');
+      uri = uri.replace('did:nft:', '');
 
-    const [reference, asset_namespace, token_id] = uri.split(seperator);
-    const [_type, chain_id] = reference.split(':');
-    const [namespace, contract_address] = asset_namespace.split(':');
+      const [reference, asset_namespace, token_id] = uri.split(seperator);
+      const [_type, chain_id] = reference.split(':');
+      const [namespace, contract_address] = asset_namespace.split(':');
 
-    assert(chain_id, 'chainID is empty');
-    assert(contract_address, 'contractAddress is empty');
-    assert(namespace, 'namespace is empty');
-    assert(token_id, 'tokenID is empty');
+      assert(chain_id, 'chainID not found');
+      assert(contract_address, 'contractAddress not found');
+      assert(namespace, 'namespace not found');
+      assert(token_id, 'tokenID not found');
 
-    return {
-      chain_id: Number(chain_id),
-      namespace,
-      contract_address,
-      token_id,
-    };
+      return {
+        chain_id: Number(chain_id),
+        namespace,
+        contract_address,
+        token_id,
+      };
+    } catch (error: any) {
+      throw new NFTURIParsingError(`${error.message} - ${uri}`)
+    }
   }
 }
 
