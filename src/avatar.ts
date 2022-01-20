@@ -10,6 +10,8 @@ import { INFURA_API_KEY, IPFS_GATEWAY, IPNS_GATEWAY } from './config';
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window as any);
+const ipfsRegex =
+  /(?<protocol>ipfs\:\/|ipns\:\/)?(?<root>\/)?(?<subpath>ipfs\/|ipns\/)?(?<target>[\w-\.]+)(?<subtarget>\/.*)?/;
 
 export interface ResolverNotFound {}
 export class ResolverNotFound extends BaseError {}
@@ -64,7 +66,7 @@ export class AvatarMetadata {
   _sanitize(data: Buffer, mimeType: string | null): Buffer {
     if (!(mimeType === 'image/svg+xml' || isSVG(data.toString()))) return data;
     const cleanDOM = DOMPurify.sanitize(data.toString());
-    return Buffer.from(cleanDOM)
+    return Buffer.from(cleanDOM);
   }
 
   _setHostMeta(meta: HostMeta) {
@@ -99,7 +101,9 @@ export class AvatarMetadata {
   ) {
     let tokenURI;
     let isOwner = false;
-    switch (namespace.toLowerCase()) { // lowercase the namespace in case of uppercase formats
+    switch (
+      namespace.toLowerCase() // lowercase the namespace in case of uppercase formats
+    ) {
       case 'erc721': {
         const contract_721 = new ethers.Contract(
           contract_address,
@@ -175,13 +179,11 @@ export class AvatarMetadata {
       : token_id;
 
     let meta;
-    if(tokenURI.startsWith('data:')) {
+    if (tokenURI.startsWith('data:')) {
       // metadata stored as base64
       const base64data = tokenURI.split('base64,')[1];
-      assert(base64data, "base64 format is incorrect: empty data");
-      meta = JSON.parse(
-        Buffer.from(base64data, 'base64').toString()
-      )
+      assert(base64data, 'base64 format is incorrect: empty data');
+      meta = JSON.parse(Buffer.from(base64data, 'base64').toString());
     } else {
       meta = await (await fetch(tokenURI.replace('0x{id}', _tokenID))).json();
     }
@@ -255,7 +257,7 @@ export class AvatarMetadata {
       const mimeType = parsed.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
       const base64data = parsed.split('base64,')[1];
 
-      assert(base64data, "base64 format is incorrect: empty data");
+      assert(base64data, 'base64 format is incorrect: empty data');
       assert(mimeType, 'base64 format is incorrect: no mimetype');
 
       const bufferData = Buffer.from(base64data, 'base64');
@@ -268,7 +270,9 @@ export class AvatarMetadata {
       const data = this._sanitize(Buffer.from(parsed), 'image/svg+xml');
       return [data, 'image/svg+xml'];
     }
-    throw new RetrieveURIFailed('Unknown type/protocol given for the image source.');
+    throw new RetrieveURIFailed(
+      'Unknown type/protocol given for the image source.'
+    );
   }
 
   async getMeta(networkName?: string) {
@@ -318,27 +322,16 @@ export class AvatarMetadata {
   static parseURI(uri: string): string {
     if (uri.startsWith('data:') || uri.startsWith('http')) {
       return uri;
-    } else if (uri.startsWith('ipfs://ipfs/')) {
-      return uri.replace('ipfs://ipfs/', IPFS_GATEWAY);
-    } else if (uri.startsWith('ipfs://ipns/')) {
-      return uri.replace('ipfs://ipns/', IPNS_GATEWAY);
-    } else if (uri.startsWith('ipfs://')) {
-      return uri.replace('ipfs://', IPFS_GATEWAY);
-    } else if (uri.startsWith('/ipfs/')) {
-      return uri.replace('/ipfs/', IPFS_GATEWAY);
-    } else if (uri.startsWith('ipfs/')) {
-      return uri.replace('ipfs/', IPFS_GATEWAY);
-    } else if (isCID(uri)) {
+    }
+
+    const ipfsRegexpResult = uri.match(ipfsRegex);
+    const { protocol, subpath, target, subtarget } =
+      ipfsRegexpResult?.groups || {};
+    if ((protocol === 'ipns:/' || subpath === 'ipns/') && target) {
+      return IPNS_GATEWAY + target + (subtarget || '');
+    } else if (isCID(target)) {
       // Assume that it's a regular IPFS CID and not an IPNS key
-      return IPFS_GATEWAY + uri;
-    } else if (uri.startsWith('ipns://ipns/')) {
-      return uri.replace('ipns://ipns/', IPNS_GATEWAY);
-    } else if (uri.startsWith('ipns://')) {
-      return uri.replace('ipns://', IPNS_GATEWAY);
-    } else if (uri.startsWith('/ipns/')) {
-      return uri.replace('/ipns/', IPNS_GATEWAY);
-    } else if (uri.startsWith('ipns/')) {
-      return uri.replace('ipns/', IPNS_GATEWAY);
+      return IPFS_GATEWAY + target + (subtarget || '');
     } else {
       // we may want to throw error here
       return uri;
@@ -366,12 +359,16 @@ export class AvatarMetadata {
         token_id,
       };
     } catch (error: any) {
-      throw new NFTURIParsingError(`${error.message} - ${uri}`)
+      throw new NFTURIParsingError(`${error.message} - ${uri}`);
     }
   }
 }
 
-export async function getAvatarMeta(provider: any, name: string, networkName?: string): Promise<any> {
+export async function getAvatarMeta(
+  provider: any,
+  name: string,
+  networkName?: string
+): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
   return await avatar.getMeta(networkName);
 }
