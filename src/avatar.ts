@@ -172,7 +172,7 @@ export class AvatarMetadata {
       owner
     );
 
-    const _tokenID = !token_id?.startsWith('0x')
+    let _tokenID = !token_id?.startsWith('0x')
       ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
       : token_id;
 
@@ -183,13 +183,16 @@ export class AvatarMetadata {
       assert(base64data, 'base64 format is incorrect: empty data');
       meta = JSON.parse(Buffer.from(base64data, 'base64').toString());
     } else {
+      // exclude opensea from erc1155 padding spec 
+      if (namespace === 'erc1155' && !tokenURI.startsWith('https://api.opensea.io')) {
+        _tokenID = _tokenID.replace('0x', '').padStart(64, '0');
+      }
       // /(?:0x)?{id}/ checks 0x{id} template for erc1155, {id} template for erc721
-      // instead of namespace check here we covered both for each cases 
+      // instead of namespace check here we covered both for each cases
       // for the out of spec implementations
       meta = await (
         await fetch(tokenURI.replace(/(?:0x)?{id}/, _tokenID))
       ).json();
-      console.log(meta);
     }
 
     const {
