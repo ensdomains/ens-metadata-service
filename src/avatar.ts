@@ -64,7 +64,7 @@ export class AvatarMetadata {
   _sanitize(data: Buffer, mimeType: string | null): Buffer {
     if (!(mimeType === 'image/svg+xml' || isSVG(data.toString()))) return data;
     const cleanDOM = DOMPurify.sanitize(data.toString());
-    return Buffer.from(cleanDOM)
+    return Buffer.from(cleanDOM);
   }
 
   _setHostMeta(meta: HostMeta) {
@@ -99,7 +99,9 @@ export class AvatarMetadata {
   ) {
     let tokenURI;
     let isOwner = false;
-    switch (namespace.toLowerCase()) { // lowercase the namespace in case of uppercase formats
+    switch (
+      namespace.toLowerCase() // lowercase the namespace in case of uppercase formats
+    ) {
       case 'erc721': {
         const contract_721 = new ethers.Contract(
           contract_address,
@@ -170,20 +172,27 @@ export class AvatarMetadata {
       owner
     );
 
-    const _tokenID = !token_id?.startsWith('0x')
+    let _tokenID = !token_id?.startsWith('0x')
       ? ethers.utils.hexValue(ethers.BigNumber.from(token_id))
       : token_id;
 
     let meta;
-    if(tokenURI.startsWith('data:')) {
+    if (tokenURI.startsWith('data:')) {
       // metadata stored as base64
       const base64data = tokenURI.split('base64,')[1];
-      assert(base64data, "base64 format is incorrect: empty data");
-      meta = JSON.parse(
-        Buffer.from(base64data, 'base64').toString()
-      )
+      assert(base64data, 'base64 format is incorrect: empty data');
+      meta = JSON.parse(Buffer.from(base64data, 'base64').toString());
     } else {
-      meta = await (await fetch(tokenURI.replace('0x{id}', _tokenID))).json();
+      // exclude opensea from erc1155 padding spec 
+      if (namespace === 'erc1155' && !tokenURI.startsWith('https://api.opensea.io')) {
+        _tokenID = _tokenID.replace('0x', '').padStart(64, '0');
+      }
+      // /(?:0x)?{id}/ checks 0x{id} template for erc1155, {id} template for erc721
+      // instead of namespace check here we covered both for each cases
+      // for the out of spec implementations
+      meta = await (
+        await fetch(tokenURI.replace(/(?:0x)?{id}/, _tokenID))
+      ).json();
     }
 
     const {
@@ -255,7 +264,7 @@ export class AvatarMetadata {
       const mimeType = parsed.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
       const base64data = parsed.split('base64,')[1];
 
-      assert(base64data, "base64 format is incorrect: empty data");
+      assert(base64data, 'base64 format is incorrect: empty data');
       assert(mimeType, 'base64 format is incorrect: no mimetype');
 
       const bufferData = Buffer.from(base64data, 'base64');
@@ -268,7 +277,9 @@ export class AvatarMetadata {
       const data = this._sanitize(Buffer.from(parsed), 'image/svg+xml');
       return [data, 'image/svg+xml'];
     }
-    throw new RetrieveURIFailed('Unknown type/protocol given for the image source.');
+    throw new RetrieveURIFailed(
+      'Unknown type/protocol given for the image source.'
+    );
   }
 
   async getMeta(networkName?: string) {
@@ -366,12 +377,16 @@ export class AvatarMetadata {
         token_id,
       };
     } catch (error: any) {
-      throw new NFTURIParsingError(`${error.message} - ${uri}`)
+      throw new NFTURIParsingError(`${error.message} - ${uri}`);
     }
   }
 }
 
-export async function getAvatarMeta(provider: any, name: string, networkName?: string): Promise<any> {
+export async function getAvatarMeta(
+  provider: any,
+  name: string,
+  networkName?: string
+): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
   return await avatar.getMeta(networkName);
 }
