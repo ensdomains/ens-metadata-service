@@ -6,8 +6,8 @@ import { AvatarMetadata } from '../src/avatar';
 const test = avaTest as TestInterface<TestContext>;
 
 test('should return data URIs without any changes', async (t: ExecutionContext<TestContext>) => {
-    const uri = 'data:text/plain;base64,dGVzdGluZw==';
-    t.is(uri, AvatarMetadata.parseURI(uri));
+  const uri = 'data:text/plain;base64,dGVzdGluZw==';
+  t.is(uri, AvatarMetadata.parseURI(uri));
 });
 
 test('should return http URIs without any changes', async (t: ExecutionContext<TestContext>) => {
@@ -16,23 +16,45 @@ test('should return http URIs without any changes', async (t: ExecutionContext<T
 });
 
 test('should replace ipfs://ipfs/ with IPFS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  const uri = 'ipfs://ipfs/QmTesting';
-  t.is(IPFS_GATEWAY + 'QmTesting', AvatarMetadata.parseURI(uri));
+  const uri = 'ipfs://ipfs/QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP';
+  t.is(
+    IPFS_GATEWAY + 'QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP',
+    AvatarMetadata.parseURI(uri)
+  );
 });
 
 test('should replace ipfs:// with IPFS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  const uri = 'ipfs://QmTesting';
-  t.is(IPFS_GATEWAY + 'QmTesting', AvatarMetadata.parseURI(uri));
+  const uri = 'ipfs://QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP';
+  t.is(
+    IPFS_GATEWAY + 'QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP',
+    AvatarMetadata.parseURI(uri)
+  );
 });
 
 test('should replace /ipfs/ with IPFS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  const uri = '/ipfs/QmTesting';
-  t.is(IPFS_GATEWAY + 'QmTesting', AvatarMetadata.parseURI(uri));
+  const uri = '/ipfs/QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP';
+  t.is(
+    IPFS_GATEWAY + 'QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP',
+    AvatarMetadata.parseURI(uri)
+  );
 });
 
 test('should replace ipfs/ with IPFS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  const uri = 'ipfs/QmTesting';
-  t.is(IPFS_GATEWAY + 'QmTesting', AvatarMetadata.parseURI(uri));
+  const uri = 'ipfs/QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP';
+  t.is(
+    IPFS_GATEWAY + 'QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP',
+    AvatarMetadata.parseURI(uri)
+  );
+});
+
+test('should recognize ipfs hash with subpath', async (t: ExecutionContext<TestContext>) => {
+  const uri =
+    'ipfs/QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP/avatar/name.jpg';
+  t.is(
+    IPFS_GATEWAY +
+      'QmUbTVz1L4uEvAPg5QcSu8Pow1YdwshDJ8VbyYjWaJv4JP/avatar/name.jpg',
+    AvatarMetadata.parseURI(uri)
+  );
 });
 
 test('should prefix CIDs with IPFS gateway prefix', async (t: ExecutionContext<TestContext>) => {
