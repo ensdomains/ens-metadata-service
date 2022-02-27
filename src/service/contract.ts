@@ -1,18 +1,12 @@
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
-import { BaseError, Version } from './base';
+import { ContractMismatchError, OwnerNotFoundError, Version } from '../base';
 
 import {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_NAME_WRAPPER,
   INAMEWRAPPER,
-} from './config';
-
-export interface ContractMismatchError {}
-export class ContractMismatchError extends BaseError {}
-
-export interface OwnerNotFoundError {}
-export class OwnerNotFoundError extends BaseError {}
+} from '../config';
 
 export async function checkContract(
   provider: any,
@@ -43,9 +37,11 @@ export async function checkContract(
   } else if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
     try {
       var nftOwner = await contract.ownerOf(tokenId);
-      assert(nftOwner !== '0x')
+      assert(nftOwner !== '0x');
     } catch (error) {
-      throw new OwnerNotFoundError(`Checking owner of ${tokenId} failed. Reason: ${error}`);
+      throw new OwnerNotFoundError(
+        `Checking owner of ${tokenId} failed. Reason: ${error}`
+      );
     }
     if (nftOwner === ADDRESS_NAME_WRAPPER) {
       return Version.v1w;

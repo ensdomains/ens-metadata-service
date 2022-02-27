@@ -1,13 +1,15 @@
-import { Version }           from './base';
+import { Version }           from '../base';
 import { 
   CANVAS_FONT_PATH, 
   CANVAS_EMOJI_FONT_PATH, 
   CANVAS_FALLBACK_FONT_PATH 
-}                            from './config';
-import createSVGfromTemplate from './svg-template';
+}                            from '../config';
+import createSVGfromTemplate from '../svg-template';
+import base64EncodeUnicode   from '../utils/base64encode';
+import getCharLength         from '../utils/charLength';
 
 // no ts decleration files
-const btoa                           = require('btoa');
+
 const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
 const { validate }                   = require('@ensdomains/ens-validation');
@@ -26,12 +28,6 @@ registerFont(
   CANVAS_FALLBACK_FONT_PATH, 
   { family: "DejaVu Sans" }
 );
-
-declare namespace Intl {
-  class Segmenter {
-    public segment: (name: string) => string;
-  }
-}
 
 export interface MetadataInit {
   name            : string;
@@ -129,7 +125,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     if (isSubdomain && !name.includes('...')) {
       subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
       domain = labels.slice(-2).join('.');
-      if (Metadata._getCharLength(subdomain) > Metadata.MAX_CHAR) {
+      if (getCharLength(subdomain) > Metadata.MAX_CHAR) {
         subdomain = Metadata._textEllipsis(subdomain);
       }
       subdomainFontSize = Metadata._getFontSize(subdomain);
@@ -146,7 +142,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     } else {
       domain = name;
     }
-    const charLength = Metadata._getCharLength(domain);
+    const charLength = getCharLength(domain);
     domainFontSize = Metadata._getFontSize(domain);
     if (charLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
@@ -163,7 +159,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     );
     try {
       this.image_url =
-        'data:image/svg+xml;base64,' + Metadata._b64EncodeUnicode(svg);
+        'data:image/svg+xml;base64,' + base64EncodeUnicode(svg);
     } catch (e) {
       console.log(domain, e);
       this.image_url = '';
@@ -191,20 +187,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     return this._renderSVG.apply(this, [...args, this.version]);
   }
 
-  static _b64EncodeUnicode(str: string) {
-    return btoa(
-      encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-        return String.fromCharCode(parseInt(p1, 16));
-      })
-    );
-  }
-
   static _textEllipsis(name: string) {
     return name.substring(0, Metadata.MAX_CHAR - 3) + '...';
-  }
-
-  static _getCharLength(name: string): number {
-    return [...new Intl.Segmenter().segment(name)].length;
   }
 
   static _getFontSize(name: string): number {
@@ -227,7 +211,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     const parts = name.split('.');
     const label = parts[parts.length - 2];
     if (!label) throw Error('Label cannot be empty!');
-    return Metadata._getCharLength(label);
+    return getCharLength(label);
   }
 
   private _renderSVG(

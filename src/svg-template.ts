@@ -1,12 +1,6 @@
 import { Version } from "./base";
 import { CANVAS_FONT_PATH, CANVAS_FALLBACK_FONT_PATH }  from './config';
-const fs = require('fs');
-
-export function importFont(font_path: string, media_type: string) {
-    const buff = fs.readFileSync(font_path);
-    const base64data = buff.toString('base64');
-    return `data:${media_type};charset=utf-8;base64,${base64data}`;
-}
+import { importFont } from "./utils/importFont";
 
 const fontJakartaBold = importFont(CANVAS_FONT_PATH, 'font/truetype');
 const fontDejaVuBold = importFont(CANVAS_FALLBACK_FONT_PATH, 'font/truetype');
