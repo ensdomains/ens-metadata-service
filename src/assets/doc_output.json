@@ -4,50 +4,60 @@
     "version": "0.0.1-alpha.0",
     "title": "ENS Metadata Service",
     "description": "Set of endpoints to query ENS metadata and more",
+    "contact": "contact@ens.domains",
+    "license": "MIT License",
     "x-logo": {
       "url": "/assets/logo.svg",
       "altText": "Ethereum Name Service"
     }
   },
-  "host": "http://localhost:8080",
-  "basePath": "/",
-  "tags": [],
-  "schemes": [
-    "http"
-  ],
-  "consumes": [],
-  "produces": [],
   "paths": {
     "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
       "get": {
-        "tags": [],
         "description": "ENS NFT metadata",
         "parameters": [
           {
             "name": "networkName",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "schema": {
+              "$ref": "#/components/schemas/networkName"
+            }
           },
           {
             "name": "contractAddress",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Contract Address of your stored NFT"
+            "schema": {
+              "$ref": "#/components/schemas/contractAddress"
+            }
           },
           {
             "name": "tokenId",
             "in": "path",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/tokenId"
+            },
             "type": "string",
             "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
           }
         ],
         "responses": {
           "200": {
-            "description": "Metadata object"
+            "description": "Metadata object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ENSMetadata"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/ENSMetadata"
+                }
+              }
+            }
           },
           "404": {
             "description": "No results found."
@@ -57,27 +67,31 @@
     },
     "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/image": {
       "get": {
-        "tags": [],
         "description": "ENS NFT image",
         "parameters": [
           {
             "name": "networkName",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "schema": {
+              "$ref": "#/components/schemas/networkName"
+            }
           },
           {
             "name": "contractAddress",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Contract Address of your stored NFT"
+            "schema": {
+              "$ref": "#/components/schemas/contractAddress"
+            }
           },
           {
             "name": "tokenId",
             "in": "path",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/tokenId"
+            },
             "type": "string",
             "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
           }
@@ -95,66 +109,232 @@
         }
       }
     },
+    "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}/rasterize": {
+      "get": {
+        "description": "ENS NFT image rasterization",
+        "parameters": [
+          {
+            "name": "networkName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/networkName"
+            }
+          },
+          {
+            "name": "contractAddress",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/contractAddress"
+            }
+          },
+          {
+            "name": "tokenId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/tokenId"
+            },
+            "type": "string",
+            "description": "Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image file"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/{networkName}/avatar/{name}/meta": {
       "get": {
-        "tags": [],
         "description": "ENS avatar metadata",
         "parameters": [
           {
             "name": "networkName",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "schema": {
+              "$ref": "#/components/schemas/networkName"
+            }
           },
           {
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
+            "schema": {
+              "type": "string"
+            },
             "description": "ENS name"
           }
         ],
         "responses": {
           "200": {
-            "description": "Avatar metadata object"
+            "description": "OK"
           },
           "404": {
             "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
           }
         }
       }
     },
     "/{networkName}/avatar/{name}": {
       "get": {
-        "tags": [],
         "description": "ENS avatar image",
         "parameters": [
           {
             "name": "networkName",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)"
+            "schema": {
+              "$ref": "#/components/schemas/networkName"
+            }
           },
           {
             "name": "name",
             "in": "path",
             "required": true,
-            "type": "string",
+            "schema": {
+              "type": "string"
+            },
             "description": "ENS name"
           }
         ],
         "responses": {
           "200": {
-            "description": "Avatar image file"
+            "description": "Image file"
           },
           "404": {
             "description": "Not Found"
+          },
+          "501": {
+            "description": "Not Implemented"
           }
         }
       }
     }
   },
-  "definitions": {}
+  "components": {
+    "examples": {
+      "ENSMetadata": {
+        "value": {
+          "$name": "nick.eth",
+          "$description": "nick.eth, an ENS name.",
+          "$attributes": [
+            {
+              "trait_type": "Created Date",
+              "display_type": "date",
+              "value": null
+            },
+            {
+              "trait_type": "Length",
+              "display_type": "number",
+              "value": 4
+            },
+            {
+              "trait_type": "Registration Date",
+              "display_type": "date",
+              "value": 1580803395000
+            },
+            {
+              "trait_type": "Expiration Date",
+              "display_type": "date",
+              "value": 1698131707000
+            }
+          ],
+          "name_length": 4,
+          "url": "https://app.ens.domains/name/nick.eth",
+          "version": 0,
+          "background_image": "https://metadata.ens.domains/mainnet/avatar/nick.eth",
+          "image_url": "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image"
+        }
+      }
+    },
+    "schemas": {
+      "ENSMetadata": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "ENS name"
+          },
+          "description": {
+            "type": "string",
+            "example": "Short ENS name description"
+          },
+          "attributes": {
+            "type": "string",
+            "example": "Custom traits about ENS"
+          },
+          "name_length": {
+            "type": "string",
+            "example": "Character length of ens name"
+          },
+          "url": {
+            "type": "string",
+            "example": "ENS App URL of the name"
+          },
+          "version": {
+            "type": "string",
+            "example": "ENS NFT version"
+          },
+          "background_image": {
+            "type": "string",
+            "example": "Origin URL of avatar image"
+          },
+          "image_url": {
+            "type": "string",
+            "example": "URL of ENS NFT image"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "attributes",
+          "name_length",
+          "url",
+          "version",
+          "background_image",
+          "image_url"
+        ],
+        "xml": {
+          "name": "ENSMetadata"
+        }
+      },
+      "networkName": {
+        "description": "Name of the chain to query for.",
+        "type": "string",
+        "enum": [
+          "mainnet",
+          "rinkeby",
+          "ropsten",
+          "goerli"
+        ],
+        "xml": {
+          "name": "networkName"
+        }
+      },
+      "contractAddress": {
+        "type": "string",
+        "example": "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
+        "xml": {
+          "name": "contractAddress"
+        }
+      },
+      "tokenId": {
+        "type": "string",
+        "example": "4221908525551133525058944220830153...",
+        "xml": {
+          "name": "tokenId"
+        }
+      }
+    }
+  }
 }

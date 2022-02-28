@@ -12,14 +12,17 @@ import { getAvatarImage } from '../service/avatar';
 import getNetwork from '../service/network';
 
 export async function avatarImage(req: Request, res: Response) {
-  // #swagger.description = 'ENS avatar record'
-  // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
+  // #swagger.description = 'ENS avatar image'
+  // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['name'] = { description: 'ENS name' }
   const { name, networkName } = req.params;
   try {
     const { provider } = getNetwork(networkName);
     const [buffer, mimeType] = await getAvatarImage(provider, name);
     if (buffer) {
+      /* #swagger.responses[200] = { 
+           description: 'Image file' 
+      } */
       res.writeHead(200, {
         'Content-Type': mimeType,
         'Content-Length': buffer.length,

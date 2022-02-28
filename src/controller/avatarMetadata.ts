@@ -13,7 +13,7 @@ import getNetwork from '../service/network';
 
 export async function avatarMetadata(req: Request, res: Response) {
   // #swagger.description = 'ENS avatar metadata'
-  // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
+  // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['name'] = { description: 'ENS name' }
   const { name, networkName } = req.params;
   try {
