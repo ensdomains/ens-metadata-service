@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FetchError } from 'node-fetch';
-import { ContractMismatchError } from '../base';
+import { ContractMismatchError, UnsupportedNetwork } from '../base';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import getNetwork from '../service/network';
@@ -42,8 +42,16 @@ export async function ensMetadata (req: Request, res: Response) {
           return;
         }
       }
+      /* #swagger.responses[501] = { 
+           description: 'Unsupported network' 
+      } */
+      if (error instanceof UnsupportedNetwork) {
+        res.status(501).json({
+          message: error.message,
+        });
+      }
       /* #swagger.responses[404] = { 
-             description: 'No results found.' 
+             description: 'No results found' 
       } */
       res.status(404).json({
         message: 'No results found.',

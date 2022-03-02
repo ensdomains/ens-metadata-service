@@ -13,7 +13,7 @@ export async function ensRasterize(req: Request, res: Response) {
     const base64 = raster.replace('data:image/png;base64,', '');
     const buffer = Buffer.from(base64, 'base64');
     /* #swagger.responses[200] = { 
-      description: 'Image file' 
+          description: 'Image file'
     } */
     res.writeHead(200, {
       'Content-Type': 'image/png',

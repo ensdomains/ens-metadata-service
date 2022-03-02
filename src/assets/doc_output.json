@@ -8,6 +8,7 @@
     "license": "MIT License",
     "x-logo": {
       "url": "/assets/logo.svg",
+      "backgroundColor": "#FFFFFF",
       "altText": "Ethereum Name Service"
     }
   },
@@ -60,7 +61,10 @@
             }
           },
           "404": {
-            "description": "No results found."
+            "description": "No results found"
+          },
+          "501": {
+            "description": "Unsupported network"
           }
         }
       }
@@ -101,10 +105,10 @@
             "description": "Image file"
           },
           "404": {
-            "description": "Not Found"
+            "description": "No results found"
           },
           "501": {
-            "description": "Not Implemented"
+            "description": "Unsupported network"
           }
         }
       }
@@ -146,6 +150,9 @@
           },
           "500": {
             "description": "Internal Server Error"
+          },
+          "501": {
+            "description": "Unsupported network"
           }
         }
       }
@@ -167,20 +174,32 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/ensName"
             },
             "description": "ENS name"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Metadata object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarMetadata"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarMetadata"
+                }
+              }
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "No results found"
           },
           "501": {
-            "description": "Not Implemented"
+            "description": "Unsupported network"
           }
         }
       }
@@ -202,7 +221,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/ensName"
             },
             "description": "ENS name"
           }
@@ -212,10 +231,10 @@
             "description": "Image file"
           },
           "404": {
-            "description": "Not Found"
+            "description": "No results found"
           },
           "501": {
-            "description": "Not Implemented"
+            "description": "Unsupported network"
           }
         }
       }
@@ -223,6 +242,36 @@
   },
   "components": {
     "examples": {
+      "AvatarMetadata": {
+        "value": {
+          "$uri": "matoken.eth",
+          "is_owner": true,
+          "host_meta": {
+            "chain_id": 1,
+            "namespace": "erc721",
+            "contract_address": "0x31385d3520bced94f77aae104b406994d8f2168c",
+            "token_id": "9421",
+            "reference_url": "https://opensea.io/assets/0x31385d3520bced94f77aae104b406994d8f2168c/9421"
+          },
+          "$name": "BASTARD GAN PUNK V2 #9421",
+          "$description": "FOR THE CHANCES\nI HAVEN'T GOT A BURIAL IN MY ARMS\nAND I'VE HAD ENOUGH\nTIME IS NOW\nIT'S TIME\nI'VE GOT NOTHING TO PROVE\nI'VE GOT NOTHING TO LOSE\n",
+          "$attributes": [
+            {
+              "trait_type": "HYPE TYPE",
+              "value": "CALM AF (STILL)"
+            },
+            {
+              "trait_type": "BASTARDNESS",
+              "value": "FOMBOI BASTARD"
+            },
+            {
+              "trait_type": "TYPE",
+              "value": "LARGE"
+            }
+          ],
+          "image": "https://ipfs.io/ipfs/QmRagxjj2No4T8gNCjpM42mLZGQE3ZwMYdTFUYe6e6LMBG"
+        }
+      },
       "ENSMetadata": {
         "value": {
           "$name": "nick.eth",
@@ -258,6 +307,86 @@
       }
     },
     "schemas": {
+      "AvatarMetadata": {
+        "type": "object",
+        "properties": {
+          "uri": {
+            "type": "string",
+            "example": "ENS name of avatar holder"
+          },
+          "is_owner": {
+            "type": "string",
+            "example": "Ownership verification of NFT"
+          },
+          "host_meta": {
+            "type": "object",
+            "properties": {
+              "chain_id": {
+                "type": "string",
+                "example": "Chain ID where NFT resides"
+              },
+              "namespace": {
+                "type": "string",
+                "example": "Type of NFT contract"
+              },
+              "contract_address": {
+                "type": "string",
+                "example": "Contract address of NFT"
+              },
+              "token_id": {
+                "type": "string",
+                "example": "Token ID of NFT"
+              },
+              "reference_url": {
+                "type": "string",
+                "example": "Marketplace URL of NFT"
+              }
+            }
+          },
+          "name": {
+            "type": "string",
+            "example": "Name of NFT"
+          },
+          "description": {
+            "type": "string",
+            "example": "Description of NFT"
+          },
+          "attributes": {
+            "type": "string",
+            "example": "Attributes of NFT"
+          },
+          "image": {
+            "type": "string",
+            "example": "Image data/URL of NFT"
+          },
+          "image_url": {
+            "type": "string",
+            "example": "Image data/URL of NFT"
+          },
+          "image_data": {
+            "type": "string",
+            "example": "Image data of NFT"
+          },
+          "background_color": {
+            "type": "string",
+            "example": "Background color of NFT"
+          },
+          "youtube_url": {
+            "type": "string",
+            "example": "Youtube URL of NFT"
+          }
+        },
+        "required": [
+          "uri",
+          "name",
+          "description",
+          "attributes",
+          "image"
+        ],
+        "xml": {
+          "name": "AvatarMetadata"
+        }
+      },
       "ENSMetadata": {
         "type": "object",
         "properties": {
@@ -308,6 +437,27 @@
           "name": "ENSMetadata"
         }
       },
+      "contractAddress": {
+        "type": "string",
+        "example": "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
+        "xml": {
+          "name": "contractAddress"
+        }
+      },
+      "ensName": {
+        "type": "string",
+        "example": "nick.eth",
+        "xml": {
+          "name": "ensName"
+        }
+      },
+      "tokenId": {
+        "type": "string",
+        "example": "4221908525551133525058944220830153...",
+        "xml": {
+          "name": "tokenId"
+        }
+      },
       "networkName": {
         "description": "Name of the chain to query for.",
         "type": "string",
@@ -319,20 +469,6 @@
         ],
         "xml": {
           "name": "networkName"
-        }
-      },
-      "contractAddress": {
-        "type": "string",
-        "example": "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85",
-        "xml": {
-          "name": "contractAddress"
-        }
-      },
-      "tokenId": {
-        "type": "string",
-        "example": "4221908525551133525058944220830153...",
-        "xml": {
-          "name": "tokenId"
         }
       }
     }

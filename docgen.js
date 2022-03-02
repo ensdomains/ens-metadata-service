@@ -23,6 +23,27 @@ const doc = {
   },
   host: SERVER_URL,
   definitions: {
+    AvatarMetadata: {
+      $uri: 'ENS name of avatar holder',
+      is_owner: 'Ownership verification of NFT',
+      host_meta: {
+        chain_id: 'Chain ID where NFT resides',
+        namespace: 'Type of NFT contract',
+        contract_address: 'Contract address of NFT',
+        token_id: 'Token ID of NFT',
+        reference_url:
+          'Marketplace URL of NFT',
+        },
+        $name: 'Name of NFT',
+        $description:
+          "Description of NFT",
+        $attributes: 'Attributes of NFT',
+        $image: 'Image data/URL of NFT',
+        image_url: 'Image data/URL of NFT',
+        image_data: 'Image data of NFT',
+        background_color: 'Background color of NFT',
+        youtube_url: 'Youtube URL of NFT'
+    },
     ENSMetadata: {
       $name: 'ENS name',
       $description: 'Short ENS name description',
@@ -33,15 +54,47 @@ const doc = {
       $background_image: 'Origin URL of avatar image',
       $image_url: 'URL of ENS NFT image',
     },
+    contractAddress: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
+    ensName: 'nick.eth',
+    tokenId: '4221908525551133525058944220830153...',
     networkName: {
       description: 'Name of the chain to query for.',
       '@enum': ['mainnet', 'rinkeby', 'ropsten', 'goerli'],
     },
-    contractAddress: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
-    tokenId: '4221908525551133525058944220830153...',
   },
   components: {
     examples: {
+      AvatarMetadata: {
+        $uri: 'matoken.eth',
+        is_owner: true,
+        host_meta: {
+          chain_id: 1,
+          namespace: 'erc721',
+          contract_address: '0x31385d3520bced94f77aae104b406994d8f2168c',
+          token_id: '9421',
+          reference_url:
+            'https://opensea.io/assets/0x31385d3520bced94f77aae104b406994d8f2168c/9421',
+        },
+        $name: 'BASTARD GAN PUNK V2 #9421',
+        $description:
+          "FOR THE CHANCES\nI HAVEN'T GOT A BURIAL IN MY ARMS\nAND I'VE HAD ENOUGH\nTIME IS NOW\nIT'S TIME\nI'VE GOT NOTHING TO PROVE\nI'VE GOT NOTHING TO LOSE\n",
+        $attributes: [
+          {
+            trait_type: 'HYPE TYPE',
+            value: 'CALM AF (STILL)',
+          },
+          {
+            trait_type: 'BASTARDNESS',
+            value: 'FOMBOI BASTARD',
+          },
+          {
+            trait_type: 'TYPE',
+            value: 'LARGE',
+          },
+        ],
+        image:
+          'https://ipfs.io/ipfs/QmRagxjj2No4T8gNCjpM42mLZGQE3ZwMYdTFUYe6e6LMBG',
+      },
       ENSMetadata: {
         $name: 'nick.eth',
         $description: 'nick.eth, an ENS name.',
