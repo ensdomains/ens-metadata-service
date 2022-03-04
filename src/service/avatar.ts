@@ -56,7 +56,12 @@ export class AvatarMetadata {
         jsdomWindow: window,
       });
     } catch (error: any) {
-      console.log('error', error);
+      if (error instanceof Error) {
+        console.log(`${this.uri} - error:`, error.message);
+      }
+      if (typeof error === 'string') {
+        console.log(`${this.uri} - error:`, error);
+      }
       if (error === 'Image is not available') {
         throw new RetrieveURIFailed(error);
       }
@@ -100,7 +105,12 @@ export class AvatarMetadata {
     try {
       metadata = await this.avtResolver.getMetadata(this.uri);
     } catch (error: any) {
-      console.log('error', error);
+      if (error instanceof Error) {
+        console.log(`${this.uri} - error:`, error.message);
+      }
+      if (typeof error === 'string') {
+        console.log(`${this.uri} - error:`, error);
+      }
       throw new ResolverNotFound(
         'There is no resolver set under given address'
       );
