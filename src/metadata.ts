@@ -10,7 +10,7 @@ import createSVGfromTemplate from './svg-template';
 const btoa                           = require('btoa');
 const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
-const { validate }                   = require('@ensdomains/ens-validation');
+const { isConfusing }                = require('@ensdomains/unicode-confusables');
 
 registerFont(
   CANVAS_FONT_PATH, 
@@ -65,7 +65,7 @@ export class Metadata {
     tokenId,
     version,
   }: MetadataInit) {
-    const is_valid = validate(name);
+    const is_valid = !isConfusing(name);
     this.is_normalized = is_valid && this._checkNormalized(name);
     this.name = this.is_normalized
       ? name
