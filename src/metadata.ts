@@ -49,7 +49,8 @@ export interface Metadata {
   attributes       : object[];
   name_length?     : number;
   image_url?       : string;
-  is_normalized    : boolean;
+  is_normalized    : boolean; // depreciated
+  is_valid         : boolean;
   background_image?: string;
   mimeType?        : string;
   url?             : string | null;
@@ -65,9 +66,11 @@ export class Metadata {
     tokenId,
     version,
   }: MetadataInit) {
-    const is_valid = !isConfusing(name);
-    this.is_normalized = is_valid && this._checkNormalized(name);
-    this.name = this.is_normalized
+    const is_confusing = isConfusing(name);
+    const is_normalized = this._checkNormalized(name);
+    this.is_normalized = !is_confusing && is_normalized
+    this.is_valid = !is_confusing && is_normalized;
+    this.name = this.is_valid
       ? name
       : tokenId.replace(
           new RegExp('^(.{0,6}).*(.{4})$', 'im'),
@@ -76,11 +79,11 @@ export class Metadata {
     this.description =
       description ||
       `${this.name}, an ENS name.${
-        !this.is_normalized ? ` (${name} is not in normalized form)` : ''
+        !is_normalized ? ` (${name} is not in normalized form)` : ''
       }`;
-    if (!is_valid) {
+    if (is_confusing) {
       this.description +=
-        ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
+        ' ⚠️ ATTENTION: This name contains unicode confusable characters. \
 Please be aware that there are characters that look identical or very \
 similar to English letters, especially characters from Cyrillic and Greek. \
 Also, traditional Chinese characters can look identical or very similar to \
@@ -100,7 +103,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       display_type: 'number',
       value: this.name_length,
     });
-    this.url = this.is_normalized
+    this.url = this.is_valid
       ? `https://app.ens.domains/name/${name}`
       : null;
     this.version = version;
@@ -115,7 +118,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   setBackground(base64: string, mimeType?: string) {
-    if (this.is_normalized) {
+    if (this.is_valid) {
       this.background_image = base64;
       this.mimeType = mimeType;
     }
@@ -241,7 +244,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       backgroundImage: this.background_image,
       domain,
       domainFontSize,
-      isNormalized: this.is_normalized,
+      isValid: this.is_valid,
       isSubdomain,
       mimeType: this.mimeType,
       subdomainText,

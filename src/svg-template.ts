@@ -16,7 +16,7 @@ interface SVGTemplateFields {
   backgroundImage?: string;
   domain: string;
   domainFontSize: number;
-  isNormalized: boolean;
+  isValid: boolean;
   isSubdomain: boolean;
   mimeType?: string;
   subdomainText?: string;
@@ -27,7 +27,7 @@ export default function createSVGfromTemplate({
   backgroundImage,
   domain,
   domainFontSize,
-  isNormalized = true,
+  isValid = true,
   isSubdomain = false,
   mimeType,
   subdomainText,
@@ -43,7 +43,7 @@ export default function createSVGfromTemplate({
         </defs>
         <rect width="270" height="270" fill="url(#backImg)"/>
         <rect width="270" height="270" fill="#000" fill-opacity=".12"/>`
-        : isNormalized
+        : isValid
           ? `<rect width="270" height="270" fill="url(#paint0_linear)"/>`
           : `<rect width="270" height="270" fill="url(#paint1_linear)"/>`
     }
@@ -57,7 +57,7 @@ export default function createSVGfromTemplate({
     <path d="M70.1927 60.9125C69.6928 59.9159 68.4555 57.946 68.4555 57.946L54.1514 80L68.1118 70.9138C68.9436 70.3962 69.6261 69.6956 70.099 68.8739C70.7358 67.6334 71.0741 66.2781 71.0903 64.9029C71.1065 63.5277 70.8001 62.1657 70.1927 60.9125Z" fill="white" filter="url(#dropShadow)"/>
     <path d="M74.8512 52.8328C74.7008 50.7229 74.0909 48.6688 73.0624 46.8081C72.0339 44.9473 70.6105 43.3228 68.8876 42.0433L54.1514 32C54.1514 32 63.3652 44.987 71.1478 57.9098C71.933 59.2755 72.4603 60.7682 72.7043 62.3165C72.8132 63.0178 72.8132 63.7311 72.7043 64.4324C72.9071 64.0652 73.3007 63.3133 73.3007 63.3133C74.0892 61.7414 74.6262 60.0606 74.893 58.3295C75.0485 56.4998 75.0345 54.66 74.8512 52.8328Z" fill="white" filter="url(#dropShadow)"/>
     ${
-      isNormalized
+      isValid
         ? ''
         : `
       <rect x="200" y="34" width="40" height="40" rx="20" fill="white" fill-opacity="0.2"/>
