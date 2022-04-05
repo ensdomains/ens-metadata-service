@@ -38,7 +38,14 @@ export class MockEntry {
     this.namehash = namehash.hash(name);
 
     if (unknown) {
-      this.expect = 'No results found.';
+      const { url, ...unknownMetadata } = new Metadata({
+        name: 'unknown.name',
+        description: 'Unknown ENS name',
+        created_date: 1580346653000,
+        tokenId: '',
+        version: Version.v1,
+      });
+      this.expect = JSON.parse(JSON.stringify(unknownMetadata));
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_URL.pathname, {
           query: GET_DOMAINS,
