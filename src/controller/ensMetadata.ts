@@ -1,31 +1,32 @@
 import { Request, Response } from 'express';
 import { FetchError } from 'node-fetch';
-import { ContractMismatchError, Version } from '../base';
+import { ContractMismatchError, UnsupportedNetwork, Version } from '../base';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import { Metadata } from '../service/metadata';
 import getNetwork from '../service/network';
 
-export async function ensMetadata(req: Request, res: Response) {
-  // #swagger.description = 'ENS NFT metadata'
-  // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
-  // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId' }
-  // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names' }
-  const { contractAddress, networkName, tokenId } = req.params;
-  try {
-    const { provider, SUBGRAPH_URL } = getNetwork(networkName);
-    const version = await checkContract(provider, contractAddress, tokenId);
-    const result = await getDomain(
-      provider,
-      networkName,
-      SUBGRAPH_URL,
-      contractAddress,
-      tokenId,
-      version,
-      false
-    );
-    /* #swagger.responses[200] = { 
-             description: 'Metadata object' 
+export async function ensMetadata (req: Request, res: Response) {
+    // #swagger.description = 'ENS NFT metadata'
+    // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
+    // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId', schema: { $ref: '#/definitions/contractAddress' } }
+    // #swagger.parameters['tokenId'] = { type: 'string', description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
+    const { contractAddress, networkName, tokenId } = req.params;
+    try {
+      const { provider, SUBGRAPH_URL } = getNetwork(networkName);
+      const version = await checkContract(provider, contractAddress, tokenId);
+      const result = await getDomain(
+        provider,
+        networkName,
+        SUBGRAPH_URL,
+        contractAddress,
+        tokenId,
+        version,
+        false
+      );
+      /* #swagger.responses[200] = { 
+             description: 'Metadata object',
+             schema: { $ref: '#/definitions/ENSMetadata' }
       } */
     res.json(result);
   } catch (error: any) {
@@ -38,6 +39,20 @@ export async function ensMetadata(req: Request, res: Response) {
         });
         return;
       }
+      /* #swagger.responses[501] = { 
+           description: 'Unsupported network' 
+      } */
+      if (error instanceof UnsupportedNetwork) {
+        res.status(501).json({
+          message: error.message,
+        });
+      }
+      /* #swagger.responses[404] = { 
+             description: 'No results found' 
+      } */
+      res.status(404).json({
+        message: 'No results found.',
+      });
     }
     // When entry is not available, return unknown name metadata with 200 status code
     const { url, ...unknownMetadata } = new Metadata({

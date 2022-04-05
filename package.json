@@ -52,7 +52,7 @@
     "got": "^11.8.2",
     "nock": "^13.1.1",
     "nyc": "^15.1.0",
-    "swagger-autogen": "^2.11.2",
+    "swagger-autogen": "^2.18.8",
     "test-listen": "^1.1.0",
     "ts-node": "^10.0.0",
     "ts-node-dev": "^1.1.6",
