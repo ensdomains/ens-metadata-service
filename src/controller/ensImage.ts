@@ -6,11 +6,11 @@ import { getDomain } from '../service/domain';
 import getNetwork from '../service/network';
 
 /* istanbul ignore next */
-export async function ensImage (req: Request, res: Response) {
+export async function ensImage(req: Request, res: Response) {
   // #swagger.description = 'ENS NFT image'
-  // #swagger.parameters['networkName'] = { description: 'Name of the chain to query for. (mainnet|rinkeby|ropsten|goerli...)' }
-  // #swagger.parameters['contractAddress'] = { description: 'Contract address which stores the NFT indicated by the tokenId' }
-  // #swagger.parameters['tokenId'] = { description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names' }
+  // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
+  // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId', type: 'string', schema: { $ref: '#/definitions/contractAddress' } }
+  // #swagger.parameters['tokenId'] = { type: 'string', description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
   const { contractAddress, networkName, tokenId } = req.params;
   try {
     const { provider, SUBGRAPH_URL } = getNetwork(networkName);
@@ -24,10 +24,7 @@ export async function ensImage (req: Request, res: Response) {
       version
     );
     if (result.image_url) {
-      const base64 = result.image_url.replace(
-        'data:image/svg+xml;base64,',
-        ''
-      );
+      const base64 = result.image_url.replace('data:image/svg+xml;base64,', '');
       const buffer = Buffer.from(base64, 'base64');
       res.writeHead(200, {
         'Content-Type': 'image/svg+xml',
@@ -38,23 +35,26 @@ export async function ensImage (req: Request, res: Response) {
       throw Error('Image URL is missing.');
     }
     /* #swagger.responses[200] = { 
-           description: 'Image file' 
-    } */
+          description: 'Image file'
+      } */
   } catch (error) {
-    if (
-      error instanceof FetchError ||
-      error instanceof ContractMismatchError
-    ) {
+    if (error instanceof FetchError || error instanceof ContractMismatchError) {
       res.status(404).json({
         message: error.message,
       });
       return;
     }
+    /* #swagger.responses[501] = { 
+           description: 'Unsupported network' 
+    } */
     if (error instanceof UnsupportedNetwork) {
       res.status(501).json({
         message: error.message,
       });
     }
+    /* #swagger.responses[404] = { 
+           description: 'No results found' 
+    } */
     res.status(404).json({
       message: 'No results found.',
     });
