@@ -1,5 +1,5 @@
 import { request } from 'graphql-request';
-import { ethers } from 'ethers';
+import { ethers, utils } from 'ethers';
 import {
   GET_REGISTRATIONS,
   GET_DOMAINS,
@@ -7,11 +7,14 @@ import {
 } from './subgraph';
 import { Metadata } from './metadata';
 import { getAvatarImage } from './avatar';
-import { Version } from './base';
+import { BaseError, Version } from './base';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
 const IMAGE_KEY = 'domains.ens.nft.image';
+
+export interface NamehashCheckFailed {}
+export class NamehashCheckFailed extends BaseError {}
 
 export async function getDomain(
   provider: any,
@@ -37,7 +40,12 @@ export async function getDomain(
     version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
   const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
   const domain = version !== Version.v2 ? result.domains[0] : result.domain;
-  const { name, labelhash, createdAt, parent, resolver } = domain;
+  const { id: namehash, name, labelhash, createdAt, parent, resolver } = domain;
+
+  // check if namehash of given name matches with the namehash provided by the subgraph
+  const _namehash = utils.namehash(name);
+  if (_namehash !== namehash)
+    throw new NamehashCheckFailed('Namehash is not belong to given name');
 
   const hasImageKey =
     resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
