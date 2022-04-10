@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Makoto Inoue <2630+makoto@users.noreply.github.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@ensdomains/ens-avatar": "^0.1.1",
     "@ensdomains/ens-validation": "^0.1.0",
