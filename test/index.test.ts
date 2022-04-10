@@ -407,5 +407,5 @@ test('should get assets when ENV set for local', async (t: ExecutionContext<Test
   const result = await got(`assets/doc_output.json`, {
     prefixUrl: 'http://localhost:8081',
   }).text();
-  t.assert(result.includes('basePath'));
+  t.assert(result.includes('openapi'));
 });
