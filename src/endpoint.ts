@@ -5,6 +5,7 @@ import { ensImage } from './controller/ensImage';
 import { ensRasterize } from './controller/ensRasterize';
 import { avatarMetadata } from './controller/avatarMetadata';
 import { avatarImage } from './controller/avatarImage';
+import { queryNFTep } from './controller/queryNFT';
 
 export default function (app: Express) {
   app.get('/', (_req, res) => {
@@ -29,4 +30,6 @@ export default function (app: Express) {
   app.get('/:networkName/avatar/:name/meta', avatarMetadata);
 
   app.get('/:networkName/avatar/:name', avatarImage);
+
+  app.get('/queryNFT', queryNFTep);
 }
