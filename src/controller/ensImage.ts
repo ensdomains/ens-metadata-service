@@ -4,6 +4,7 @@ import { ContractMismatchError, UnsupportedNetwork } from '../base';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import getNetwork from '../service/network';
+import { getLabelhash } from '../utils/labelhash';
 
 /* istanbul ignore next */
 export async function ensImage(req: Request, res: Response) {
@@ -12,15 +13,25 @@ export async function ensImage(req: Request, res: Response) {
   // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId', type: 'string', schema: { $ref: '#/definitions/contractAddress' } }
   // #swagger.parameters['tokenId'] = { type: 'string', description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
   const { contractAddress, networkName, tokenId } = req.params;
+
+  // check if token id provided as raw ens name, if so then convert to labelhash
+  // TODO add namehash conversion for v2
+  let _tokenId;
+  if (tokenId.endsWith('.eth')) {
+    _tokenId = getLabelhash(tokenId)
+  } else {
+    _tokenId = tokenId
+  }
+
   try {
     const { provider, SUBGRAPH_URL } = getNetwork(networkName);
-    const version = await checkContract(provider, contractAddress, tokenId);
+    const version = await checkContract(provider, contractAddress, _tokenId);
     const result = await getDomain(
       provider,
       networkName,
       SUBGRAPH_URL,
       contractAddress,
-      tokenId,
+      _tokenId,
       version
     );
     if (result.image_url) {
