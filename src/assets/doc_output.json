@@ -63,6 +63,9 @@
           "404": {
             "description": "No results found"
           },
+          "500": {
+            "description": "Internal Server Error"
+          },
           "501": {
             "description": "Unsupported network"
           }
@@ -235,6 +238,29 @@
           },
           "501": {
             "description": "Unsupported network"
+          }
+        }
+      }
+    },
+    "/queryNFT": {
+      "get": {
+        "description": "Query endpoint for NFT URIs",
+        "parameters": [
+          {
+            "name": "uri",
+            "in": "query",
+            "description": "NFT URI as defined under CAIP-22 for erc721 assets and CAIP-29 for erc1155 assets.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "NFT metadata"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }

@@ -38,10 +38,13 @@ export async function ensImage(req: Request, res: Response) {
       throw Error('Image URL is missing.');
     }
     /* #swagger.responses[200] = { 
-          description: 'Image file'
-      } */
+        description: 'Image file'
+    } */
   } catch (error) {
     if (error instanceof FetchError || error instanceof ContractMismatchError) {
+      /* #swagger.responses[404] = { 
+           description: 'No results found' 
+      } */
       res.status(404).json({
         message: error.message,
       });
