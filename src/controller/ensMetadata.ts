@@ -66,7 +66,7 @@ export async function ensMetadata(req: Request, res: Response) {
         ETH_REGISTRY_ABI,
         provider
       );
-      const _namehash = constructEthNameHash(tokenId);
+      const _namehash = constructEthNameHash(_tokenId);
       const isRecordExist = await registry.recordExists(_namehash);
       assert(isRecordExist, 'ENS name does not exist');
     } catch (error) {
