@@ -11,17 +11,9 @@ export async function ensImage(req: Request, res: Response) {
   // #swagger.description = 'ENS NFT image'
   // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId', type: 'string', schema: { $ref: '#/definitions/contractAddress' } }
-  // #swagger.parameters['tokenId'] = { type: 'string', description: 'Namehash(v1) /Labelhash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
+  // #swagger.parameters['tokenId'] = { type: 'string', description: 'Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
   const { contractAddress, networkName, tokenId } = req.params;
-
-  // check if token id provided as raw ens name, if so then convert to labelhash
-  // TODO add namehash conversion for v2
-  let _tokenId;
-  if (tokenId.endsWith('.eth')) {
-    _tokenId = getLabelhash(tokenId)
-  } else {
-    _tokenId = tokenId
-  }
+  const _tokenId = getLabelhash(tokenId);
 
   try {
     const { provider, SUBGRAPH_URL } = getNetwork(networkName);
