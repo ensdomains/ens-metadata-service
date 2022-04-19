@@ -1,7 +1,9 @@
+import { strict as assert } from 'assert';
+import { Contract } from 'ethers';
 import { Request, Response } from 'express';
 import { FetchError } from 'node-fetch';
-import { ContractMismatchError, OwnerNotFoundError, UnsupportedNetwork, Version } from '../base';
-// import { ADDRESS_ETH_REGISTRY, ETH_REGISTRY_ABI } from '../config';
+import { ContractMismatchError, UnsupportedNetwork, Version } from '../base';
+import { ADDRESS_ETH_REGISTRY, ETH_REGISTRY_ABI } from '../config';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import { Metadata } from '../service/metadata';
@@ -63,32 +65,24 @@ export async function ensMetadata(req: Request, res: Response) {
       return;
     }
 
-    /* #swagger.responses[404] = {
+    try {
+      const registry = new Contract(
+        ADDRESS_ETH_REGISTRY,
+        ETH_REGISTRY_ABI,
+        provider
+      );
+      const _namehash = constructEthNameHash(tokenId);
+      const isRecordExist = await registry.recordExists(_namehash);
+      assert(isRecordExist, 'ENS name does not exist');
+    } catch (error) {
+      /* #swagger.responses[404] = {
              description: 'No results found'
-    } */
-    if (error instanceof OwnerNotFoundError) {
+      } */
       res.status(404).json({
         message: 'No results found.',
       });
       return;
     }
-
-    // try {
-    //   const registry = new Contract(
-    //     ADDRESS_ETH_REGISTRY,
-    //     ETH_REGISTRY_ABI,
-    //     provider
-    //   );
-    //   const _namehash = constructEthNameHash(tokenId);
-    //   const isRecordExist = await registry.recordExists(_namehash);
-    //   console.log('isRecordExist', isRecordExist)
-    //   assert(isRecordExist, 'ENS name does not exist');
-    // } catch (error) {
-    //   res.status(404).json({
-    //     message: 'No results found.',
-    //   });
-    //   return;
-    // }
 
     // When entry is not available on subgraph yet,
     // return unknown name metadata with 200 status code
