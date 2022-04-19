@@ -8,6 +8,7 @@ import { avatarImage } from './controller/avatarImage';
 import { queryNFTep } from './controller/queryNFT';
 
 export default function (app: Express) {
+  // #swagger.ignore = true
   app.get('/', (_req, res) => {
     res.send('Well done mate To see more go to "/docs"!');
   });

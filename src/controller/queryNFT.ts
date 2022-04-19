@@ -13,8 +13,14 @@ export async function queryNFTep(req: Request, res: Response) {
   }
   try {
     const metadata = await queryNFT(uri as string);
+    /* #swagger.responses[200] = { 
+          description: 'NFT metadata'
+    } */
     res.status(200).json(metadata);
   } catch (error) {
+    /* #swagger.responses[500] = { 
+          description: 'Internal Server Error'
+    } */
     res.status(500).json({
       message: error,
     });

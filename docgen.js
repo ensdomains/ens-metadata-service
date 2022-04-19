@@ -11,7 +11,7 @@ const endpointsFiles = ['./src/endpoint.ts'];
 
 const doc = {
   info: {
-    version: '0.0.1-alpha.0',
+    version: '0.0.1-alpha.1',
     title: 'ENS Metadata Service',
     description: 'Set of endpoints to query ENS metadata and more',
     contact: 'contact@ens.domains',

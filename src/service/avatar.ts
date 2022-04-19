@@ -140,7 +140,7 @@ export class AvatarMetadata {
 export async function getAvatarMeta(
   provider: BaseProvider,
   name: string,
-  networkName?: string
+  networkName: string
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
   return await avatar.getMeta(networkName);
