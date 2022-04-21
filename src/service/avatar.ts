@@ -100,7 +100,7 @@ export class AvatarMetadata {
     );
   }
 
-  async getMeta(networkName?: string) {
+  async getMeta(networkName: string) {
     let metadata: any;
     try {
       metadata = await this.avtResolver.getMetadata(this.uri);
