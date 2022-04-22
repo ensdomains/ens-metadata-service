@@ -1,14 +1,15 @@
 import { utils } from 'ethers';
 import nock from 'nock';
 import { Version } from '../src/base';
-import { Metadata } from '../src/metadata';
-import getNetwork from '../src/network';
-import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/subgraph';
+import { Metadata } from '../src/service/metadata';
+import getNetwork from '../src/service/network';
+import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/service/subgraph';
 import {
   DomainResponse,
   MockEntryBody,
   RegistrationResponse,
 } from './interface';
+
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('rinkeby');
 const SUBGRAPH_URL = new URL(subgraph_url);
 const namehash = require('@ensdomains/eth-ens-namehash'); // no types
@@ -30,7 +31,7 @@ export class MockEntry {
     statusCode = 200,
     unknown = false,
     version = Version.v2,
-    persist = false
+    persist = false,
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
@@ -47,7 +48,8 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: null,
-        }).persist(persist);
+        })
+        .persist(persist);
       return;
     }
 
@@ -61,9 +63,12 @@ export class MockEntry {
       version,
     });
 
-    (_metadata as Metadata).setImage(`https://metadata.ens.domains/rinkeby/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`);
-    (_metadata as Metadata).setBackground(`https://metadata.ens.domains/rinkeby/avatar/${name}`)
-
+    (_metadata as Metadata).setImage(
+      `https://metadata.ens.domains/rinkeby/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`
+    );
+    (_metadata as Metadata).setBackground(
+      `https://metadata.ens.domains/rinkeby/avatar/${name}`
+    );
 
     this.domainResponse = {
       domain: {
@@ -95,12 +100,12 @@ export class MockEntry {
         trait_type: 'Registration Date',
         display_type: 'date',
         value: +randomDate * 1000,
-      })
+      });
       _metadata.addAttribute({
         trait_type: 'Expiration Date',
         display_type: 'date',
         value: +randomDate * 1000,
-      })
+      });
 
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_URL.pathname, {
@@ -111,7 +116,8 @@ export class MockEntry {
         })
         .reply(statusCode, {
           data: this.registrationResponse,
-        }).persist(persist);
+        })
+        .persist(persist);
     }
 
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
@@ -125,7 +131,8 @@ export class MockEntry {
       })
       .reply(statusCode, {
         data: this.domainResponse,
-      }).persist(persist);
+      })
+      .persist(persist);
   }
 
   getRandomDate(

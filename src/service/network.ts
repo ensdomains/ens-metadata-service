@@ -1,9 +1,6 @@
 import { ethers } from 'ethers';
-import { BaseError } from './base';
-import { INFURA_API_KEY } from './config';
-
-export interface UnsupportedNetwork {}
-export class UnsupportedNetwork extends BaseError {}
+import { UnsupportedNetwork } from '../base';
+import { INFURA_API_KEY } from '../config';
 
 const NETWORK = {
   LOCAL: 'local',

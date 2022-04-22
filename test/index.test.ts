@@ -1,4 +1,5 @@
 import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import { ethers } from 'ethers';
 import * as http from 'http';
 import got, {
   HTTPError,
@@ -8,9 +9,6 @@ import got, {
 import nock from 'nock';
 import listen from 'test-listen';
 
-import * as app from '../src/index';
-import { GET_DOMAINS } from '../src/subgraph';
-import { SERVER_URL as server_url } from '../src/config';
 import { MockEntry } from './entry.mock';
 import {
   EthCallResponse,
@@ -18,16 +16,18 @@ import {
   NetVersionResponse,
   TestContext,
 } from './interface';
-import { ethers } from 'ethers';
-import getNetwork from '../src/network';
+import * as app from '../src/index';
+import { SERVER_URL as server_url } from '../src/config';
+import getNetwork from '../src/service/network';
+import { GET_DOMAINS } from '../src/service/subgraph';
 
 const { INFURA_URL: infura_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork('rinkeby');
 const INFURA_URL = new URL(infura_url);
 const SERVER_URL = new URL(server_url);
-console.log('SERVER_URL', SERVER_URL)
+console.log('SERVER_URL', SERVER_URL);
 const SUBGRAPH_URL = new URL(subgraph_url);
-console.log('SUBGRAPH_URL', SUBGRAPH_URL)
+console.log('SUBGRAPH_URL', SUBGRAPH_URL);
 const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
 const NON_CONTRACT_ADDRESS = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B';
 
@@ -250,7 +250,9 @@ test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionCont
       instanceOf: HTTPError,
     }
   );
-  t.assert((body as string).includes(`Cannot GET /rinkeby/${NAME_WRAPPER_ADDRESS}/`));
+  t.assert(
+    (body as string).includes(`Cannot GET /rinkeby/${NAME_WRAPPER_ADDRESS}/`)
+  );
   t.is(statusCode, 404);
 });
 
@@ -405,5 +407,5 @@ test('should get assets when ENV set for local', async (t: ExecutionContext<Test
   const result = await got(`assets/doc_output.json`, {
     prefixUrl: 'http://localhost:8081',
   }).text();
-  t.assert(result.includes('basePath'));
+  t.assert(result.includes('openapi'));
 });

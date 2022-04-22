@@ -4,7 +4,11 @@
   "main": "index.js",
   "author": "Makoto Inoue <2630+makoto@users.noreply.github.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
+    "@ensdomains/ens-avatar": "^0.1.4",
     "@ensdomains/ens-validation": "^0.1.0",
     "@ensdomains/eth-ens-namehash": "^2.0.15",
     "@types/lodash": "^4.14.170",
@@ -33,7 +37,7 @@
     "start": "node dist/index.js",
     "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
     "deploy:test": "ENV=prod yarn build && gcloud app deploy --no-promote --project=ens-metadata-service",
-    "test": "ava --serial",
+    "test": "ava -v --serial",
     "test:cov": "nyc --reporter=json --reporter=text ava --serial",
     "docgen": "node docgen.js"
   },
@@ -51,7 +55,7 @@
     "got": "^11.8.2",
     "nock": "^13.1.1",
     "nyc": "^15.1.0",
-    "swagger-autogen": "^2.11.2",
+    "swagger-autogen": "^2.18.8",
     "test-listen": "^1.1.0",
     "ts-node": "^10.0.0",
     "ts-node-dev": "^1.1.6",
