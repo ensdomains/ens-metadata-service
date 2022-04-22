@@ -15,17 +15,24 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY;
 const IPFS_GATEWAY = 'https://ipfs.io/';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
+const ADDRESS_ETH_REGISTRY = process.env.ADDRESS_ETH_REGISTRY || '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
 const ADDRESS_NAME_WRAPPER = process.env.ADDRESS_NAME_WRAPPER || '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
 
 const SERVER_URL =
   ENV === 'local' ? `http://localhost:${PORT}` : `https://${HOST}`;
 
+const ETH_REGISTRY_ABI = [
+  'function recordExists(bytes32 node) external view returns (bool)'
+];
+
 export {
   ADDRESS_ETH_REGISTRAR,
+  ADDRESS_ETH_REGISTRY,
   ADDRESS_NAME_WRAPPER,
   CANVAS_FONT_PATH,
   CANVAS_EMOJI_FONT_PATH,
   CANVAS_FALLBACK_FONT_PATH,
+  ETH_REGISTRY_ABI,
   INAMEWRAPPER,
   INFURA_API_KEY,
   IPFS_GATEWAY,
