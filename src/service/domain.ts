@@ -7,7 +7,7 @@ import {
 } from './subgraph';
 import { Metadata } from './metadata';
 import { getAvatarImage } from './avatar';
-import { Version } from '../base';
+import { SubgraphRecordNotFound, Version } from '../base';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
@@ -37,6 +37,7 @@ export async function getDomain(
     version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
   const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
   const domain = version !== Version.v2 ? result.domains[0] : result.domain;
+  if (!(domain && Object.keys(domain).length)) throw new SubgraphRecordNotFound(`No record for ${hexId}`)
   const { name, labelhash, createdAt, parent, resolver } = domain;
 
   const hasImageKey =

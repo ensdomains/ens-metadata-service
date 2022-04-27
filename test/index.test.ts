@@ -50,7 +50,8 @@ const sub2Wrappertest9 = new MockEntry({
   resolver: { texts: ['domains.ens.nft.image'] },
   hasImageKey: true,
 });
-const unknown = new MockEntry({ name: 'unknown.name', unknown: true });
+const unknown = new MockEntry({ name: 'unknown.name', unknown: true, registered: false });
+const unknownRegistered = new MockEntry({ name: 'something.eth', unknown: true });
 const handle21character = new MockEntry({
   name: 'handle21character.eth',
   registration: true,
@@ -154,6 +155,22 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     }
   );
 
+  // something.eth recordExist true
+  nockInfura(
+    'eth_call',
+    [
+      {
+        to: '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+        data: '0xf79fe5387857c9824139b8a8c3cb04712b41558b4878c55fa9c1e5390e910ee3220c3cce',
+      },
+      'latest',
+    ],
+    {
+      result:
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+    }
+  );
+
   t.context.server = http.createServer(app);
   t.context.prefixUrl = await listen(t.context.server);
 });
@@ -230,11 +247,24 @@ test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long subdomain'
 });
 
 test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionContext<TestContext>) => {
+  const {
+    response: { statusCode, body },
+  }: HTTPError = await t.throwsAsync(
+    () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
+    { instanceOf: HTTPError }
+  );
+  const message = JSON.parse(body as string)?.message;
+  t.is(message, unknown.expect);
+  t.is(statusCode, 404);
+});
+
+test('get /:contractAddress/:tokenId for unknown namehash on subgraph but registered', async (t: ExecutionContext<TestContext>) => {
+  console.log("unknownRegistered", unknownRegistered);
   const { message } = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`,
+    `rinkeby/${NAME_WRAPPER_ADDRESS}/${unknownRegistered.namehash}`,
     options
   ).json();
-  t.deepEqual(message, unknown.expect);
+  t.deepEqual(message, unknownRegistered.expect);
 });
 
 test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionContext<TestContext>) => {
@@ -266,16 +296,23 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
       },
     })
     .replyWithError(fetchError);
-  const { message } = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
+  const {
+    response: { body, statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
     {
-      ...options,
-      retry: 0,
+      instanceOf: HTTPError,
     }
-  ).json();
+  );
+  const { message } = JSON.parse(body as string);
   // Regardless of what is the message in subgraph with status 404 code
-  // user will always see "Unknown name"" template instead
-  t.deepEqual(message, unknown.expect);
+  // user will always see "No results found."" instead
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, fetchError.statusCode);
 });
 
 test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<TestContext>) => {
@@ -292,15 +329,24 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
       },
     })
     .replyWithError(fetchError);
-  const { message } = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
-    {
-      ...options,
-      retry: 0,
-    }
-  ).json();
-  t.deepEqual(message, unknown.expect);
-});
+    const {
+      response: { body, statusCode },
+    }: HTTPError = await t.throwsAsync(
+      () =>
+        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+          ...options,
+          retry: 0,
+        }),
+      {
+        instanceOf: HTTPError,
+      }
+    );
+    const { message } = JSON.parse(body as string);
+    // Regardless of what is the message in subgraph with status 404 code
+    // user will always see "No results found."" instead
+    t.assert(message.includes('No results found.'));
+    t.is(statusCode, 404);
+  });
 
 test('raise Internal Server Error from subgraph', async (t: ExecutionContext<TestContext>) => {
   const fetchError = {
@@ -316,15 +362,22 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
       },
     })
     .replyWithError(fetchError);
-  const { message } = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
-    {
-      ...options,
-      retry: 0,
-    }
-  ).json();
-  t.deepEqual(message, unknown.expect);
-});
+    const {
+      response: { body, statusCode },
+    }: HTTPError = await t.throwsAsync(
+      () =>
+        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+          ...options,
+          retry: 0,
+        }),
+      {
+        instanceOf: HTTPError,
+      }
+    );
+    const { message } = JSON.parse(body as string);
+    t.assert(message.includes('No results found.'));
+    t.is(statusCode, 404);
+  });
 
 test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
   nock(SUBGRAPH_URL.origin)
@@ -337,15 +390,20 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
     .delayConnection(2000) // 2 seconds
     .replyWithError({ code: 'ETIMEDOUT' })
     .persist(false);
-  const { message } = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
-    {
-      ...options,
-      retry: 0,
-    }
-  ).json();
-  t.deepEqual(message, unknown.expect);
-});
+  const {
+      response: { statusCode },
+    }: HTTPError = await t.throwsAsync(
+      () =>
+        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+          ...options,
+          retry: 0,
+        }),
+      {
+        instanceOf: HTTPError,
+      }
+    );
+    t.assert(statusCode === 404);
+  });
 
 test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => {
   const {
