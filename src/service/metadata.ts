@@ -142,10 +142,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     } else {
       domain = name;
     }
-    const charLength = getCharLength(domain);
+    let charLength = getCharLength(domain);
     domainFontSize = Metadata._getFontSize(domain);
     if (charLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
+      domainFontSize = Metadata._getFontSize(domain);
+      charLength = Metadata.MAX_CHAR;
     }
     if (charLength > 25) {
       domain = this._addSpan(domain, charLength / 2);
@@ -158,8 +160,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       domain
     );
     try {
-      this.image_url =
-        'data:image/svg+xml;base64,' + base64EncodeUnicode(svg);
+      this.image_url = 'data:image/svg+xml;base64,' + base64EncodeUnicode(svg);
     } catch (e) {
       console.log(domain, e);
       this.image_url = '';
@@ -188,13 +189,19 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _textEllipsis(name: string) {
-    return name.substring(0, Metadata.MAX_CHAR - 3) + '...';
+    const _nameLength = name.length;
+    return (
+      name.substring(0, Metadata.MAX_CHAR - 7) +
+      '...' +
+      name.substring(_nameLength - 7, _nameLength - 4) +
+      '.eth'
+    );
   }
 
   static _getFontSize(name: string): number {
     const canvas = createCanvas(270, 270);
     const ctx = canvas.getContext('2d');
-    ctx.font = "20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji";
+    ctx.font = '20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji';
     const fontMetrics = ctx.measureText(name);
     // some nasty hack on calculation
     // 270 - (32.5 px padding both sides * 2)
@@ -223,7 +230,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   ) {
     return createSVGfromTemplate({
       backgroundImage: this.background_image,
-      domain,
+      domain: domain.trim(),
       domainFontSize,
       isNormalized: this.is_normalized,
       isSubdomain,
