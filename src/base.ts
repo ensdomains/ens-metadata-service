@@ -24,6 +24,9 @@ export class TextRecordNotFound extends BaseError {}
 export interface RetrieveURIFailed {}
 export class RetrieveURIFailed extends BaseError {}
 
+export interface SubgraphRecordNotFound {}
+export class SubgraphRecordNotFound extends BaseError {}
+
 export interface UnsupportedNamespace {}
 export class UnsupportedNamespace extends BaseError {}
 

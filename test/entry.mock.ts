@@ -30,12 +30,28 @@ export class MockEntry {
     registration = false,
     statusCode = 200,
     unknown = false,
+    registered = true,
     version = Version.v2,
     persist = false,
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
     this.namehash = namehash.hash(name);
+
+    if (!registered) {
+      this.expect = 'No results found.';
+      nock(SUBGRAPH_URL.origin)
+        .post(SUBGRAPH_URL.pathname, {
+          query: GET_DOMAINS,
+          variables: {
+            tokenId: this.namehash,
+          },
+        })
+        .reply(statusCode, {
+          data: null,
+        }).persist(persist);
+      return;
+    }
 
     if (unknown) {
       const { url, ...unknownMetadata } = new Metadata({
@@ -54,7 +70,7 @@ export class MockEntry {
           },
         })
         .reply(statusCode, {
-          data: null,
+          data: { domain: {}},
         })
         .persist(persist);
       return;

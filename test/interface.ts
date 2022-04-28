@@ -60,6 +60,7 @@ export interface MockEntryBody {
   resolver?: any;
   statusCode?: number;
   unknown?: boolean;
+  registered?: boolean;
   version?: Version;
   persist?: boolean;
 }

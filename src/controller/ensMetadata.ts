@@ -20,8 +20,9 @@ export async function ensMetadata(req: Request, res: Response) {
   const _tokenId = getLabelhash(tokenId);
 
   const { provider, SUBGRAPH_URL } = getNetwork(networkName);
+  let version;
   try {
-    const version = await checkContract(provider, contractAddress, _tokenId);
+    version = await checkContract(provider, contractAddress, _tokenId);
     const result = await getDomain(
       provider,
       networkName,
@@ -37,7 +38,6 @@ export async function ensMetadata(req: Request, res: Response) {
     } */
     res.json(result);
   } catch (error: any) {
-    console.log('error', error);
     let errCode = (error?.code && Number(error.code)) || 500;
     /* #swagger.responses[500] = { 
              description: 'Internal Server Error'
@@ -66,7 +66,8 @@ export async function ensMetadata(req: Request, res: Response) {
         ETH_REGISTRY_ABI,
         provider
       );
-      const _namehash = constructEthNameHash(_tokenId);
+
+      const _namehash = constructEthNameHash(_tokenId, version as Version);
       const isRecordExist = await registry.recordExists(_namehash);
       assert(isRecordExist, 'ENS name does not exist');
     } catch (error) {
