@@ -41,10 +41,11 @@ export interface MetadataInit {
 
 export interface Metadata {
   name             : string;
-  description?     : string;
+  description      : string;
   attributes       : object[];
   name_length?     : number;
-  image_url?       : string;
+  image            : string;
+  image_url?       : string; // same as image, keep for backward compatibility
   is_normalized    : boolean;
   background_image?: string;
   mimeType?        : string;
@@ -107,6 +108,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   setImage(image_url: string) {
+    this.image = image_url;
     this.image_url = image_url;
   }
 
@@ -160,10 +162,10 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       domain
     );
     try {
-      this.image_url = 'data:image/svg+xml;base64,' + base64EncodeUnicode(svg);
+      this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
     } catch (e) {
       console.log(domain, e);
-      this.image_url = '';
+      this.setImage('');
     }
   }
 
