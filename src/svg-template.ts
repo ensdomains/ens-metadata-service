@@ -86,6 +86,7 @@ export default function createSVGfromTemplate({
         text {
           font-family: Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif;
           font-style: normal;
+          font-variant-numeric: tabular-nums;
           font-weight: bold;
           line-height: 34px;
         }
