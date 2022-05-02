@@ -41,10 +41,10 @@ export interface MetadataInit {
 
 export interface Metadata {
   name             : string;
-  description?     : string;
+  description      : string;
   attributes       : object[];
   name_length?     : number;
-  image?           : string;
+  image            : string;
   image_url?       : string; // same as image, keep for backward compatibility
   is_normalized    : boolean;
   background_image?: string;
