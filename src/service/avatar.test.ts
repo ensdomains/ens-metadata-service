@@ -1,6 +1,6 @@
 import avaTest, { ExecutionContext, TestInterface } from 'ava';
-import { TestContext } from './interface';
-import { IPFS_GATEWAY } from '../src/config';
+import { TestContext } from '../../mock/interface';
+import { IPFS_GATEWAY } from '../config';
 import { utils } from '@ensdomains/ens-avatar'
 
 const test = avaTest as TestInterface<TestContext>;

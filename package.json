@@ -67,9 +67,7 @@
       "ts"
     ],
     "files": [
-      "test/**/*",
-      "!test/entry.mock.ts",
-      "!test/interface.ts"
+      "**/*.test.ts"
     ],
     "nonSemVerExperiments": {
       "configurableModuleFormat": true
