@@ -1,4 +1,4 @@
-import { Version }           from '../base';
+import { CharacterSet, Version } from '../base';
 import { 
   CANVAS_FONT_PATH, 
   CANVAS_EMOJI_FONT_PATH, 
@@ -6,6 +6,7 @@ import {
 }                            from '../config';
 import createSVGfromTemplate from '../svg-template';
 import base64EncodeUnicode   from '../utils/base64encode';
+import { findCharacterSet } from '../utils/characterSet';
 import getCharLength         from '../utils/charLength';
 
 // no ts decleration files
@@ -48,6 +49,7 @@ export interface Metadata {
   image_url?       : string; // same as image, keep for backward compatibility
   is_normalized    : boolean;
   background_image?: string;
+  character_set    : CharacterSet;
   mimeType?        : string;
   url?             : string | null;
   version          : Version;
@@ -101,6 +103,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       ? `https://app.ens.domains/name/${name}`
       : null;
     this.version = version;
+    this.character_set = findCharacterSet(name);
   }
 
   addAttribute(attribute: object) {
@@ -217,8 +220,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   private _labelLength(name: string): number {
-    const parts = name.split('.');
-    const label = parts[parts.length - 2];
+    const label = name.substring(0, name.lastIndexOf('.'));
     if (!label) throw Error('Label cannot be empty!');
     return getCharLength(label);
   }
