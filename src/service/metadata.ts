@@ -145,11 +145,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       domain = name;
     }
     let charLength = getCharLength(domain);
-    domainFontSize = Metadata._getFontSize(domain);
     if (charLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
       domainFontSize = Metadata._getFontSize(domain);
       charLength = Metadata.MAX_CHAR;
+    } else {
+      domainFontSize = Metadata._getFontSize(domain);
     }
     if (charLength > 25) {
       domain = this._addSpan(domain, charLength / 2);
@@ -201,12 +202,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(270, 270);
+    console.log('name', name);
+    const canvas = createCanvas(270, 270, 'svg');
     const ctx = canvas.getContext('2d');
-    ctx.font = '20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji';
+    ctx.font = '20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
     const fontMetrics = ctx.measureText(name);
-    // some nasty hack on calculation
-    // 270 - (32.5 px padding both sides * 2)
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
   }
