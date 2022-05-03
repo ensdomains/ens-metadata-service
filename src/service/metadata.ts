@@ -220,7 +220,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   private _labelLength(name: string): number {
-    const label = name.substring(0, name.lastIndexOf('.'));
+    const label = name.substring(0, name.indexOf('.'));
     if (!label) throw Error('Label cannot be empty!');
     return getCharLength(label);
   }
