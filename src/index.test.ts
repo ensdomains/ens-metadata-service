@@ -9,17 +9,17 @@ import got, {
 import nock from 'nock';
 import listen from 'test-listen';
 
-import { MockEntry } from './entry.mock';
+import { MockEntry } from '../mock/entry.mock';
 import {
   EthCallResponse,
   EthChainIdResponse,
   NetVersionResponse,
   TestContext,
-} from './interface';
-import * as app from '../src/index';
-import { SERVER_URL as server_url } from '../src/config';
-import getNetwork from '../src/service/network';
-import { GET_DOMAINS } from '../src/service/subgraph';
+} from '../mock/interface';
+import * as app from './index';
+import { SERVER_URL as server_url } from './config';
+import getNetwork from './service/network';
+import { GET_DOMAINS } from './service/subgraph';
 
 const { INFURA_URL: infura_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork('rinkeby');

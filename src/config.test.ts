@@ -1,5 +1,5 @@
 import avaTest, { ExecutionContext, TestInterface } from 'ava';
-import { TestContext } from './interface';
+import { TestContext } from '../mock/interface';
 
 function requireUncached(module: string) {
     delete require.cache[require.resolve(module)];
