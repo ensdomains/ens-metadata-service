@@ -63,13 +63,14 @@ export class AvatarMetadata {
         console.log(`${this.uri} - error:`, error);
       }
       if (error === 'Image is not available') {
-        throw new RetrieveURIFailed(error);
+        throw new RetrieveURIFailed(error, 404);
       }
     }
 
     if (!avatarURI) {
       throw new TextRecordNotFound(
-        'There is no avatar set under given address'
+        'There is no avatar set under given address',
+        404
       );
     }
 
@@ -96,7 +97,8 @@ export class AvatarMetadata {
     }
 
     throw new RetrieveURIFailed(
-      'Unknown type/protocol given for the image source.'
+      'Unknown type/protocol given for the image source.',
+      400
     );
   }
 
@@ -112,13 +114,15 @@ export class AvatarMetadata {
         console.log(`${this.uri} - error:`, error);
       }
       throw new ResolverNotFound(
-        'There is no resolver set under given address'
+        'There is no resolver set under given address',
+        404
       );
     }
 
     if (!metadata) {
       throw new TextRecordNotFound(
-        'There is no avatar set under given address'
+        'There is no avatar set under given address',
+        404
       );
     }
 
@@ -129,7 +133,8 @@ export class AvatarMetadata {
         metadata.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
       } else {
         throw new TextRecordNotFound(
-          'There is no avatar set under given address'
+          'There is no avatar set under given address',
+          404
         );
       }
     }

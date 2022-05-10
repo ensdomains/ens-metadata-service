@@ -40,7 +40,7 @@ export default function getNetwork(network: string): any {
       INFURA_URL = `https://mainnet.infura.io/v3/${INFURA_API_KEY}`;
       break;
     default:
-      throw new UnsupportedNetwork(`Unknown network '${network}'`);
+      throw new UnsupportedNetwork(`Unknown network '${network}'`, 400);
   }
   const provider = new ethers.providers.StaticJsonRpcProvider(INFURA_URL);
   return { INFURA_URL, SUBGRAPH_URL, provider };
