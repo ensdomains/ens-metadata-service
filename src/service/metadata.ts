@@ -6,7 +6,7 @@ import {
 }                            from '../config';
 import createSVGfromTemplate from '../svg-template';
 import base64EncodeUnicode   from '../utils/base64encode';
-import { findCharacterSet } from '../utils/characterSet';
+import { findCharacterSet }  from '../utils/characterSet';
 import getCharLength         from '../utils/charLength';
 
 // no ts decleration files
@@ -49,7 +49,6 @@ export interface Metadata {
   image_url?       : string; // same as image, keep for backward compatibility
   is_normalized    : boolean;
   background_image?: string;
-  character_set    : CharacterSet;
   mimeType?        : string;
   url?             : string | null;
   version          : Version;
@@ -103,7 +102,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       ? `https://app.ens.domains/name/${name}`
       : null;
     this.version = version;
-    this.character_set = findCharacterSet(name);
+    this.addAttribute({
+      trait_type: 'Character Set',
+      display_type: 'string',
+      value: findCharacterSet(name),
+    });
   }
 
   addAttribute(attribute: object) {
@@ -205,7 +208,6 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   static _getFontSize(name: string): number {
-    console.log('name', name);
     const canvas = createCanvas(270, 270, 'svg');
     const ctx = canvas.getContext('2d');
     ctx.font = '20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
