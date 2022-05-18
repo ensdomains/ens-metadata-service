@@ -7,7 +7,7 @@ import {
 import createSVGfromTemplate from '../svg-template';
 import base64EncodeUnicode   from '../utils/base64encode';
 import { findCharacterSet }  from '../utils/characterSet';
-import { getCharCodeLength, getSegmentLength }  from '../utils/charLength';
+import { getCodePointLength, getSegmentLength }  from '../utils/charLength';
 
 // no ts decleration files
 
@@ -231,7 +231,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   private _labelCharLength(name: string): number {
     const label = name.substring(0, name.indexOf('.'));
     if (!label) throw Error('Label cannot be empty!');
-    return getCharCodeLength(label);
+    return getCodePointLength(label);
   }
 
   private _labelSegmentLength(name: string): number {

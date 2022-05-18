@@ -8,7 +8,7 @@ export function getSegmentLength(name: string): number {
   return [...new Intl.Segmenter().segment(name)].length;
 }
 
-export function getCharCodeLength(name: string): number {
+export function getCodePointLength(name: string): number {
   // spread operator will split string into its codepoints
   return [...name].length
 }
