@@ -7,7 +7,7 @@ import {
 import createSVGfromTemplate from '../svg-template';
 import base64EncodeUnicode   from '../utils/base64encode';
 import { findCharacterSet }  from '../utils/characterSet';
-import getCharLength         from '../utils/charLength';
+import { getCharCodeLength, getSegmentLength }  from '../utils/charLength';
 
 // no ts decleration files
 
@@ -45,6 +45,7 @@ export interface Metadata {
   description      : string;
   attributes       : object[];
   name_length?     : number;
+  segment_length?  : number;
   image            : string;
   image_url?       : string; // same as image, keep for backward compatibility
   is_normalized    : boolean;
@@ -92,11 +93,17 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
         value: created_date * 1000,
       },
     ];
-    this.name_length = this._labelLength(name);
+    this.name_length = this._labelCharLength(name);
+    this.segment_length = this._labelSegmentLength(name);
     this.addAttribute({
       trait_type: 'Length',
       display_type: 'number',
       value: this.name_length,
+    });
+    this.addAttribute({
+      trait_type: 'Segment Length',
+      display_type: 'number',
+      value: this.segment_length,
     });
     this.url = this.is_normalized
       ? `https://app.ens.domains/name/${name}`
@@ -133,7 +140,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     if (isSubdomain && !name.includes('...')) {
       subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
       domain = labels.slice(-2).join('.');
-      if (getCharLength(subdomain) > Metadata.MAX_CHAR) {
+      if (getSegmentLength(subdomain) > Metadata.MAX_CHAR) {
         subdomain = Metadata._textEllipsis(subdomain);
       }
       subdomainFontSize = Metadata._getFontSize(subdomain);
@@ -150,16 +157,16 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     } else {
       domain = name;
     }
-    let charLength = getCharLength(domain);
-    if (charLength > Metadata.MAX_CHAR) {
+    let charSegmentLength = getSegmentLength(domain);
+    if (charSegmentLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
       domainFontSize = Metadata._getFontSize(domain);
-      charLength = Metadata.MAX_CHAR;
+      charSegmentLength = Metadata.MAX_CHAR;
     } else {
       domainFontSize = Metadata._getFontSize(domain);
     }
-    if (charLength > 25) {
-      domain = this._addSpan(domain, charLength / 2);
+    if (charSegmentLength > 25) {
+      domain = this._addSpan(domain, charSegmentLength / 2);
       domainFontSize *= 2;
     }
     const svg = this._generateByVersion(
@@ -221,10 +228,16 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     return name === namehash.normalize(name);
   }
 
-  private _labelLength(name: string): number {
+  private _labelCharLength(name: string): number {
     const label = name.substring(0, name.indexOf('.'));
     if (!label) throw Error('Label cannot be empty!');
-    return getCharLength(label);
+    return getCharCodeLength(label);
+  }
+
+  private _labelSegmentLength(name: string): number {
+    const label = name.substring(0, name.indexOf('.'));
+    if (!label) throw Error('Label cannot be empty!');
+    return getSegmentLength(label);
   }
 
   private _renderSVG(
