@@ -2,7 +2,7 @@ import { Version } from "./base";
 import { CANVAS_FONT_PATH, CANVAS_FALLBACK_FONT_PATH }  from './config';
 import { importFont } from "./utils/importFont";
 
-const fontJakartaBold = importFont(CANVAS_FONT_PATH, 'font/truetype');
+const fontSatoshiBold = importFont(CANVAS_FONT_PATH, 'font/truetype');
 const fontDejaVuBold = importFont(CANVAS_FALLBACK_FONT_PATH, 'font/truetype');
 // const fontNotoColorEmoji = font2base64.encodeToDataUrlSync(CANVAS_EMOJI_FONT_PATH);
 
@@ -70,10 +70,10 @@ export default function createSVGfromTemplate({
     <defs>
       <style type="text/css">
         @font-face { 
-          font-family: "Plus Jakarta Sans";
+          font-family: "Satoshi";
           font-style: normal;
           font-weight: 600 900;
-          src: url(${fontJakartaBold});
+          src: url(${fontSatoshiBold});
         }
         @font-face {
           font-family: "DejaVu Sans";
@@ -84,10 +84,14 @@ export default function createSVGfromTemplate({
       </style>
       <style>
         text {
-          font-family: Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif;
+          font-family: Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif;
           font-style: normal;
           font-variant-numeric: tabular-nums;
           font-weight: bold;
+          font-variant-ligatures: none;
+          font-family: 'Satoshi', sans-serif;
+          font-feature-settings: "ss01" on, "ss03" on;
+          -moz-font-feature-settings: "ss01" on, "ss03" on;
           line-height: 34px;
         }
       </style>

@@ -17,7 +17,7 @@ const { validate }                   = require('@ensdomains/ens-validation');
 
 registerFont(
   CANVAS_FONT_PATH, 
-  { family: "Plus Jakarta Sans" }
+  { family: "Satoshi" }
 );
 
 registerFont(
@@ -210,7 +210,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   static _getFontSize(name: string): number {
     const canvas = createCanvas(270, 270, 'svg');
     const ctx = canvas.getContext('2d');
-    ctx.font = '20px Plus Jakarta Sans, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
+    ctx.font = '20px Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
     const fontMetrics = ctx.measureText(name);
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
