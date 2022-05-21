@@ -10,5 +10,5 @@ export function getSegmentLength(name: string): number {
 
 export function getCodePointLength(name: string): number {
   // spread operator will split string into its codepoints
-  return [...name].length
+  return [...name].length;
 }
