@@ -30,6 +30,7 @@ export const GET_DOMAINS_BY_LABELHASH = gql`
       id
       labelhash
       name
+      createdAt
       parent {
         id
       }
