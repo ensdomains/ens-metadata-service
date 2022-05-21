@@ -6,7 +6,7 @@ const HOST = process.env.HOST || 'localhost';
 const ENV = process.env.ENV || 'local'; // local/prod
 
 const FONT_FOLDER = path.join((ENV === 'local' ? 'src' : 'dist'), 'assets');
-const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'PlusJakartaSans-Bold.ttf');
+const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'Satoshi-Bold.ttf');
 const CANVAS_EMOJI_FONT_PATH = path.join(FONT_FOLDER, 'NotoColorEmoji.ttf');
 const CANVAS_FALLBACK_FONT_PATH = path.join(FONT_FOLDER, 'DejaVuSans-Bold.ttf');
 const INAMEWRAPPER = process.env.INAMEWRAPPER || '0x1aa28a1e';
