@@ -208,10 +208,10 @@
   dependencies:
     arrify "^1.0.1"
 
-"@ensdomains/ens-avatar@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.1.4.tgz#3338c961d84ce9cc2384dba33e809a58f2dcf74e"
-  integrity sha512-oJSdqtbqtEKUTMyKy2GV1y+MTo2tRc9hygNoQMR0/Fg4fsHbGXY3y1KIqaeqncR/jRhBCcbkqd44/sD3UZ+TCg==
+"@ensdomains/ens-avatar@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.1.5.tgz#d2c49ba3e988eb5ca8db89ad5dcf9c40adf66833"
+  integrity sha512-juZb4YthmT0vIDg33eBHbohEJi9zL4wEPc+BEdNi7VHOsCxUmcMezRTnzTCcoz1GMXVed+a9KvIN8xoIDLqlIA==
   dependencies:
     "@ethersproject/contracts" "^5.5.0"
     "@ethersproject/providers" "^5.5.2"
