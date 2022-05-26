@@ -1,13 +1,13 @@
-import { CharacterSet, Version } from '../base';
-import { 
-  CANVAS_FONT_PATH, 
-  CANVAS_EMOJI_FONT_PATH, 
-  CANVAS_FALLBACK_FONT_PATH 
-}                            from '../config';
-import createSVGfromTemplate from '../svg-template';
-import base64EncodeUnicode   from '../utils/base64encode';
-import { findCharacterSet }  from '../utils/characterSet';
-import { getCodePointLength, getSegmentLength }  from '../utils/charLength';
+import { Version }                              from '../base';
+import {
+  CANVAS_FONT_PATH,
+  CANVAS_EMOJI_FONT_PATH,
+  CANVAS_FALLBACK_FONT_PATH,
+}                                               from '../config';
+import createSVGfromTemplate                    from '../svg-template';
+import base64EncodeUnicode                      from '../utils/base64encode';
+import { isASCII, findCharacterSet }            from '../utils/characterSet';
+import { getCodePointLength, getSegmentLength } from '../utils/charLength';
 
 // no ts decleration files
 
@@ -15,20 +15,11 @@ const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
 const { validate }                   = require('@ensdomains/ens-validation');
 
-registerFont(
-  CANVAS_FONT_PATH, 
-  { family: "Satoshi" }
-);
+registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
 
-registerFont(
-  CANVAS_EMOJI_FONT_PATH, 
-  { family: "Noto Color Emoji" }
-);
+registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
 
-registerFont(
-  CANVAS_FALLBACK_FONT_PATH, 
-  { family: "DejaVu Sans" }
-);
+registerFont(CANVAS_FALLBACK_FONT_PATH, { family: 'DejaVu Sans' });
 
 export interface MetadataInit {
   name            : string;
@@ -64,6 +55,7 @@ export class Metadata {
     tokenId,
     version,
   }: MetadataInit) {
+    const label = name.substring(0, name.indexOf('.'));
     const is_valid = validate(name);
     this.is_normalized = is_valid && this._checkNormalized(name);
     this.name = this.is_normalized
@@ -77,7 +69,7 @@ export class Metadata {
       `${this.name}, an ENS name.${
         !this.is_normalized ? ` (${name} is not in normalized form)` : ''
       }`;
-    if (!is_valid) {
+    if (!is_valid || !isASCII(label)) {
       this.description +=
         ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
 Please be aware that there are characters that look identical or very \
@@ -93,8 +85,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
         value: created_date * 1000,
       },
     ];
-    this.name_length = this._labelCharLength(name);
-    this.segment_length = this._labelSegmentLength(name);
+    this.name_length = this._labelCharLength(label);
+    this.segment_length = this._labelSegmentLength(label);
     this.addAttribute({
       trait_type: 'Length',
       display_type: 'number',
@@ -112,7 +104,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     this.addAttribute({
       trait_type: 'Character Set',
       display_type: 'string',
-      value: findCharacterSet(name),
+      value: findCharacterSet(label),
     });
   }
 
@@ -217,7 +209,8 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   static _getFontSize(name: string): number {
     const canvas = createCanvas(270, 270, 'svg');
     const ctx = canvas.getContext('2d');
-    ctx.font = '20px Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
+    ctx.font =
+      '20px Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
     const fontMetrics = ctx.measureText(name);
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
@@ -228,14 +221,12 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     return name === namehash.normalize(name);
   }
 
-  private _labelCharLength(name: string): number {
-    const label = name.substring(0, name.indexOf('.'));
+  private _labelCharLength(label: string): number {
     if (!label) throw Error('Label cannot be empty!');
     return getCodePointLength(label);
   }
 
-  private _labelSegmentLength(name: string): number {
-    const label = name.substring(0, name.indexOf('.'));
+  private _labelSegmentLength(label: string): number {
     if (!label) throw Error('Label cannot be empty!');
     return getSegmentLength(label);
   }
