@@ -40,9 +40,9 @@ export async function checkContract(
       var nftOwner = await contract.ownerOf(tokenId);
       assert(nftOwner !== '0x');
     } catch (error) {
-      throw new OwnerNotFoundError(
-        `Checking owner of ${tokenId} failed. Reason: ${error}`
-      );
+      // throw new OwnerNotFoundError(
+      //   `Checking owner of ${tokenId} failed. Reason: ${error}`
+      // );
     }
     if (nftOwner === ADDRESS_NAME_WRAPPER) {
       return Version.v1w;

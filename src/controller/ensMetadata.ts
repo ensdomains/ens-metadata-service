@@ -2,7 +2,12 @@ import { strict as assert } from 'assert';
 import { Contract } from 'ethers';
 import { Request, Response } from 'express';
 import { FetchError } from 'node-fetch';
-import { ContractMismatchError, UnsupportedNetwork, Version } from '../base';
+import {
+  ContractMismatchError,
+  ExpiredNameError,
+  UnsupportedNetwork,
+  Version,
+} from '../base';
 import { ADDRESS_ETH_REGISTRY, ETH_REGISTRY_ABI } from '../config';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
@@ -42,7 +47,11 @@ export async function ensMetadata(req: Request, res: Response) {
     /* #swagger.responses[500] = { 
              description: 'Internal Server Error'
     } */
-    if (error instanceof FetchError || error instanceof ContractMismatchError) {
+    if (
+      error instanceof FetchError ||
+      error instanceof ContractMismatchError ||
+      error instanceof ExpiredNameError
+    ) {
       if (errCode !== 404) {
         res.status(errCode).json({
           message: error.message,
