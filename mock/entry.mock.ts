@@ -113,21 +113,21 @@ export class MockEntry {
       this.registrationResponse = {
         registrations: [
           {
-            expiryDate: randomDate,
+            expiryDate: (+new Date() + 31536000000).toString(),
             labelName: name,
-            registrationDate: randomDate,
+            registrationDate: (+new Date() - 157680000000).toString(),
           },
         ],
       };
       _metadata.addAttribute({
         trait_type: 'Registration Date',
         display_type: 'date',
-        value: +randomDate * 1000,
+        value: (+new Date() - 157680000000) * 1000,
       });
       _metadata.addAttribute({
         trait_type: 'Expiration Date',
         display_type: 'date',
-        value: +randomDate * 1000,
+        value: (+new Date() + 31536000000) * 1000,
       });
 
       nock(SUBGRAPH_URL.origin)
