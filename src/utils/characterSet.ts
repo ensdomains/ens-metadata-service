@@ -1,8 +1,7 @@
 import emojiRegex                     from 'emoji-regex';
 import { characterSet, CharacterSet } from '../base';
 
-export function findCharacterSet(name: string): CharacterSet {
-  const label = name.substring(0, name.indexOf('.'));
+export function findCharacterSet(label: string): CharacterSet {
   // regex digit only
   if (/^[0-9]+$/.test(label)) return characterSet.DIGIT;
   // regex latin letters only
@@ -17,4 +16,15 @@ export function findCharacterSet(name: string): CharacterSet {
   if (newEmojiRxp.test(label)) return characterSet.EMOJI;
 
   return characterSet.MIXED;
+}
+
+export function isASCII(label: string) {
+  // function excludes all known emojis from ascii check
+  const emojiRxp = emojiRegex();
+  // check both ascii and emoji character set
+  const newEmojiRxp = new RegExp(
+    `^([\x00-\x7F]|${emojiRxp.source})+$`,
+    emojiRxp.flags
+  );
+  return newEmojiRxp.test(label);
 }
