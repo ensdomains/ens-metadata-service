@@ -21,9 +21,9 @@ import { SERVER_URL as server_url } from './config';
 import getNetwork from './service/network';
 import { GET_DOMAINS } from './service/subgraph';
 
-const { INFURA_URL: infura_url, SUBGRAPH_URL: subgraph_url } =
+const { CLOUDFLARE_WEB3_URL: clourflare_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork('rinkeby');
-const INFURA_URL = new URL(infura_url);
+const CLOUDFLARE_WEB3_URL = new URL(clourflare_url);
 const SERVER_URL = new URL(server_url);
 console.log('SERVER_URL', SERVER_URL);
 const SUBGRAPH_URL = new URL(subgraph_url);
@@ -50,8 +50,15 @@ const sub2Wrappertest9 = new MockEntry({
   resolver: { texts: ['domains.ens.nft.image'] },
   hasImageKey: true,
 });
-const unknown = new MockEntry({ name: 'unknown.name', unknown: true, registered: false });
-const unknownRegistered = new MockEntry({ name: 'something.eth', unknown: true });
+const unknown = new MockEntry({
+  name: 'unknown.name',
+  unknown: true,
+  registered: false,
+});
+const unknownRegistered = new MockEntry({
+  name: 'something.eth',
+  unknown: true,
+});
 const handle21character = new MockEntry({
   name: 'handle21character.eth',
   registration: true,
@@ -70,14 +77,14 @@ const longsubdomainconsistof34charactersMdt = new MockEntry({
 
 /* Helper functions */
 
-function nockInfura(
+function nockProvider(
   method: string,
   params: any[],
   response: EthCallResponse | EthChainIdResponse | NetVersionResponse
 ) {
-  nock(INFURA_URL.origin)
+  nock(CLOUDFLARE_WEB3_URL.origin)
     .persist()
-    .post(INFURA_URL.pathname, {
+    .post(CLOUDFLARE_WEB3_URL.pathname, {
       method,
       params,
       id: /[0-9]/,
@@ -102,17 +109,17 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
   nock.enableNetConnect(SERVER_URL.host);
 
-  nockInfura('eth_chainId', [], {
+  nockProvider('eth_chainId', [], {
     id: 1,
     jsonrpc: '2.0',
     result: '0x04', // rinkeby
   });
-  nockInfura('net_version', [], {
+  nockProvider('net_version', [], {
     jsonrpc: '2.0',
     id: 1,
     result: '4',
   });
-  nockInfura(
+  nockProvider(
     'eth_call',
     [
       {
@@ -126,7 +133,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
         '0x000000000000000000000000f96e15e7ea2b1d862fb8c400c9e64dccc6d56ba4',
     }
   );
-  nockInfura(
+  nockProvider(
     'eth_call',
     [
       {
@@ -140,7 +147,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
         '0x0000000000000000000000004d9487c0fa713630a8f3cd8067564a604f0d2989',
     }
   );
-  nockInfura(
+  nockProvider(
     'eth_call',
     [
       {
@@ -156,7 +163,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   );
 
   // something.eth recordExist true
-  nockInfura(
+  nockProvider(
     'eth_call',
     [
       {
@@ -259,7 +266,6 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
 });
 
 test('get /:contractAddress/:tokenId for unknown namehash on subgraph but registered', async (t: ExecutionContext<TestContext>) => {
-  console.log("unknownRegistered", unknownRegistered);
   const { message } = await got(
     `rinkeby/${NAME_WRAPPER_ADDRESS}/${unknownRegistered.namehash}`,
     options
@@ -329,24 +335,24 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
       },
     })
     .replyWithError(fetchError);
-    const {
-      response: { body, statusCode },
-    }: HTTPError = await t.throwsAsync(
-      () =>
-        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
-          ...options,
-          retry: 0,
-        }),
-      {
-        instanceOf: HTTPError,
-      }
-    );
-    const { message } = JSON.parse(body as string);
-    // Regardless of what is the message in subgraph with status 404 code
-    // user will always see "No results found."" instead
-    t.assert(message.includes('No results found.'));
-    t.is(statusCode, 404);
-  });
+  const {
+    response: { body, statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  // Regardless of what is the message in subgraph with status 404 code
+  // user will always see "No results found."" instead
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, 404);
+});
 
 test('raise Internal Server Error from subgraph', async (t: ExecutionContext<TestContext>) => {
   const fetchError = {
@@ -362,22 +368,22 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
       },
     })
     .replyWithError(fetchError);
-    const {
-      response: { body, statusCode },
-    }: HTTPError = await t.throwsAsync(
-      () =>
-        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
-          ...options,
-          retry: 0,
-        }),
-      {
-        instanceOf: HTTPError,
-      }
-    );
-    const { message } = JSON.parse(body as string);
-    t.assert(message.includes('No results found.'));
-    t.is(statusCode, 404);
-  });
+  const {
+    response: { body, statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  const { message } = JSON.parse(body as string);
+  t.assert(message.includes('No results found.'));
+  t.is(statusCode, 404);
+});
 
 test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
   nock(SUBGRAPH_URL.origin)
@@ -391,19 +397,19 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
     .replyWithError({ code: 'ETIMEDOUT' })
     .persist(false);
   const {
-      response: { statusCode },
-    }: HTTPError = await t.throwsAsync(
-      () =>
-        got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
-          ...options,
-          retry: 0,
-        }),
-      {
-        instanceOf: HTTPError,
-      }
-    );
-    t.assert(statusCode === 404);
-  });
+    response: { statusCode },
+  }: HTTPError = await t.throwsAsync(
+    () =>
+      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+        ...options,
+        retry: 0,
+      }),
+    {
+      instanceOf: HTTPError,
+    }
+  );
+  t.assert(statusCode === 404);
+});
 
 test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => {
   const {

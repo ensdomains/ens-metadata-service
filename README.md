@@ -96,7 +96,6 @@ yarn test:cov
 
 | Name | Description | Default value | Options |
 | ---- | ----------- | ------------- | ------- |
-| INFURA_API_KEY | API Key provided by Infura. [See here](https://infura.io/docs/gettingStarted/projectSecurity) (Required) | - | - |
 | HOST | Host (ip/domain) address of the running service | localhost | - | No |
 | ENV | Project scope | local | local/prod |
 | INAMEWRAPPER | InterfaceId of NameWrapper Contract | 0x1aa28a1e | - |
