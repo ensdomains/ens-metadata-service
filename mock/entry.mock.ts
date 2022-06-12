@@ -77,6 +77,8 @@ export class MockEntry {
     }
 
     const randomDate = this.getRandomDate();
+    const registrationDate = +new Date() - 157680000000;
+    const expiryDate = +new Date() + 31536000000;
     const labelName = name.split('.')[0];
     const labelhash = utils.keccak256(utils.toUtf8Bytes(labelName));
     const _metadata = new Metadata({
@@ -113,21 +115,21 @@ export class MockEntry {
       this.registrationResponse = {
         registrations: [
           {
-            expiryDate: randomDate,
+            expiryDate: expiryDate.toString(),
             labelName: name,
-            registrationDate: randomDate,
+            registrationDate: registrationDate.toString(),
           },
         ],
       };
       _metadata.addAttribute({
         trait_type: 'Registration Date',
         display_type: 'date',
-        value: +randomDate * 1000,
+        value: registrationDate * 1000,
       });
       _metadata.addAttribute({
         trait_type: 'Expiration Date',
         display_type: 'date',
-        value: +randomDate * 1000,
+        value: expiryDate * 1000,
       });
 
       nock(SUBGRAPH_URL.origin)

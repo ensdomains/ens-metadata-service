@@ -52,3 +52,6 @@ export class OwnerNotFoundError extends BaseError {}
 
 export interface UnsupportedNetwork {}
 export class UnsupportedNetwork extends BaseError {}
+
+export interface ExpiredNameError {}
+export class ExpiredNameError extends BaseError {}
