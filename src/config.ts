@@ -11,7 +11,6 @@ const CANVAS_EMOJI_FONT_PATH = path.join(FONT_FOLDER, 'NotoColorEmoji.ttf');
 const CANVAS_FALLBACK_FONT_PATH = path.join(FONT_FOLDER, 'DejaVuSans-Bold.ttf');
 const INAMEWRAPPER = process.env.INAMEWRAPPER || '0x1aa28a1e';
 
-const INFURA_API_KEY = process.env.INFURA_API_KEY;
 const IPFS_GATEWAY = 'https://ipfs.io/';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
@@ -34,7 +33,6 @@ export {
   CANVAS_FALLBACK_FONT_PATH,
   ETH_REGISTRY_ABI,
   INAMEWRAPPER,
-  INFURA_API_KEY,
   IPFS_GATEWAY,
   SERVER_URL,
 };
