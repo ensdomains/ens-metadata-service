@@ -41,6 +41,8 @@ export default function getNetwork(network: string): any {
     default:
       throw new UnsupportedNetwork(`Unknown network '${network}'`, 400);
   }
+  process.env.RPC_PROVIDER && (CLOUDFLARE_WEB3_URL = process.env.RPC_PROVIDER);
+  process.env.SUBGRAPH_URL && (SUBGRAPH_URL = process.env.SUBGRAPH_URL);
   const provider = new ethers.providers.StaticJsonRpcProvider(CLOUDFLARE_WEB3_URL);
   return { CLOUDFLARE_WEB3_URL, SUBGRAPH_URL, provider };
 }
