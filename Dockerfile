@@ -6,7 +6,7 @@ RUN apk add pkgconfig cairo-dev pango-dev libjpeg giflib-dev librsvg-dev pixman-
 COPY package.json yarn.lock tsconfig.json ./
 COPY ./src ./src
 
-RUN yarn install --verbose
+RUN yarn install
 RUN yarn build
 
 RUN yarn install --production
