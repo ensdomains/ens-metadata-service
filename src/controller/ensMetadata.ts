@@ -8,7 +8,11 @@ import {
   UnsupportedNetwork,
   Version,
 } from '../base';
-import { ADDRESS_ETH_REGISTRY, ETH_REGISTRY_ABI } from '../config';
+import {
+  ADDRESS_ETH_REGISTRY,
+  ETH_REGISTRY_ABI,
+  RESPONSE_TIMEOUT,
+} from '../config';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import { Metadata } from '../service/metadata';
@@ -21,6 +25,10 @@ export async function ensMetadata(req: Request, res: Response) {
   // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['{}'] = { name: 'contractAddress', description: 'Contract address which stores the NFT indicated by the tokenId', schema: { $ref: '#/definitions/contractAddress' } }
   // #swagger.parameters['tokenId'] = { type: 'string', description: 'Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
+  res.setTimeout(RESPONSE_TIMEOUT, () => {
+    res.status(504).json({ message: 'Timeout' });
+  });
+
   const { contractAddress, networkName, tokenId } = req.params;
   const _tokenId = getLabelhash(tokenId);
 
@@ -83,9 +91,11 @@ export async function ensMetadata(req: Request, res: Response) {
       /* #swagger.responses[404] = {
              description: 'No results found'
       } */
-      res.status(404).json({
-        message: 'No results found.',
-      });
+      if (!res.headersSent) {
+        res.status(404).json({
+          message: 'No results found.',
+        });
+      }
       return;
     }
 

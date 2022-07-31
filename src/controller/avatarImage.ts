@@ -8,6 +8,7 @@ import {
   UnsupportedNamespace,
   UnsupportedNetwork,
 } from '../base';
+import { RESPONSE_TIMEOUT } from '../config';
 import { getAvatarImage } from '../service/avatar';
 import getNetwork from '../service/network';
 
@@ -15,6 +16,10 @@ export async function avatarImage(req: Request, res: Response) {
   // #swagger.description = 'ENS avatar image'
   // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
+  res.setTimeout(RESPONSE_TIMEOUT, () => {
+    res.status(504).json({ message: 'Timeout' });
+  })
+
   const { name, networkName } = req.params;
   try {
     const { provider } = getNetwork(networkName);
@@ -28,13 +33,16 @@ export async function avatarImage(req: Request, res: Response) {
         'Content-Length': buffer.length,
       });
       res.end(buffer);
+      return;
     }
     /* #swagger.responses[404] = { 
            description: 'No results found' 
     } */
-    res.status(404).json({
-      message: 'No results found.',
-    });
+    if (!res.headersSent) {
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    }
   } catch (error: any) {
     const errCode = (error?.code && Number(error.code)) || 500;
     if (
