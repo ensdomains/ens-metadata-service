@@ -21,9 +21,9 @@ import { SERVER_URL as server_url } from './config';
 import getNetwork from './service/network';
 import { GET_DOMAINS } from './service/subgraph';
 
-const { CLOUDFLARE_WEB3_URL: cloudflare_url, SUBGRAPH_URL: subgraph_url } =
+const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork('rinkeby');
-const CLOUDFLARE_WEB3_URL = new URL(cloudflare_url);
+const WEB3_URL = new URL(web3_url);
 const SERVER_URL = new URL(server_url);
 console.log('SERVER_URL', SERVER_URL);
 const SUBGRAPH_URL = new URL(subgraph_url);
@@ -82,9 +82,9 @@ function nockProvider(
   params: any[],
   response: EthCallResponse | EthChainIdResponse | NetVersionResponse
 ) {
-  nock(CLOUDFLARE_WEB3_URL.origin)
+  nock(WEB3_URL.origin)
     .persist()
-    .post(CLOUDFLARE_WEB3_URL.pathname, {
+    .post(WEB3_URL.pathname, {
       method,
       params,
       id: /[0-9]/,

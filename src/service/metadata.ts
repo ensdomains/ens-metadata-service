@@ -218,7 +218,11 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
 
   private _checkNormalized(name: string) {
     // this method can be used to filter many unformal name type
-    return name === namehash.normalize(name);
+    try {
+      return name === namehash.normalize(name);
+    } catch {
+      return false;
+    }
   }
 
   private _labelCharLength(label: string): number {
