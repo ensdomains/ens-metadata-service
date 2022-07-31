@@ -46,6 +46,7 @@ export class MockEntry {
           variables: {
             tokenId: this.namehash,
           },
+          operationName: "getDomains"
         })
         .reply(statusCode, {
           data: null,
@@ -68,6 +69,7 @@ export class MockEntry {
           variables: {
             tokenId: this.namehash,
           },
+          operationName: "getDomains"
         })
         .reply(statusCode, {
           data: { domain: {}},
@@ -138,6 +140,7 @@ export class MockEntry {
           variables: {
             labelhash,
           },
+          operationName: "getRegistration"
         })
         .reply(statusCode, {
           data: this.registrationResponse,
@@ -153,6 +156,7 @@ export class MockEntry {
         variables: {
           tokenId: this.namehash,
         },
+        operationName: "getDomains"
       })
       .reply(statusCode, {
         data: this.domainResponse,
