@@ -89,7 +89,6 @@ export default function createSVGfromTemplate({
           font-variant-numeric: tabular-nums;
           font-weight: bold;
           font-variant-ligatures: none;
-          font-family: 'Satoshi', sans-serif;
           font-feature-settings: "ss01" on, "ss03" on;
           -moz-font-feature-settings: "ss01" on, "ss03" on;
           line-height: 34px;
