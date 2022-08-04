@@ -8,7 +8,7 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                           from '../base';
-import { IPFS_GATEWAY }     from '../config';
+import { IPFS_GATEWAY, MAX_CONTENT_LENGTH }     from '../config';
 
 const window = new JSDOM('').window;
 
@@ -75,7 +75,7 @@ export class AvatarMetadata {
     }
 
     if (avatarURI?.startsWith('http')) {
-      const response = await fetch(avatarURI);
+      const response = await fetch(avatarURI, { size: MAX_CONTENT_LENGTH });
 
       assert(response, 'Response is empty');
 
