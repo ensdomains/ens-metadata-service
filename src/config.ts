@@ -28,6 +28,9 @@ const ETH_REGISTRY_ABI = [
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 60 * 1000;
 
+// avatar cannot be greater than 50mb
+const MAX_CONTENT_LENGTH = 50000000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -39,6 +42,7 @@ export {
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
+  MAX_CONTENT_LENGTH,
   RESPONSE_TIMEOUT,
   SERVER_URL,
 };
