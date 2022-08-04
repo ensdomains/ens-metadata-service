@@ -8,6 +8,7 @@ import {
   UnsupportedNamespace,
   UnsupportedNetwork,
 } from '../base';
+import { RESPONSE_TIMEOUT } from '../config';
 import { getAvatarMeta } from '../service/avatar';
 import getNetwork from '../service/network';
 
@@ -15,6 +16,10 @@ export async function avatarMetadata(req: Request, res: Response) {
   // #swagger.description = 'ENS avatar metadata'
   // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
+  res.setTimeout(RESPONSE_TIMEOUT, () => {
+    res.status(504).json({ message: 'Timeout' });
+  })
+
   const { name, networkName } = req.params;
   try {
     const { provider } = getNetwork(networkName);

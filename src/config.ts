@@ -11,7 +11,8 @@ const CANVAS_EMOJI_FONT_PATH = path.join(FONT_FOLDER, 'NotoColorEmoji.ttf');
 const CANVAS_FALLBACK_FONT_PATH = path.join(FONT_FOLDER, 'DejaVuSans-Bold.ttf');
 const INAMEWRAPPER = process.env.INAMEWRAPPER || '0x1aa28a1e';
 
-const IPFS_GATEWAY = 'https://ipfs.io/';
+const IPFS_GATEWAY = 'https://cloudflare-ipfs.com/';
+const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
 const ADDRESS_ETH_REGISTRY = process.env.ADDRESS_ETH_REGISTRY || '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
@@ -24,6 +25,9 @@ const ETH_REGISTRY_ABI = [
   'function recordExists(bytes32 node) external view returns (bool)'
 ];
 
+// response timeout: 1 min
+const RESPONSE_TIMEOUT = 60 * 1000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -34,5 +38,7 @@ export {
   ETH_REGISTRY_ABI,
   INAMEWRAPPER,
   IPFS_GATEWAY,
+  INFURA_API_KEY,
+  RESPONSE_TIMEOUT,
   SERVER_URL,
 };
