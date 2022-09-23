@@ -53,9 +53,11 @@ export async function avatarImage(req: Request, res: Response) {
       error instanceof TextRecordNotFound ||
       error instanceof UnsupportedNamespace
     ) {
-      res.status(errCode).json({
-        message: error.message,
-      });
+      if (!res.headersSent) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+      }
       return;
     }
     /* #swagger.responses[501] = { 
