@@ -37,8 +37,8 @@
     "start": "node dist/index.js",
     "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
     "deploy:test": "ENV=prod yarn build && gcloud app deploy --no-promote --project=ens-metadata-service",
-    "test": "ava -v --serial --timeout=30s",
-    "test:cov": "nyc --reporter=json --reporter=text ava --serial --timeout=30s",
+    "test": "ava -v --serial --timeout=3m",
+    "test:cov": "nyc --reporter=json --reporter=text ava --serial --timeout=3m",
     "docgen": "node docgen.js"
   },
   "devDependencies": {
