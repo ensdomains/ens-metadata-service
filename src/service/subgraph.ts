@@ -9,11 +9,13 @@ export const GET_DOMAINS = gql`
       id
       labelhash
       name
+      createdAt
       parent {
         id
       }
       resolver {
         texts
+        address
       }
     }
   }
@@ -36,6 +38,7 @@ export const GET_DOMAINS_BY_LABELHASH = gql`
       }
       resolver {
         texts
+        address
       }
     }
   }

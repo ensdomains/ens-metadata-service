@@ -40,12 +40,13 @@ const wrappertest3 = new MockEntry({
 const sub1Wrappertest = new MockEntry({
   name: 'sub1.wrappertest.eth',
   parent: '0x2517c0dfe3a4eebac3456a409c53f824f86070c73d48794d8268ec5c007ee683',
+  resolver: { texts: null },
 });
 const sub2Wrappertest9 = new MockEntry({
   name: 'sub2.wrappertest9.eth',
   image: 'https://i.imgur.com/JcZESMp.png',
   parent: '0x0b00a980e17bfb715fca7267b401b08daa6e750f1bdac52b273e11c46c3e2b9f',
-  resolver: { texts: ['domains.ens.nft.image'] },
+  resolver: { texts: ['avatar'] },
   hasImageKey: true,
 });
 const unknown = new MockEntry({
@@ -173,6 +174,22 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     {
       result:
         '0x0000000000000000000000000000000000000000000000000000000000000001',
+    }
+  );
+
+  // // NON-contract supportsInterface 0x0
+  nockProvider(
+    'eth_call',
+    [
+      {
+        to: '0xab5801a7d398351b8be11c439e05c5b3259aec9b',
+        data: '0x01ffc9a7e89c48dc00000000000000000000000000000000000000000000000000000000',
+      },
+      'latest',
+    ],
+    {
+      result:
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
     }
   );
 

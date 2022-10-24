@@ -2,7 +2,6 @@ import { Version }                              from '../base';
 import {
   CANVAS_FONT_PATH,
   CANVAS_EMOJI_FONT_PATH,
-  CANVAS_FALLBACK_FONT_PATH,
 }                                               from '../config';
 import createSVGfromTemplate                    from '../svg-template';
 import base64EncodeUnicode                      from '../utils/base64encode';
@@ -19,7 +18,6 @@ registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
 
 registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
 
-registerFont(CANVAS_FALLBACK_FONT_PATH, { family: 'DejaVu Sans' });
 
 export interface MetadataInit {
   name            : string;
@@ -210,7 +208,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
     const canvas = createCanvas(270, 270, 'svg');
     const ctx = canvas.getContext('2d');
     ctx.font =
-      '20px Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif';
+      '20px Satoshi, Noto Color Emoji, Apple Color Emoji, sans-serif';
     const fontMetrics = ctx.measureText(name);
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;

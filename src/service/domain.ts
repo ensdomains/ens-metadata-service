@@ -11,7 +11,6 @@ import { ExpiredNameError, SubgraphRecordNotFound, Version } from '../base';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
-const IMAGE_KEY = 'domains.ens.nft.image';
 const GRACE_PERIOD_MS = 7776000000; // 90 days as milliseconds
 
 export async function getDomain(
@@ -42,8 +41,6 @@ export async function getDomain(
     throw new SubgraphRecordNotFound(`No record for ${hexId}`);
   const { name, labelhash, createdAt, parent, resolver } = domain;
 
-  const hasImageKey =
-    resolver && resolver.texts && resolver.texts.includes(IMAGE_KEY);
   const metadata = new Metadata({
     name,
     created_date: createdAt,
@@ -61,29 +58,16 @@ export async function getDomain(
     }
   }
 
-  async function requestNFTImage() {
-    if (hasImageKey) {
-      const r = await provider.getResolver(name);
-      const image = await r.getText(IMAGE_KEY);
-      return image;
-    }
-  }
-
-  async function requestMedia() {
+  async function requestMedia(isAvatarExist: boolean) {
     if (loadImages) {
-      const [avatar, imageNFT] = await Promise.all([
-        requestAvatar(),
-        requestNFTImage(),
-      ]);
-      if (imageNFT) {
-        metadata.setImage(imageNFT);
-      } else {
+      if (isAvatarExist) {
+        const avatar = await requestAvatar();
         if (avatar) {
           const [base64, mimeType] = avatar;
           metadata.setBackground(base64, mimeType);
         }
-        metadata.generateImage();
       }
+      metadata.generateImage();
     } else {
       metadata.setBackground(
         `https://metadata.ens.domains/${networkName}/avatar/${name}`
@@ -124,6 +108,7 @@ export async function getDomain(
       }
     }
   }
-  await Promise.all([requestMedia(), requestAttributes()]);
+  const isAvatarExist = resolver.texts && resolver.texts.includes('avatar');
+  await Promise.all([requestMedia(isAvatarExist), requestAttributes()]);
   return metadata;
 }

@@ -1,6 +1,8 @@
 import { utils, BigNumber } from 'ethers';
-import { Version } from '../base';
-var sha3 = require('js-sha3').keccak_256;
+import { Version }          from '../base';
+
+const sha3     = require('js-sha3').keccak_256;
+const namehash = require('@ensdomains/eth-ens-namehash');
 
 const eth0x =
   '4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0';
@@ -20,4 +22,13 @@ export function constructEthNameHash(tokenId: string, version: Version): string 
     node = sha3(Buffer.from(node + labelSha, 'hex'));
   }
   return '0x' + node;
+}
+
+export function getNamehash(nameOrNamehash: string) {
+  const _name = nameOrNamehash.substring(0, nameOrNamehash.lastIndexOf('.'));
+  // if not name, return original
+  if (!_name) return nameOrNamehash;
+
+  const _lhexId = namehash.hash(nameOrNamehash);
+  return _lhexId;
 }

@@ -1,55 +1,62 @@
 import { strict as assert } from 'assert';
 import { ethers } from 'ethers';
-import { ContractMismatchError, OwnerNotFoundError, Version } from '../base';
+import { ContractMismatchError, Version } from '../base';
 
 import {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_NAME_WRAPPER,
   INAMEWRAPPER,
 } from '../config';
+import { getLabelhash } from '../utils/labelhash';
+import { getNamehash } from '../utils/namehash';
 
 export async function checkContract(
-  provider: any,
+  provider: ethers.providers.BaseProvider,
   contractAddress: string,
-  tokenId: string
-): Promise<Version> {
+  identifier: string
+): Promise<{tokenId: string, version: Version}> {
   const _contractAddress = ethers.utils.getAddress(contractAddress);
-  try {
-    var contract = new ethers.Contract(
-      _contractAddress,
-      [
-        'function ownerOf(uint256 tokenId) public view returns (address)',
-        'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
-      ],
-      provider
-    );
-    if (_contractAddress !== ADDRESS_ETH_REGISTRAR) {
-      assert(await contract.supportsInterface(INAMEWRAPPER));
-    }
-  } catch (error) {
-    throw new ContractMismatchError(
-      `${_contractAddress} does not match with any ENS related contract`,
-      400
-    );
-  }
+  const contract = new ethers.Contract(
+    _contractAddress,
+    [
+      'function ownerOf(uint256 id) view returns (address)',
+      'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+    ],
+    provider
+  );
 
   if (_contractAddress === ADDRESS_NAME_WRAPPER) {
-    return Version.v2;
+    return { tokenId: getNamehash(identifier), version: Version.v2 };
   } else if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
+    const _tokenId = getLabelhash(identifier);
     try {
-      var nftOwner = await contract.ownerOf(tokenId);
-      assert(nftOwner !== '0x');
+      const nftOwner = await contract.ownerOf(_tokenId);
+      if (nftOwner === ADDRESS_NAME_WRAPPER) {
+        return { tokenId: _tokenId, version: Version.v1w };
+      }
     } catch (error) {
+      console.warn('error', error);
       // throw new OwnerNotFoundError(
       //   `Checking owner of ${tokenId} failed. Reason: ${error}`
       // );
     }
-    if (nftOwner === ADDRESS_NAME_WRAPPER) {
-      return Version.v1w;
-    } else {
-      return Version.v1;
+    return { tokenId: _tokenId, version: Version.v1 };
+  } else {
+    try {
+      if (_contractAddress !== ADDRESS_ETH_REGISTRAR) {
+        const isInterfaceSupported = await contract.supportsInterface(INAMEWRAPPER);
+        assert(isInterfaceSupported);
+        return { tokenId: getNamehash(identifier), version: Version.v2 };
+      }
+    } catch (error) {
+      console.warn('error here', error);
+      throw new ContractMismatchError(
+        `${_contractAddress} does not match with any ENS related contract`,
+        400
+      );
     }
   }
+
   throw new ContractMismatchError(
     `${_contractAddress} does not match with any ENS related contract`,
     400

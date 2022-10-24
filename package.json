@@ -68,9 +68,6 @@
     "files": [
       "**/*.test.ts"
     ],
-    "nonSemVerExperiments": {
-      "configurableModuleFormat": true
-    },
     "nodeArguments": [
       "--loader=ts-node/esm"
     ]
