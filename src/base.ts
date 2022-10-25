@@ -15,14 +15,13 @@ export enum Version {
 
 export interface BaseError {}
 export class BaseError extends Error {
-  __proto__: Error;
   code: number;
   constructor(message?: string, code: number = 500) {
-    const trueProto = new.target.prototype;
     super(message);
     this.code = code;
 
-    this.__proto__ = trueProto;
+    const trueProto = new.target.prototype;
+    Object.setPrototypeOf(this, trueProto);
   }
 }
 

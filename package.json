@@ -8,7 +8,7 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@ensdomains/ens-avatar": "0.1.6",
+    "@ensdomains/ens-avatar": "0.1.7",
     "@ensdomains/ens-validation": "^0.1.0",
     "@ensdomains/eth-ens-namehash": "^2.0.15",
     "@types/lodash": "^4.14.170",
@@ -19,7 +19,7 @@
     "dompurify": "^2.3.9",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^5.6.9",
+    "ethers": "^5.7.1",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",
@@ -57,9 +57,9 @@
     "nyc": "^15.1.0",
     "swagger-autogen": "^2.18.8",
     "test-listen": "^1.1.0",
-    "ts-node": "^10.0.0",
-    "ts-node-dev": "^1.1.6",
-    "typescript": "^4.5.2"
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.8.3"
   },
   "ava": {
     "extensions": [

@@ -25,9 +25,7 @@ const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork('rinkeby');
 const WEB3_URL = new URL(web3_url);
 const SERVER_URL = new URL(server_url);
-console.log('SERVER_URL', SERVER_URL);
 const SUBGRAPH_URL = new URL(subgraph_url);
-console.log('SUBGRAPH_URL', SUBGRAPH_URL);
 const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
 const NON_CONTRACT_ADDRESS = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B';
 
@@ -266,7 +264,7 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
 });
 
 test('get /:contractAddress/:tokenId for unknown namehash on subgraph but registered', async (t: ExecutionContext<TestContext>) => {
-  const { message } = await got(
+  const { message }: any = await got(
     `rinkeby/${NAME_WRAPPER_ADDRESS}/${unknownRegistered.namehash}`,
     options
   ).json();
