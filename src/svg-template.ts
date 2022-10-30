@@ -1,9 +1,8 @@
 import { Version } from "./base";
-import { CANVAS_FONT_PATH, CANVAS_FALLBACK_FONT_PATH }  from './config';
+import { CANVAS_FONT_PATH }  from './config';
 import { importFont } from "./utils/importFont";
 
 const fontSatoshiBold = importFont(CANVAS_FONT_PATH, 'font/truetype');
-const fontDejaVuBold = importFont(CANVAS_FALLBACK_FONT_PATH, 'font/truetype');
 // const fontNotoColorEmoji = font2base64.encodeToDataUrlSync(CANVAS_EMOJI_FONT_PATH);
 
 interface SVGTemplateFields {
@@ -75,16 +74,10 @@ export default function createSVGfromTemplate({
           font-weight: 600 900;
           src: url(${fontSatoshiBold});
         }
-        @font-face {
-          font-family: "DejaVu Sans";
-          font-style: normal;
-          font-weight: 600 900;
-          src: url(${fontDejaVuBold});
-        }
       </style>
       <style>
         text {
-          font-family: Satoshi, DejaVu Sans, Noto Color Emoji, Apple Color Emoji, sans-serif;
+          font-family: 'Satoshi', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif;
           font-style: normal;
           font-variant-numeric: tabular-nums;
           font-weight: bold;

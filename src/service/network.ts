@@ -30,7 +30,7 @@ export default function getNetwork(network: string): any {
   // currently subgraphs used under this function are outdated,
   // we will have namewrapper support and more attributes when latest subgraph goes to production
   let SUBGRAPH_URL: string;
-  let WEB3_URL = WEB3_API.CLOUDFLARE;
+  let WEB3_URL = WEB3_API.INFURA;
   switch (network) {
     case NETWORK.LOCAL:
       SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';

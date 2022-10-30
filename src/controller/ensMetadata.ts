@@ -17,7 +17,6 @@ import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import { Metadata } from '../service/metadata';
 import getNetwork from '../service/network';
-import { getLabelhash } from '../utils/labelhash';
 import { constructEthNameHash } from '../utils/namehash';
 
 export async function ensMetadata(req: Request, res: Response) {
@@ -29,19 +28,16 @@ export async function ensMetadata(req: Request, res: Response) {
     res.status(504).json({ message: 'Timeout' });
   });
 
-  const { contractAddress, networkName, tokenId } = req.params;
-  const _tokenId = getLabelhash(tokenId);
-
+  const { contractAddress, networkName, tokenId: identifier } = req.params;
   const { provider, SUBGRAPH_URL } = getNetwork(networkName);
-  let version;
   try {
-    version = await checkContract(provider, contractAddress, _tokenId);
+    var { tokenId, version } = await checkContract(provider, contractAddress, identifier);
     const result = await getDomain(
       provider,
       networkName,
       SUBGRAPH_URL,
       contractAddress,
-      _tokenId,
+      tokenId,
       version,
       false
     );
@@ -50,6 +46,7 @@ export async function ensMetadata(req: Request, res: Response) {
              schema: { $ref: '#/definitions/ENSMetadata' }
     } */
     res.json(result);
+    return;
   } catch (error: any) {
     let errCode = (error?.code && Number(error.code)) || 500;
     /* #swagger.responses[500] = { 
@@ -83,8 +80,7 @@ export async function ensMetadata(req: Request, res: Response) {
         ETH_REGISTRY_ABI,
         provider
       );
-
-      const _namehash = constructEthNameHash(_tokenId, version as Version);
+      const _namehash = constructEthNameHash(tokenId, version as Version);
       const isRecordExist = await registry.recordExists(_namehash);
       assert(isRecordExist, 'ENS name does not exist');
     } catch (error) {

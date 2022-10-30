@@ -17,18 +17,17 @@ export async function ensImage(req: Request, res: Response) {
     res.status(504).json({ message: 'Timeout' });
   });
 
-  const { contractAddress, networkName, tokenId } = req.params;
-  const _tokenId = getLabelhash(tokenId);
+  const { contractAddress, networkName, tokenId: identifier } = req.params;
 
   try {
     const { provider, SUBGRAPH_URL } = getNetwork(networkName);
-    const version = await checkContract(provider, contractAddress, _tokenId);
+    const { tokenId, version } = await checkContract(provider, contractAddress, identifier);
     const result = await getDomain(
       provider,
       networkName,
       SUBGRAPH_URL,
       contractAddress,
-      _tokenId,
+      tokenId,
       version
     );
     if (result.image_url) {
