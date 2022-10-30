@@ -108,7 +108,7 @@ export async function getDomain(
       }
     }
   }
-  const isAvatarExist = resolver.texts && resolver.texts.includes('avatar');
+  const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');
   await Promise.all([requestMedia(isAvatarExist), requestAttributes()]);
   return metadata;
 }
