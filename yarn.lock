@@ -215,10 +215,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@ensdomains/ens-avatar@0.1.7":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.1.7.tgz#45693be737c1b90893477ae53ebca74e5efb1910"
-  integrity sha512-pjDCPfu7Qv7FDuIDTGIkuYTruwN3aJyywlB0n1+zQ4LTlxwvaPN5ndw1drZlWPDT3Z1Xpv0cPvVVEmZXVyDgjw==
+"@ensdomains/ens-avatar@0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.1.8.tgz#26bd65a1c60ebdbfb75e86a087b9f46815539c27"
+  integrity sha512-o6A2n4hfYjGA+MFCZ9f6ikY9vlKVMOd31m4oH0rNUE45Qt9DnHcKOo0djVFmapwAKDySEMRORkYOacvRUbWwEA==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
