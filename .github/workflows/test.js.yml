@@ -25,5 +25,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
+    - name: Install Pango
+      run: sudo apt-get install libsdl-pango-dev
     - run: yarn
     - run: npm test
