@@ -68,9 +68,9 @@
     "files": [
       "**/*.test.ts"
     ],
-    "nodeArguments": [
-      "--loader=ts-node/esm"
-    ]
+		"require": [
+			"ts-node/register/transpile-only"
+		]
   },
   "volta": {
     "node": "16.15.0"
