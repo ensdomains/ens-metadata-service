@@ -1,4 +1,4 @@
-import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import avaTest, { ExecutionContext, TestFn } from 'ava';
 import { TestContext } from '../mock/interface';
 
 function requireUncached(module: string) {
@@ -6,7 +6,7 @@ function requireUncached(module: string) {
     return require(module);
 }
 
-const test = avaTest as TestInterface<TestContext>;
+const test = avaTest as TestFn<TestContext>;
 
 test.after('cleanup', t => {
     delete process.env.NETWORK
