@@ -1,9 +1,9 @@
-import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import avaTest, { ExecutionContext, TestFn } from 'ava';
 import { TestContext } from '../../mock/interface';
 import { characterSet } from '../base';
 import { findCharacterSet } from './characterSet';
 
-const test = avaTest as TestInterface<TestContext>;
+const test = avaTest as TestFn<TestContext>;
 
 const getLabel = (name: string) => name.substring(0, name.indexOf('.'));
 

@@ -1,9 +1,9 @@
-import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import avaTest, { ExecutionContext, TestFn } from 'ava';
 import { TestContext } from '../../mock/interface';
 import { IPFS_GATEWAY } from '../config';
 import { utils } from '@ensdomains/ens-avatar'
 
-const test = avaTest as TestInterface<TestContext>;
+const test = avaTest as TestFn<TestContext>;
 
 test('should return data URIs without any changes', async (t: ExecutionContext<TestContext>) => {
   const uri = 'data:text/plain;base64,dGVzdGluZw==';
