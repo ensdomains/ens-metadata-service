@@ -68,9 +68,9 @@
     "files": [
       "**/*.test.ts"
     ],
-		"require": [
-			"ts-node/register/transpile-only"
-		]
+    "require": [
+      "ts-node/register/transpile-only"
+    ]
   },
   "volta": {
     "node": "16.15.0"
