@@ -1,4 +1,4 @@
-import avaTest, { ExecutionContext, TestInterface } from 'ava';
+import avaTest, { ExecutionContext, TestFn } from 'ava';
 import { ethers } from 'ethers';
 import * as http from 'http';
 import got, {
@@ -99,7 +99,7 @@ function requireUncached(module: string) {
 
 /* Test Setup */
 
-const test = avaTest as TestInterface<TestContext>;
+const test = avaTest as TestFn<TestContext>;
 const options: OptionsOfJSONResponseBody | OptionsOfTextResponseBody = {
   prefixUrl: SERVER_URL.toString(),
 };
@@ -274,7 +274,7 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
   }: HTTPError = await t.throwsAsync(
     () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
     { instanceOf: HTTPError }
-  );
+  ) as HTTPError;
   const message = JSON.parse(body as string)?.message;
   t.is(message, unknown.expect);
   t.is(statusCode, 404);
@@ -296,7 +296,7 @@ test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionCont
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   t.assert(
     (body as string).includes(`Cannot GET /rinkeby/${NAME_WRAPPER_ADDRESS}/`)
   );
@@ -328,7 +328,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   const { message } = JSON.parse(body as string);
   // Regardless of what is the message in subgraph with status 404 code
   // user will always see "No results found."" instead
@@ -361,7 +361,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   const { message } = JSON.parse(body as string);
   // Regardless of what is the message in subgraph with status 404 code
   // user will always see "No results found."" instead
@@ -394,7 +394,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   const { message } = JSON.parse(body as string);
   t.assert(message.includes('No results found.'));
   t.is(statusCode, 404);
@@ -422,7 +422,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   t.assert(statusCode === 404);
 });
 
@@ -438,7 +438,7 @@ test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => 
     {
       instanceOf: HTTPError,
     }
-  );
+  ) as HTTPError;
   const { message } = JSON.parse(body as string);
   t.assert(
     message ===

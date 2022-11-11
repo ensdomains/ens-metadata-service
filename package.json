@@ -5,10 +5,10 @@
   "author": "Makoto Inoue <2630+makoto@users.noreply.github.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=16"
+    "node": ">=16.15"
   },
   "dependencies": {
-    "@ensdomains/ens-avatar": "0.1.8",
+    "@ensdomains/ens-avatar": "0.2.0",
     "@ensdomains/ens-validation": "^0.1.0",
     "@ensdomains/eth-ens-namehash": "^2.0.15",
     "@types/lodash": "^4.14.170",
@@ -37,7 +37,7 @@
     "start": "node dist/index.js",
     "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
     "deploy:test": "ENV=prod yarn build && gcloud app deploy --no-promote --project=ens-metadata-service",
-    "test": "ava -v --serial",
+    "test": "ava -v --serial --timeout=1m",
     "test:cov": "nyc --reporter=json --reporter=text ava --serial",
     "docgen": "node docgen.js"
   },
@@ -50,7 +50,7 @@
     "@types/node": "^16.11.0",
     "@types/node-fetch": "^2.5.11",
     "@types/test-listen": "^1.1.0",
-    "ava": "^3.15.0",
+    "ava": "^5.0.1",
     "cpx": "^1.5.0",
     "got": "^11.8.2",
     "nock": "^13.1.1",
@@ -68,11 +68,11 @@
     "files": [
       "**/*.test.ts"
     ],
-    "nodeArguments": [
-      "--loader=ts-node/esm"
+    "require": [
+      "ts-node/register/transpile-only"
     ]
   },
   "volta": {
-    "node": "16.13.0"
+    "node": "16.15.0"
   }
 }
