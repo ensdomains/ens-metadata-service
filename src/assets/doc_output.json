@@ -2,17 +2,27 @@
   "openapi": "3.0.0",
   "info": {
     "version": "0.0.1-alpha.1",
-    "title": "ENS Metadata Service",
-    "description": "Set of endpoints to query ENS metadata and more",
+    "title": "PNS Metadata Service",
+    "description": "Set of endpoints to query PNS metadata and more",
     "contact": "contact@ens.domains",
     "license": "MIT License",
-    "x-logo": {
-      "url": "/assets/logo.svg",
-      "backgroundColor": "#FFFFFF",
-      "altText": "Ethereum Name Service"
+    "x_logo": {
+      "url": "./src/assets/logo.svg",
+      "backgroundColor": "#FFFFFF"
     }
   },
   "paths": {
+    "/": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/{networkName}/{contractAddress(0x[a-fA-F0-9]{40})}/{tokenId}": {
       "get": {
         "description": "ENS NFT metadata",
@@ -26,11 +36,11 @@
             }
           },
           {
-            "name": "contractAddress",
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/contractAddress"
+              "type": "string"
             }
           },
           {
@@ -42,6 +52,13 @@
             },
             "type": "string",
             "description": "Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "{}",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -68,6 +85,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -85,11 +105,11 @@
             }
           },
           {
-            "name": "contractAddress",
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/contractAddress"
+              "type": "string"
             }
           },
           {
@@ -101,6 +121,13 @@
             },
             "type": "string",
             "description": "Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "{}",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -112,6 +139,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -129,11 +159,11 @@
             }
           },
           {
-            "name": "contractAddress",
+            "name": "contractAddress(0x[a-fA-F0-9]{40})",
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/contractAddress"
+              "type": "string"
             }
           },
           {
@@ -145,6 +175,13 @@
             },
             "type": "string",
             "description": "Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "{}",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -153,9 +190,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          },
-          "501": {
-            "description": "Unsupported network"
           }
         }
       }
@@ -203,6 +237,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -238,6 +275,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -270,10 +310,10 @@
     "examples": {
       "AvatarMetadata": {
         "value": {
-          "$uri": "matoken.eth",
+          "$uri": "matoken.pls",
           "is_owner": true,
           "host_meta": {
-            "chain_id": 1,
+            "chain_id": 941,
             "namespace": "erc721",
             "contract_address": "0x31385d3520bced94f77aae104b406994d8f2168c",
             "token_id": "9421",
@@ -300,8 +340,8 @@
       },
       "ENSMetadata": {
         "value": {
-          "$name": "nick.eth",
-          "$description": "nick.eth, an ENS name.",
+          "$name": "nick.pls",
+          "$description": "nick.pls, an PNS name.",
           "$attributes": [
             {
               "trait_type": "Created Date",
@@ -325,9 +365,9 @@
             }
           ],
           "name_length": 4,
-          "url": "https://app.ens.domains/name/nick.eth",
+          "url": "https://app.ens.domains/name/nick.pls",
           "version": 0,
-          "background_image": "https://metadata.ens.domains/mainnet/avatar/nick.eth",
+          "background_image": "https://metadata.ens.domains/mainnet/avatar/nick.pls",
           "image_url": "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image"
         }
       }
@@ -338,7 +378,7 @@
         "properties": {
           "uri": {
             "type": "string",
-            "example": "ENS name of avatar holder"
+            "example": "PNS name of avatar holder"
           },
           "is_owner": {
             "type": "string",
@@ -418,15 +458,15 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "ENS name"
+            "example": "PNS name"
           },
           "description": {
             "type": "string",
-            "example": "Short ENS name description"
+            "example": "Short PNS name description"
           },
           "attributes": {
             "type": "string",
-            "example": "Custom traits about ENS"
+            "example": "Custom traits about PNS"
           },
           "name_length": {
             "type": "string",
@@ -434,11 +474,11 @@
           },
           "url": {
             "type": "string",
-            "example": "ENS App URL of the name"
+            "example": "PNS App URL of the name"
           },
           "version": {
             "type": "string",
-            "example": "ENS NFT version"
+            "example": "PNS NFT version"
           },
           "background_image": {
             "type": "string",
@@ -446,7 +486,7 @@
           },
           "image_url": {
             "type": "string",
-            "example": "URL of ENS NFT image"
+            "example": "URL of PNS NFT image"
           }
         },
         "required": [
@@ -472,7 +512,7 @@
       },
       "ensName": {
         "type": "string",
-        "example": "nick.eth",
+        "example": "nick.pls",
         "xml": {
           "name": "ensName"
         }
@@ -488,10 +528,7 @@
         "description": "Name of the chain to query for.",
         "type": "string",
         "enum": [
-          "mainnet",
-          "rinkeby",
-          "ropsten",
-          "goerli"
+          "pulse"
         ],
         "xml": {
           "name": "networkName"

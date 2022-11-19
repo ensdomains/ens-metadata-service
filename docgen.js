@@ -12,8 +12,8 @@ const endpointsFiles = ['./src/endpoint.ts'];
 const doc = {
   info: {
     version: '0.0.1-alpha.1',
-    title: 'ENS Metadata Service',
-    description: 'Set of endpoints to query ENS metadata and more',
+    title: 'PNS Metadata Service',
+    description: 'Set of endpoints to query PNS metadata and more',
     contact: 'contact@ens.domains',
     license: 'MIT License',
     x_logo: {
@@ -24,7 +24,7 @@ const doc = {
   host: SERVER_URL,
   definitions: {
     AvatarMetadata: {
-      $uri: 'ENS name of avatar holder',
+      $uri: 'PNS name of avatar holder',
       is_owner: 'Ownership verification of NFT',
       host_meta: {
         chain_id: 'Chain ID where NFT resides',
@@ -45,30 +45,30 @@ const doc = {
         youtube_url: 'Youtube URL of NFT'
     },
     ENSMetadata: {
-      $name: 'ENS name',
-      $description: 'Short ENS name description',
-      $attributes: 'Custom traits about ENS',
+      $name: 'PNS name',
+      $description: 'Short PNS name description',
+      $attributes: 'Custom traits about PNS',
       $name_length: 'Character length of ens name',
-      $url: 'ENS App URL of the name',
-      $version: 'ENS NFT version',
+      $url: 'PNS App URL of the name',
+      $version: 'PNS NFT version',
       $background_image: 'Origin URL of avatar image',
-      $image_url: 'URL of ENS NFT image',
+      $image_url: 'URL of PNS NFT image',
     },
     contractAddress: '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85',
-    ensName: 'nick.eth',
+    ensName: 'nick.pls',
     tokenId: '4221908525551133525058944220830153...',
     networkName: {
       description: 'Name of the chain to query for.',
-      '@enum': ['mainnet', 'rinkeby', 'ropsten', 'goerli'],
+      '@enum': ['pulse'],
     },
   },
   components: {
     examples: {
       AvatarMetadata: {
-        $uri: 'matoken.eth',
+        $uri: 'matoken.pls',
         is_owner: true,
         host_meta: {
-          chain_id: 1,
+          chain_id: 941,
           namespace: 'erc721',
           contract_address: '0x31385d3520bced94f77aae104b406994d8f2168c',
           token_id: '9421',
@@ -96,8 +96,8 @@ const doc = {
           'https://ipfs.io/ipfs/QmRagxjj2No4T8gNCjpM42mLZGQE3ZwMYdTFUYe6e6LMBG',
       },
       ENSMetadata: {
-        $name: 'nick.eth',
-        $description: 'nick.eth, an ENS name.',
+        $name: 'nick.pls',
+        $description: 'nick.pls, an PNS name.',
         $attributes: [
           {
             trait_type: 'Created Date',
@@ -121,10 +121,10 @@ const doc = {
           },
         ],
         name_length: 4,
-        url: 'https://app.ens.domains/name/nick.eth',
+        url: 'https://app.ens.domains/name/nick.pls',
         version: 0,
         background_image:
-          'https://metadata.ens.domains/mainnet/avatar/nick.eth',
+          'https://metadata.ens.domains/mainnet/avatar/nick.pls',
         image_url:
           'https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image',
       },

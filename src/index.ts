@@ -54,7 +54,7 @@ app.listen(PORT, () => {
 app.get(
   '/docs',
   docUI({
-    title: 'ENS Metadata Service',
+    title: 'PNS Metadata Service',
     specUrl: '/assets/doc_output.json',
   })
 );
