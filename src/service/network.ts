@@ -4,7 +4,8 @@ import { INFURA_API_KEY } from '../config';
 
 const WEB3_API = {
   INFURA: 'https://infura.io/v3/',
-  CLOUDFLARE: 'https://web3metadata.ens.domains/v1'
+  CLOUDFLARE: 'https://web3metadata.ens.domains/v1',
+  CLOUDFLARE_2: 'https://web3metadata2.ens.domains/v1'
 }
 
 const NETWORK = {
@@ -18,9 +19,10 @@ const NETWORK = {
 function getWeb3URL(api: string, network: string) {
   switch(api) {
     case WEB3_API.INFURA:
-      return `${WEB3_API.INFURA.replace('https://', `https://${network}.`)}${INFURA_API_KEY}`;
+      return `${api.replace('https://', `https://${network}.`)}${INFURA_API_KEY}`;
     case WEB3_API.CLOUDFLARE:
-      return `${WEB3_API.CLOUDFLARE}/${network}`
+    case WEB3_API.CLOUDFLARE_2:
+      return `${api}/${network}`
     default:
       throw Error('');
   }
@@ -30,7 +32,7 @@ export default function getNetwork(network: string): any {
   // currently subgraphs used under this function are outdated,
   // we will have namewrapper support and more attributes when latest subgraph goes to production
   let SUBGRAPH_URL: string;
-  let WEB3_URL = WEB3_API.INFURA;
+  let WEB3_URL = WEB3_API.CLOUDFLARE;
   switch (network) {
     case NETWORK.LOCAL:
       SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';
