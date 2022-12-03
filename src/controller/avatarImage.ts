@@ -28,12 +28,13 @@ export async function avatarImage(req: Request, res: Response) {
       /* #swagger.responses[200] = { 
            description: 'Image file'
       } */
-      res.writeHead(200, {
-        'Content-Type': mimeType,
-        'Content-Length': buffer.length,
-      });
-      res.end(buffer);
-      return;
+      if (!res.headersSent) {
+        res.writeHead(200, {
+          'Content-Type': mimeType,
+          'Content-Length': buffer.length,
+        }).end(buffer);
+        return;
+      }
     }
     /* #swagger.responses[404] = { 
            description: 'No results found' 

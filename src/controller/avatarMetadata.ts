@@ -29,7 +29,9 @@ export async function avatarMetadata(req: Request, res: Response) {
              description: 'Metadata object',
              schema: { $ref: '#/definitions/AvatarMetadata' }
       } */
-      res.status(200).json(meta);
+      if (!res.headersSent) {
+        res.status(200).json(meta);
+      }
     } else {
       /* #swagger.responses[404] = { 
              description: 'No results found' 

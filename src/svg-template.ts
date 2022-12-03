@@ -29,12 +29,7 @@ export default function createSVGfromTemplate({
   return `<svg width="270" height="270" viewBox="0 0 270 270" fill="none" xmlns="http://www.w3.org/2000/svg">
     ${
       backgroundImage
-        ? `<defs>
-          <pattern id="backImg" patternUnits="userSpaceOnUse" x="0" y="0" width="270" height="270">
-            <image href="data:${mimeType};base64,${backgroundImage}" width="270" height="270" />
-          </pattern>
-        </defs>
-        <rect width="270" height="270" fill="url(#backImg)"/>
+        ? `<image href="data:${mimeType};base64,${backgroundImage}" width="270" height="270"/>
         <rect width="270" height="270" fill="#000" fill-opacity=".12"/>`
         : isNormalized
           ? `<rect width="270" height="270" fill="url(#paint0_linear)"/>`

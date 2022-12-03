@@ -51,6 +51,7 @@ export async function getDomain(
   async function requestAvatar() {
     try {
       const [buffer, mimeType] = await getAvatarImage(provider, name);
+      if (mimeType === 'text/html') return;
       const base64 = buffer.toString('base64');
       return [base64, mimeType];
     } catch {

@@ -51,6 +51,8 @@ app.listen(PORT, () => {
   console.log(`APP_LOG::App listening on port ${PORT}`);
 });
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 app.get(
   '/docs',
   docUI({
