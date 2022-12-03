@@ -10,7 +10,7 @@ const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'Satoshi-Bold.ttf');
 const CANVAS_EMOJI_FONT_PATH = path.join(FONT_FOLDER, 'NotoColorEmoji.ttf');
 const INAMEWRAPPER = process.env.INAMEWRAPPER || '0xe89c48dc';
 
-const IPFS_GATEWAY = 'https://cloudflare-ipfs.com/';
+const IPFS_GATEWAY = 'https://ipfsmetadata.ens.domains/';
 const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
