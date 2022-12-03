@@ -5,7 +5,6 @@ import { RESPONSE_TIMEOUT } from '../config';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
 import getNetwork from '../service/network';
-import { getLabelhash } from '../utils/labelhash';
 
 /* istanbul ignore next */
 export async function ensImage(req: Request, res: Response) {
@@ -33,12 +32,13 @@ export async function ensImage(req: Request, res: Response) {
     if (result.image_url) {
       const base64 = result.image_url.replace('data:image/svg+xml;base64,', '');
       const buffer = Buffer.from(base64, 'base64');
-      res.writeHead(200, {
-        'Content-Type': 'image/svg+xml',
-        'Content-Length': buffer.length,
-      });
-      res.end(buffer);
-      return;
+      if (!res.headersSent) {
+        res.writeHead(200, {
+          'Content-Type': 'image/svg+xml',
+          'Content-Length': buffer.length,
+        }).end(buffer);
+        return;
+      }
     } else {
       throw Error('Image URL is missing.');
     }
