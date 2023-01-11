@@ -18,7 +18,7 @@ export async function avatarImage(req: Request, res: Response) {
   // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
   res.setTimeout(RESPONSE_TIMEOUT, () => {
     res.status(504).json({ message: 'Timeout' });
-  })
+  });
 
   const { name, networkName } = req.params;
   try {
@@ -29,10 +29,12 @@ export async function avatarImage(req: Request, res: Response) {
            description: 'Image file'
       } */
       if (!res.headersSent) {
-        res.writeHead(200, {
-          'Content-Type': mimeType,
-          'Content-Length': buffer.length,
-        }).end(buffer);
+        res
+          .writeHead(200, {
+            'Content-Type': mimeType,
+            'Content-Length': buffer.length,
+          })
+          .end(buffer);
         return;
       }
     }
@@ -52,22 +54,18 @@ export async function avatarImage(req: Request, res: Response) {
       error instanceof ResolverNotFound ||
       error instanceof RetrieveURIFailed ||
       error instanceof TextRecordNotFound ||
-      error instanceof UnsupportedNamespace
+      error instanceof UnsupportedNamespace ||
+      error instanceof UnsupportedNetwork
     ) {
+      /* #swagger.responses[501] = { 
+          description: 'Unsupported network' 
+      } */
       if (!res.headersSent) {
         res.status(errCode).json({
           message: error.message,
         });
       }
       return;
-    }
-    /* #swagger.responses[501] = { 
-          description: 'Unsupported network' 
-    } */
-    if (error instanceof UnsupportedNetwork) {
-      res.status(501).json({
-        message: error.message,
-      });
     }
   }
 }

@@ -11,22 +11,20 @@ import listen from 'test-listen';
 
 import { MockEntry } from '../mock/entry.mock';
 import {
-  EthCallResponse,
-  EthChainIdResponse,
-  NetVersionResponse,
   TestContext,
 } from '../mock/interface';
 import * as app from './index';
-import { SERVER_URL as server_url } from './config';
+import { ADDRESS_NAME_WRAPPER, SERVER_URL as server_url } from './config';
 import getNetwork from './service/network';
 import { GET_DOMAINS } from './service/subgraph';
+import { nockProvider, requireUncached } from '../mock/helper';
 
 const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } =
-  getNetwork('rinkeby');
+  getNetwork('goerli');
 const WEB3_URL = new URL(web3_url);
 const SERVER_URL = new URL(server_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
-const NAME_WRAPPER_ADDRESS = '0x4D83cea620E3864F912046b73bB3a6c04Da75990';
+const NAME_WRAPPER_ADDRESS = ADDRESS_NAME_WRAPPER;
 const NON_CONTRACT_ADDRESS = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B';
 
 /* Mocks */
@@ -74,29 +72,6 @@ const longsubdomainconsistof34charactersMdt = new MockEntry({
   resolver: { texts: null },
 });
 
-/* Helper functions */
-
-function nockProvider(
-  method: string,
-  params: any[],
-  response: EthCallResponse | EthChainIdResponse | NetVersionResponse
-) {
-  nock(WEB3_URL.origin)
-    .persist()
-    .post(WEB3_URL.pathname, {
-      method,
-      params,
-      id: /[0-9]/,
-      jsonrpc: '2.0',
-    })
-    .reply(200, response);
-}
-
-function requireUncached(module: string) {
-  delete require.cache[require.resolve(module)];
-  return require(module);
-}
-
 /* Test Setup */
 
 const test = avaTest as TestFn<TestContext>;
@@ -108,17 +83,18 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
   nock.enableNetConnect(SERVER_URL.host);
 
-  nockProvider('eth_chainId', [], {
+  nockProvider(WEB3_URL, 'eth_chainId', [], {
     id: 1,
     jsonrpc: '2.0',
-    result: '0x04', // rinkeby
+    result: '0x04', // goerli
   });
-  nockProvider('net_version', [], {
+  nockProvider(WEB3_URL, 'net_version', [], {
     jsonrpc: '2.0',
     id: 1,
     result: '4',
   });
   nockProvider(
+    WEB3_URL,
     'eth_call',
     [
       {
@@ -133,6 +109,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     }
   );
   nockProvider(
+    WEB3_URL,
     'eth_call',
     [
       {
@@ -147,6 +124,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     }
   );
   nockProvider(
+    WEB3_URL,
     'eth_call',
     [
       {
@@ -163,6 +141,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // something.eth recordExist true
   nockProvider(
+    WEB3_URL,
     'eth_call',
     [
       {
@@ -179,6 +158,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // // NON-contract supportsInterface 0x0
   nockProvider(
+    WEB3_URL,
     'eth_call',
     [
       {
@@ -213,7 +193,7 @@ test('get welcome message', async (t: ExecutionContext<TestContext>) => {
 
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${wrappertest3.namehash}`,
     options
   ).json();
   t.deepEqual(result, wrappertest3.expect);
@@ -222,7 +202,7 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
   const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${intId}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${intId}`,
     options
   ).json();
   t.deepEqual(result, wrappertest3.expect);
@@ -230,7 +210,7 @@ test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<
 
 test('get /:contractAddress/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`,
     options
   ).json();
   t.deepEqual(result, sub1Wrappertest.expect);
@@ -238,7 +218,7 @@ test('get /:contractAddress/:tokenId for subdomain returns auto generated image'
 
 test('get /:contractAddress/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${sub2Wrappertest9.namehash}`,
     options
   ).json();
   t.deepEqual(result, sub2Wrappertest9.expect);
@@ -246,7 +226,7 @@ test('get /:contractAddress/:tokenId for subdomain returns image from text recor
 
 test('get /:contractAddress/:tokenId for a 21 char long domain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${handle21character.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${handle21character.namehash}`,
     options
   ).json();
   t.deepEqual(result, handle21character.expect);
@@ -254,7 +234,7 @@ test('get /:contractAddress/:tokenId for a 21 char long domain', async (t: Execu
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long domain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${supercalifragilisticexpialidocious.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${supercalifragilisticexpialidocious.namehash}`,
     options
   ).json();
   t.deepEqual(result, supercalifragilisticexpialidocious.expect);
@@ -262,7 +242,7 @@ test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long domain', a
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long subdomain', async (t: ExecutionContext<TestContext>) => {
   const result = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${longsubdomainconsistof34charactersMdt.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${longsubdomainconsistof34charactersMdt.namehash}`,
     options
   ).json();
   t.deepEqual(result, longsubdomainconsistof34charactersMdt.expect);
@@ -272,7 +252,7 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
   const {
     response: { statusCode, body },
   }: HTTPError = await t.throwsAsync(
-    () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
+    () => got(`goerli/${NAME_WRAPPER_ADDRESS}/${unknown.namehash}`, options),
     { instanceOf: HTTPError }
   ) as HTTPError;
   const message = JSON.parse(body as string)?.message;
@@ -282,7 +262,7 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
 
 test('get /:contractAddress/:tokenId for unknown namehash on subgraph but registered', async (t: ExecutionContext<TestContext>) => {
   const { message }: any = await got(
-    `rinkeby/${NAME_WRAPPER_ADDRESS}/${unknownRegistered.namehash}`,
+    `goerli/${NAME_WRAPPER_ADDRESS}/${unknownRegistered.namehash}`,
     options
   ).json();
   t.deepEqual(message, unknownRegistered.expect);
@@ -292,13 +272,13 @@ test('get /:contractAddress/:tokenId for empty tokenId', async (t: ExecutionCont
   const {
     response: { statusCode, body },
   }: HTTPError = await t.throwsAsync(
-    () => got(`rinkeby/${NAME_WRAPPER_ADDRESS}/`, options),
+    () => got(`goerli/${NAME_WRAPPER_ADDRESS}/`, options),
     {
       instanceOf: HTTPError,
     }
   ) as HTTPError;
   t.assert(
-    (body as string).includes(`Cannot GET /rinkeby/${NAME_WRAPPER_ADDRESS}/`)
+    (body as string).includes(`Cannot GET /goerli/${NAME_WRAPPER_ADDRESS}/`)
   );
   t.is(statusCode, 404);
 });
@@ -321,7 +301,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`goerli/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -354,7 +334,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`goerli/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -387,7 +367,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     response: { body, statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`goerli/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -415,7 +395,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
     response: { statusCode },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`rinkeby/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`goerli/${NAME_WRAPPER_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
@@ -431,7 +411,7 @@ test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => 
     response: { body },
   }: HTTPError = await t.throwsAsync(
     () =>
-      got(`rinkeby/${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`goerli/${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),

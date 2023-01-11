@@ -14,9 +14,14 @@ const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
 const { validate }                   = require('@ensdomains/ens-validation');
 
-registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
 
-registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
+try {
+  registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
+  registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
+} catch(error) {
+  console.warn("Font registeration is failed.");
+  console.warn(error);
+}
 
 
 export interface MetadataInit {

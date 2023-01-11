@@ -1,6 +1,7 @@
 import { utils } from 'ethers';
 import nock from 'nock';
 import { Version } from '../src/base';
+import { ADDRESS_NAME_WRAPPER } from '../src/config';
 import { Metadata } from '../src/service/metadata';
 import getNetwork from '../src/service/network';
 import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/service/subgraph';
@@ -10,7 +11,7 @@ import {
   RegistrationResponse,
 } from './interface';
 
-const { SUBGRAPH_URL: subgraph_url } = getNetwork('rinkeby');
+const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
 const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
@@ -91,10 +92,10 @@ export class MockEntry {
     });
 
     (_metadata as Metadata).setImage(
-      `https://metadata.ens.domains/rinkeby/0x4D83cea620E3864F912046b73bB3a6c04Da75990/${this.namehash}/image`
+      `https://metadata.ens.domains/goerli/${ADDRESS_NAME_WRAPPER}/${this.namehash}/image`
     );
     (_metadata as Metadata).setBackground(
-      `https://metadata.ens.domains/rinkeby/avatar/${name}`
+      `https://metadata.ens.domains/goerli/avatar/${name}`
     );
 
     this.domainResponse = {
