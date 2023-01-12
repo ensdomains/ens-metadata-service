@@ -9,8 +9,6 @@ import { getDomain } from './domain';
 import getNetwork from './network';
 import { GET_DOMAINS_BY_LABELHASH, GET_REGISTRATIONS } from './subgraph';
 
-const canvas = require('canvas');
-
 const test = avaTest as TestFn<TestContext>;
 const NETWORK = 'mainnet';
 
