@@ -92,14 +92,14 @@ test('should replace ipns:// with IPNS gateway prefix', async (t: ExecutionConte
 });
 
 test('should replace /ipns/ with IPNS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  // Should only replace the first occurence of /ipns/
+  // Should only replace the first occurrence of /ipns/
   const uri = '/ipns/testing/ipns/other';
   const { uri: resolvedURI } = utils.resolveURI(uri, { ipfs: IPFS_GATEWAY } );
   t.is(IPFS_GATEWAY + 'ipns/' + 'testing/ipns/other', resolvedURI);
 });
 
 test('should replace ipns/ with IPNS gateway prefix', async (t: ExecutionContext<TestContext>) => {
-  // Should only replace the first occurence of ipns/
+  // Should only replace the first occurrence of ipns/
   const uri = 'ipns/testing/ipns/other';
   const { uri: resolvedURI } = utils.resolveURI(uri, { ipfs: IPFS_GATEWAY } );
   t.is(IPFS_GATEWAY + 'ipns/' + 'testing/ipns/other', resolvedURI);
