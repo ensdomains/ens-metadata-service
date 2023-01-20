@@ -18,7 +18,7 @@ export async function avatarMetadata(req: Request, res: Response) {
   // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
   res.setTimeout(RESPONSE_TIMEOUT, () => {
     res.status(504).json({ message: 'Timeout' });
-  })
+  });
 
   const { name, networkName } = req.params;
   try {
@@ -48,20 +48,18 @@ export async function avatarMetadata(req: Request, res: Response) {
       error instanceof ResolverNotFound ||
       error instanceof RetrieveURIFailed ||
       error instanceof TextRecordNotFound ||
-      error instanceof UnsupportedNamespace
+      error instanceof UnsupportedNamespace ||
+      error instanceof UnsupportedNetwork
     ) {
-      res.status(errCode).json({
-        message: error.message,
-      });
-      return;
-    }
-    /* #swagger.responses[501] = { 
+      /* #swagger.responses[501] = { 
           description: 'Unsupported network' 
-    } */
-    if (error instanceof UnsupportedNetwork) {
-      res.status(501).json({
-        message: error.message,
-      });
+      } */
+      if (!res.headersSent) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+      }
+      return;
     }
   }
 }

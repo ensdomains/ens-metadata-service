@@ -58,7 +58,7 @@ export default function getNetwork(network: string): any {
       WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.MAINNET);
       break;
     default:
-      throw new UnsupportedNetwork(`Unknown network '${network}'`, 400);
+      throw new UnsupportedNetwork(`Unknown network '${network}'`, 501);
   }
   const provider = new ethers.providers.StaticJsonRpcProvider(WEB3_URL);
   return { WEB3_URL, SUBGRAPH_URL, provider };

@@ -29,7 +29,7 @@ export async function queryNFT(uri: string) {
   if (!networkName)
     throw new UnsupportedNetwork(
       `chainID ${chainID.toString()} is unsupported`,
-      400
+      501
     );
   const { provider } = getNetwork(networkName);
   // retrieve metadata, omit "is_owner" field

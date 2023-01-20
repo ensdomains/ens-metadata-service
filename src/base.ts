@@ -46,6 +46,9 @@ export class NFTURIParsingError extends BaseError {}
 export interface ContractMismatchError {}
 export class ContractMismatchError extends BaseError {}
 
+export interface NamehashMismatchError {}
+export class NamehashMismatchError extends BaseError {}
+
 export interface OwnerNotFoundError {}
 export class OwnerNotFoundError extends BaseError {}
 

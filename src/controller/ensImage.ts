@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { FetchError } from 'node-fetch';
-import { ContractMismatchError, UnsupportedNetwork } from '../base';
+import { ContractMismatchError, ExpiredNameError, NamehashMismatchError, UnsupportedNetwork } from '../base';
 import { RESPONSE_TIMEOUT } from '../config';
 import { checkContract } from '../service/contract';
 import { getDomain } from '../service/domain';
@@ -45,8 +45,10 @@ export async function ensImage(req: Request, res: Response) {
     /* #swagger.responses[200] = { 
         description: 'Image file'
     } */
-  } catch (error) {
-    if (error instanceof FetchError || error instanceof ContractMismatchError) {
+  } catch (error: any) {
+    const errCode = (error?.code && Number(error.code)) || 500;
+
+    if (error instanceof FetchError) {
       /* #swagger.responses[404] = { 
            description: 'No results found' 
       } */
@@ -55,15 +57,25 @@ export async function ensImage(req: Request, res: Response) {
       });
       return;
     }
+
+    /* #swagger.responses[500] = { 
+             description: 'Internal Server Error'
+    } */
     /* #swagger.responses[501] = { 
            description: 'Unsupported network' 
     } */
-    if (error instanceof UnsupportedNetwork) {
-      res.status(501).json({
+    if (
+      error instanceof ContractMismatchError ||
+      error instanceof ExpiredNameError ||
+      error instanceof NamehashMismatchError ||
+      error instanceof UnsupportedNetwork
+    ) {
+      res.status(errCode).json({
         message: error.message,
       });
       return;
     }
+
     /* #swagger.responses[404] = { 
            description: 'No results found' 
     } */

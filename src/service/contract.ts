@@ -14,7 +14,7 @@ export async function checkContract(
   provider: ethers.providers.BaseProvider,
   contractAddress: string,
   identifier: string
-): Promise<{tokenId: string, version: Version}> {
+): Promise<{ tokenId: string; version: Version }> {
   const _contractAddress = ethers.utils.getAddress(contractAddress);
   const contract = new ethers.Contract(
     _contractAddress,
@@ -35,7 +35,7 @@ export async function checkContract(
         return { tokenId: _tokenId, version: Version.v1w };
       }
     } catch (error) {
-      console.warn('error', error);
+      console.warn(`error for ${_contractAddress}`, error);
       // throw new OwnerNotFoundError(
       //   `Checking owner of ${tokenId} failed. Reason: ${error}`
       // );
@@ -43,17 +43,13 @@ export async function checkContract(
     return { tokenId: _tokenId, version: Version.v1 };
   } else {
     try {
-      if (_contractAddress !== ADDRESS_ETH_REGISTRAR) {
-        const isInterfaceSupported = await contract.supportsInterface(INAMEWRAPPER);
-        assert(isInterfaceSupported);
-        return { tokenId: getNamehash(identifier), version: Version.v2 };
-      }
-    } catch (error) {
-      console.warn('error here', error);
-      throw new ContractMismatchError(
-        `${_contractAddress} does not match with any ENS related contract`,
-        400
+      const isInterfaceSupported = await contract.supportsInterface(
+        INAMEWRAPPER
       );
+      assert(isInterfaceSupported);
+      return { tokenId: getNamehash(identifier), version: Version.v2 };
+    } catch (error) {
+      console.warn(`error for ${_contractAddress}`, error);
     }
   }
 
