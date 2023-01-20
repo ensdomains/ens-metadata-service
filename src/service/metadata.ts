@@ -8,7 +8,7 @@ import base64EncodeUnicode                      from '../utils/base64encode';
 import { isASCII, findCharacterSet }            from '../utils/characterSet';
 import { getCodePointLength, getSegmentLength } from '../utils/charLength';
 
-// no ts decleration files
+// no ts declaration files
 
 const { createCanvas, registerFont } = require('canvas');
 const namehash                       = require('@ensdomains/eth-ens-namehash');
@@ -220,7 +220,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
   }
 
   private _checkNormalized(name: string) {
-    // this method can be used to filter many unformal name type
+    // this method can be used to filter many informal name types
     try {
       return name === namehash.normalize(name);
     } catch {
