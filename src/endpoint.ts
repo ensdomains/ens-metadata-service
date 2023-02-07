@@ -6,6 +6,7 @@ import { ensRasterize } from './controller/ensRasterize';
 import { avatarMetadata } from './controller/avatarMetadata';
 import { avatarImage } from './controller/avatarImage';
 import { queryNFTep } from './controller/queryNFT';
+import { preview } from './controller/preview';
 
 export default function (app: Express) {
   // #swagger.ignore = true
@@ -33,4 +34,6 @@ export default function (app: Express) {
   app.get('/:networkName/avatar/:name', avatarImage);
 
   app.get('/queryNFT', queryNFTep);
+
+  app.get('/preview/:name', preview);
 }

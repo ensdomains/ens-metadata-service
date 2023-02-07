@@ -68,6 +68,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -112,6 +115,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -203,6 +209,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -238,6 +247,9 @@
           },
           "501": {
             "description": "Unsupported network"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
@@ -261,6 +273,33 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/preview/{name}": {
+      "get": {
+        "description": "ENS NFT preview",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ENS name."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image file"
+          },
+          "404": {
+            "description": "No results found"
+          },
+          "504": {
+            "description": "Gateway Timeout"
           }
         }
       }
