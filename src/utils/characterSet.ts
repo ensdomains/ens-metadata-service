@@ -11,9 +11,7 @@ export function findCharacterSet(label: string): CharacterSet {
   // \p{N} or \p{Number}: any kind of numeric character in any script.
   if (/^[\p{L}\p{N}]*$/u.test(label)) return characterSet.ALPHANUMERIC;
   // regex emoji only
-  const emojiRxp = emojiRegex();
-  const newEmojiRxp = new RegExp(`^(${emojiRxp.source})+$`, emojiRxp.flags);
-  if (newEmojiRxp.test(label)) return characterSet.EMOJI;
+  if (/^[\p{Extended_Pictographic}|\p{Emoji_Component}]+$/gu.test(label)) return characterSet.EMOJI;
 
   return characterSet.MIXED;
 }
