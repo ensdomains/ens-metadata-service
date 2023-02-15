@@ -1,4 +1,4 @@
-import * as http from 'http';
+import * as http   from 'http';
 import { Version } from '../src/base';
 
 export interface DomainResponse {
@@ -27,6 +27,13 @@ export interface RegistrationResponse {
     labelName: string;
     registrationDate: string;
   }[];
+}
+
+export interface WrappedDomainResponse {
+  wrappedDomain: {
+    expiryDate: number;
+    fuses: number;
+  };
 }
 
 export interface EthChainIdResponse {

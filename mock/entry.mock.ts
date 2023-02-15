@@ -1,25 +1,33 @@
-import { utils } from 'ethers';
-import nock from 'nock';
-import { Version } from '../src/base';
+import { utils }                from 'ethers';
+import nock                     from 'nock';
+import { Version }              from '../src/base';
 import { ADDRESS_NAME_WRAPPER } from '../src/config';
-import { Metadata } from '../src/service/metadata';
-import getNetwork from '../src/service/network';
-import { GET_DOMAINS, GET_REGISTRATIONS } from '../src/service/subgraph';
+import { Metadata }             from '../src/service/metadata';
+import getNetwork               from '../src/service/network';
+import { decodeFuses }          from '../src/utils/fuse';
+import {
+  GET_DOMAINS,
+  GET_REGISTRATIONS,
+  GET_WRAPPED_DOMAIN,
+}                               from '../src/service/subgraph';
 import {
   DomainResponse,
   MockEntryBody,
   RegistrationResponse,
-} from './interface';
+  WrappedDomainResponse,
+}                               from './interface';
+
+const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
-const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 export class MockEntry {
   public name: string;
   public namehash: string;
   public domainResponse!: DomainResponse | null;
   public registrationResponse: RegistrationResponse | null = null;
+  public wrappedDomainResponse: WrappedDomainResponse | null = null;
   public expect: Metadata | string;
   constructor({
     name,
@@ -47,11 +55,12 @@ export class MockEntry {
           variables: {
             tokenId: this.namehash,
           },
-          operationName: "getDomains"
+          operationName: 'getDomains',
         })
         .reply(statusCode, {
           data: null,
-        }).persist(persist);
+        })
+        .persist(persist);
       return;
     }
 
@@ -70,10 +79,10 @@ export class MockEntry {
           variables: {
             tokenId: this.namehash,
           },
-          operationName: "getDomains"
+          operationName: 'getDomains',
         })
         .reply(statusCode, {
-          data: { domain: {}},
+          data: { domain: {} },
         })
         .persist(persist);
       return;
@@ -141,10 +150,44 @@ export class MockEntry {
           variables: {
             labelhash,
           },
-          operationName: "getRegistration"
+          operationName: 'getRegistration',
         })
         .reply(statusCode, {
           data: this.registrationResponse,
+        })
+        .persist(persist);
+    }
+
+    if (version === Version.v2) {
+      const fuses = 1;
+      this.wrappedDomainResponse = {
+        wrappedDomain: {
+          expiryDate: expiryDate,
+          fuses,
+        },
+      };
+
+      _metadata.addAttribute({
+        trait_type: 'Namewrapper Fuse States',
+        display_type: 'object',
+        value: decodeFuses(fuses),
+      });
+      _metadata.addAttribute({
+        trait_type: 'Namewrapper Expiry Date',
+        display_type: 'date',
+        value: expiryDate * 1000,
+      });
+
+      nock(SUBGRAPH_URL.origin)
+        .post(SUBGRAPH_URL.pathname, {
+          query: GET_WRAPPED_DOMAIN,
+          variables: {
+            tokenId: this.namehash,
+          },
+          operationName: 'getWrappedDomain',
+        })
+        .reply(statusCode, {
+          data: this.wrappedDomainResponse,
         })
         .persist(persist);
     }
@@ -157,7 +200,7 @@ export class MockEntry {
         variables: {
           tokenId: this.namehash,
         },
-        operationName: "getDomains"
+        operationName: 'getDomains',
       })
       .reply(statusCode, {
         data: this.domainResponse,
