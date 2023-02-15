@@ -12,6 +12,7 @@ const INAMEWRAPPER = process.env.INAMEWRAPPER || '0x81b4e24c';
 
 const IPFS_GATEWAY = 'https://ipfsmetadata.ens.domains/';
 const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
+const GOOGLE_WEB3_URL = process.env.GOOGLE_WEB3_URL || '';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
 const ADDRESS_ETH_REGISTRY = process.env.ADDRESS_ETH_REGISTRY || '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
@@ -37,6 +38,7 @@ export {
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
+  GOOGLE_WEB3_URL,
   RESPONSE_TIMEOUT,
   SERVER_URL,
 };
