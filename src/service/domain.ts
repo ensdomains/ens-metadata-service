@@ -1,27 +1,28 @@
-import { request } from 'graphql-request';
-import { ethers } from 'ethers';
+import { request }        from 'graphql-request';
+import { ethers }         from 'ethers';
 import {
   GET_REGISTRATIONS,
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
-} from './subgraph';
-import { Metadata } from './metadata';
+}                         from './subgraph';
+import { Metadata }       from './metadata';
 import { getAvatarImage } from './avatar';
 import {
   ExpiredNameError,
   NamehashMismatchError,
   SubgraphRecordNotFound,
   Version,
-} from '../base';
-import { getNamehash } from '../utils/namehash';
+}                         from '../base';
+import { NetworkName }    from './network';
+import { getNamehash }    from '../utils/namehash';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
 const GRACE_PERIOD_MS = 7776000000; // 90 days as milliseconds
 
 export async function getDomain(
-  provider: any,
-  networkName: string,
+  provider: ethers.providers.BaseProvider,
+  networkName: NetworkName,
   SUBGRAPH_URL: string,
   contractAddress: string,
   tokenId: string,
@@ -39,7 +40,7 @@ export async function getDomain(
     intId = ethers.BigNumber.from(tokenId).toString();
     hexId = tokenId;
   }
-  const queryDocument: any =
+  const queryDocument: string =
     version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
   const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
   const domain = version !== Version.v2 ? result.domains[0] : result.domain;

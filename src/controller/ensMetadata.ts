@@ -1,24 +1,24 @@
-import { strict as assert } from 'assert';
-import { Contract } from 'ethers';
-import { Request, Response } from 'express';
-import { FetchError } from 'node-fetch';
+import { strict as assert }        from 'assert';
+import { Contract }                from 'ethers';
+import { Request, Response }       from 'express';
+import { FetchError }              from 'node-fetch';
 import {
   ContractMismatchError,
   ExpiredNameError,
   NamehashMismatchError,
   UnsupportedNetwork,
   Version,
-} from '../base';
+}                                  from '../base';
 import {
   ADDRESS_ETH_REGISTRY,
   ETH_REGISTRY_ABI,
   RESPONSE_TIMEOUT,
-} from '../config';
-import { checkContract } from '../service/contract';
-import { getDomain } from '../service/domain';
-import { Metadata } from '../service/metadata';
-import getNetwork from '../service/network';
-import { constructEthNameHash } from '../utils/namehash';
+}                                  from '../config';
+import { checkContract }           from '../service/contract';
+import { getDomain }               from '../service/domain';
+import { Metadata }                from '../service/metadata';
+import getNetwork, { NetworkName } from '../service/network';
+import { constructEthNameHash }    from '../utils/namehash';
 
 export async function ensMetadata(req: Request, res: Response) {
   // #swagger.description = 'ENS NFT metadata'
@@ -30,7 +30,7 @@ export async function ensMetadata(req: Request, res: Response) {
   });
 
   const { contractAddress, networkName, tokenId: identifier } = req.params;
-  const { provider, SUBGRAPH_URL } = getNetwork(networkName);
+  const { provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName);
   let tokenId, version;
   try {
     ({ tokenId, version } = await checkContract(
@@ -40,7 +40,7 @@ export async function ensMetadata(req: Request, res: Response) {
     ));
     const result = await getDomain(
       provider,
-      networkName,
+      networkName as NetworkName,
       SUBGRAPH_URL,
       contractAddress,
       tokenId,
