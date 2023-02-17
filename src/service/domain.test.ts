@@ -1,13 +1,18 @@
 import avaTest, { ExecutionContext, TestFn } from 'ava';
-import { ethers } from 'ethers';
-import nock from 'nock';
-import { nockProvider } from '../../mock/helper';
-import { TestContext } from '../../mock/interface';
-import { NamehashMismatchError, Version } from '../base';
-import { ADDRESS_ETH_REGISTRAR } from '../config';
-import { getDomain } from './domain';
-import getNetwork from './network';
-import { GET_DOMAINS_BY_LABELHASH, GET_REGISTRATIONS } from './subgraph';
+import { ethers }                            from 'ethers';
+import nock                                  from 'nock';
+import { nockProvider }                      from '../../mock/helper';
+import { TestContext }                       from '../../mock/interface';
+import { NamehashMismatchError, Version }    from '../base';
+import { ADDRESS_ETH_REGISTRAR }             from '../config';
+import { createBatchQuery }                  from '../utils/batchQuery';
+import { getDomain }                         from './domain';
+import getNetwork                            from './network';
+import {
+  GET_DOMAINS_BY_LABELHASH,
+  GET_REGISTRATIONS,
+  GET_WRAPPED_DOMAIN,
+}                                            from './subgraph';
 
 const test = avaTest as TestFn<TestContext>;
 const NETWORK = 'mainnet';
@@ -60,15 +65,20 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     }
   );
 
+  const newBatchQuery = createBatchQuery('getDomainInfo')
+    .add(GET_DOMAINS_BY_LABELHASH)
+    .add(GET_REGISTRATIONS)
+    .add(GET_WRAPPED_DOMAIN);
+
   // fake vitalik.eth with nullifier
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
-      query: GET_DOMAINS_BY_LABELHASH,
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+      query: newBatchQuery.query(),
       variables: {
         tokenId:
           '0x3581397a478dcebdc1ee778deed625697f624c6f7dbed8bb7f780a6ac094b772',
       },
-      operationName: 'getDomains',
+      operationName: 'getDomainInfo',
     })
     .reply(200, {
       data: {
@@ -85,18 +95,20 @@ test.before(async (t: ExecutionContext<TestContext>) => {
             resolver: null,
           },
         ],
+        registrations: [],
+        wrappedDomain: null,
       },
     });
 
   // original vitalik.eth
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
-      query: GET_DOMAINS_BY_LABELHASH,
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+      query: newBatchQuery.query(),
       variables: {
         tokenId:
           '0xaf2caa1c2ca1d027f1ac823b529d0a67cd144264b2789fa2ea4d63a67c7103cc',
       },
-      operationName: 'getDomains',
+      operationName: 'getDomainInfo',
     })
     .reply(200, {
       data: {
@@ -116,20 +128,6 @@ test.before(async (t: ExecutionContext<TestContext>) => {
             },
           },
         ],
-      },
-    });
-
-  nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
-      query: GET_REGISTRATIONS,
-      variables: {
-        labelhash:
-          '0xaf2caa1c2ca1d027f1ac823b529d0a67cd144264b2789fa2ea4d63a67c7103cc',
-      },
-      operationName: 'getRegistration',
-    })
-    .reply(200, {
-      data: {
         registrations: [
           {
             labelName: 'vitalik',
@@ -137,6 +135,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
             expiryDate: '2032977474',
           },
         ],
+        wrappedDomain: null,
       },
     });
 });
