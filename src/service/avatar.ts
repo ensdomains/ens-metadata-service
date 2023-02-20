@@ -1,14 +1,15 @@
 import { AvatarResolver }   from '@ensdomains/ens-avatar';
 import { BaseProvider }     from '@ethersproject/providers';
 import { strict as assert } from 'assert';
+import { ethers }           from 'ethers';
 import { JSDOM }            from 'jsdom';
-import fetch                from 'node-fetch';
 import {
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
 }                           from '../base';
 import { IPFS_GATEWAY }     from '../config';
+import { abortableFetch }   from '../utils/abortableFetch';
 
 const window = new JSDOM('').window;
 
@@ -41,9 +42,9 @@ export interface AvatarMetadata {
 }
 
 export class AvatarMetadata {
-  defaultProvider: any;
+  defaultProvider: ethers.providers.BaseProvider;
   avtResolver: AvatarResolver;
-  constructor(provider: any, uri: string) {
+  constructor(provider: ethers.providers.BaseProvider, uri: string) {
     this.defaultProvider = provider;
     this.avtResolver = new AvatarResolver(provider, { ipfs: IPFS_GATEWAY });
     this.uri = uri;
@@ -75,7 +76,8 @@ export class AvatarMetadata {
     }
 
     if (avatarURI?.startsWith('http')) {
-      const response = await fetch(avatarURI);
+      // abort fetching image after 5sec
+      const response = await abortableFetch(avatarURI, { timeout: 5000 });
 
       assert(response, 'Response is empty');
 

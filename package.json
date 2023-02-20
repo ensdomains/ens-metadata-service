@@ -29,6 +29,7 @@
     "lodash": "^4.17.21",
     "multiformats": "^9.4.8",
     "redoc-express": "^1.0.0",
+    "timeout-signal": "^1.0.0",
     "tsc": "^2.0.3"
   },
   "scripts": {
