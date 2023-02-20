@@ -1,6 +1,6 @@
 import { utils, specs, UnsupportedNamespace } from '@ensdomains/ens-avatar';
-import getNetwork from '../service/network';
-import { UnsupportedNetwork } from '../base';
+import getNetwork, { NetworkName }            from '../service/network';
+import { UnsupportedNetwork }                 from '../base';
 
 const networks: { [key: string]: string } = {
   '1': 'mainnet',
@@ -31,7 +31,7 @@ export async function queryNFT(uri: string) {
       `chainID ${chainID.toString()} is unsupported`,
       501
     );
-  const { provider } = getNetwork(networkName);
+  const { provider } = getNetwork(networkName as NetworkName);
   // retrieve metadata, omit "is_owner" field
   const { is_owner, ...metadata } = await spec.getMetadata(
     provider,

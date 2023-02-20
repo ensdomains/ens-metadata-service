@@ -1,10 +1,15 @@
-import { Request, Response } from 'express';
-import { FetchError } from 'node-fetch';
-import { ContractMismatchError, ExpiredNameError, NamehashMismatchError, UnsupportedNetwork } from '../base';
-import { RESPONSE_TIMEOUT } from '../config';
-import { checkContract } from '../service/contract';
-import { getDomain } from '../service/domain';
-import getNetwork from '../service/network';
+import { Request, Response }       from 'express';
+import { FetchError }              from 'node-fetch';
+import {
+  ContractMismatchError,
+  ExpiredNameError,
+  NamehashMismatchError,
+  UnsupportedNetwork,
+}                                  from '../base';
+import { RESPONSE_TIMEOUT }        from '../config';
+import { checkContract }           from '../service/contract';
+import { getDomain }               from '../service/domain';
+import getNetwork, { NetworkName } from '../service/network';
 
 /* istanbul ignore next */
 export async function ensImage(req: Request, res: Response) {
@@ -19,11 +24,15 @@ export async function ensImage(req: Request, res: Response) {
   const { contractAddress, networkName, tokenId: identifier } = req.params;
 
   try {
-    const { provider, SUBGRAPH_URL } = getNetwork(networkName);
-    const { tokenId, version } = await checkContract(provider, contractAddress, identifier);
+    const { provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName);
+    const { tokenId, version } = await checkContract(
+      provider,
+      contractAddress,
+      identifier
+    );
     const result = await getDomain(
       provider,
-      networkName,
+      networkName as NetworkName,
       SUBGRAPH_URL,
       contractAddress,
       tokenId,
@@ -33,10 +42,12 @@ export async function ensImage(req: Request, res: Response) {
       const base64 = result.image_url.replace('data:image/svg+xml;base64,', '');
       const buffer = Buffer.from(base64, 'base64');
       if (!res.headersSent) {
-        res.writeHead(200, {
-          'Content-Type': 'image/svg+xml',
-          'Content-Length': buffer.length,
-        }).end(buffer);
+        res
+          .writeHead(200, {
+            'Content-Type': 'image/svg+xml',
+            'Content-Length': buffer.length,
+          })
+          .end(buffer);
         return;
       }
     } else {

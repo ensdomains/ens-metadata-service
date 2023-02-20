@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { FetchError } from 'node-fetch';
+import { Request, Response }       from 'express';
+import { FetchError }              from 'node-fetch';
 import {
   NFTURIParsingError,
   ResolverNotFound,
@@ -7,10 +7,10 @@ import {
   TextRecordNotFound,
   UnsupportedNamespace,
   UnsupportedNetwork,
-} from '../base';
-import { RESPONSE_TIMEOUT } from '../config';
-import { getAvatarMeta } from '../service/avatar';
-import getNetwork from '../service/network';
+}                                  from '../base';
+import { RESPONSE_TIMEOUT }        from '../config';
+import { getAvatarMeta }           from '../service/avatar';
+import getNetwork, { NetworkName } from '../service/network';
 
 export async function avatarMetadata(req: Request, res: Response) {
   // #swagger.description = 'ENS avatar metadata'
@@ -22,7 +22,7 @@ export async function avatarMetadata(req: Request, res: Response) {
 
   const { name, networkName } = req.params;
   try {
-    const { provider } = getNetwork(networkName);
+    const { provider } = getNetwork(networkName as NetworkName);
     const meta = await getAvatarMeta(provider, name, networkName);
     if (meta) {
       /* #swagger.responses[200] = { 
