@@ -290,7 +290,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
     statusCode: 404,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -323,7 +323,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     statusCode: 500,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -356,7 +356,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     statusCode: 500,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -382,7 +382,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
 
 test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,

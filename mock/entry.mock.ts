@@ -42,7 +42,7 @@ export class MockEntry {
     if (!registered) {
       this.expect = 'No results found.';
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname, {
+        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
           query: GET_DOMAINS,
           variables: {
             tokenId: this.namehash,
@@ -65,7 +65,7 @@ export class MockEntry {
       });
       this.expect = JSON.parse(JSON.stringify(unknownMetadata));
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname, {
+        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
           query: GET_DOMAINS,
           variables: {
             tokenId: this.namehash,
@@ -136,7 +136,7 @@ export class MockEntry {
       });
 
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname, {
+        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
           query: GET_REGISTRATIONS,
           variables: {
             labelhash,
@@ -152,7 +152,7 @@ export class MockEntry {
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
 
     nock(SUBGRAPH_URL.origin)
-      .post(SUBGRAPH_URL.pathname, {
+      .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
         query: GET_DOMAINS,
         variables: {
           tokenId: this.namehash,
