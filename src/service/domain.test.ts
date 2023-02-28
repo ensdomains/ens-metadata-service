@@ -62,7 +62,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // fake vitalik.eth with nullifier
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS_BY_LABELHASH,
       variables: {
         tokenId:
@@ -90,7 +90,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // original vitalik.eth
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_DOMAINS_BY_LABELHASH,
       variables: {
         tokenId:
@@ -120,7 +120,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     });
 
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname, {
+    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
       query: GET_REGISTRATIONS,
       variables: {
         labelhash:
