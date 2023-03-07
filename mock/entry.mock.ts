@@ -4,7 +4,7 @@ import { Version }              from '../src/base';
 import { ADDRESS_NAME_WRAPPER } from '../src/config';
 import { Metadata }             from '../src/service/metadata';
 import getNetwork               from '../src/service/network';
-import { decodeFuses }          from '../src/utils/fuse';
+import { decodeFuses, getWrapperState }          from '../src/utils/fuse';
 import {
   GET_DOMAINS,
   GET_REGISTRATIONS,
@@ -167,15 +167,23 @@ export class MockEntry {
         },
       };
 
+      const decodedFuses = decodeFuses(fuses);
+
       _metadata.addAttribute({
         trait_type: 'Namewrapper Fuse States',
         display_type: 'object',
-        value: decodeFuses(fuses),
+        value: decodedFuses,
       });
       _metadata.addAttribute({
         trait_type: 'Namewrapper Expiry Date',
         display_type: 'date',
         value: expiryDate * 1000,
+      });
+
+      _metadata.addAttribute({
+        trait_type: 'Namewrapper State',
+        display_type: 'string',
+        value: getWrapperState(decodedFuses),
       });
 
       nock(SUBGRAPH_URL.origin)
