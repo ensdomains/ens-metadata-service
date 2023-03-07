@@ -27,5 +27,5 @@ jobs:
         cache: 'yarn'
     - name: Install Pango
       run: sudo apt-get install libsdl-pango-dev libgif-dev
-    - run: yarn
-    - run: npm test
+    - run: yarn --frozen-lockfile
+    - run: yarn test
