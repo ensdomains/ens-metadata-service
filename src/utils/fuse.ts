@@ -7,6 +7,7 @@ const CANNOT_TRANSFER = 4;
 const CANNOT_SET_RESOLVER = 8;
 const CANNOT_SET_TTL = 16;
 const CANNOT_CREATE_SUBDOMAIN = 32;
+const CANNOT_APPROVE = 64;
 
 // parent named fuses
 const PARENT_CANNOT_CONTROL = 0x10000;
@@ -28,6 +29,7 @@ export const childFuseEnum = {
   CANNOT_SET_RESOLVER,
   CANNOT_SET_TTL,
   CANNOT_CREATE_SUBDOMAIN,
+  CANNOT_APPROVE,
 } as const;
 
 export const parentFuseEnum = {
@@ -162,3 +164,24 @@ export const decodeFuses = (fuses: number) => {
     },
   };
 };
+
+type PartialFuseSet = {
+  parent: FullParentFuses['current'];
+  child: ChildFuses['current'];
+};
+
+export const WrapperState = Object.freeze({
+  LOCKED: 'Locked',
+  EMANCIPATED: 'Emancipated',
+  WRAPPED: 'Wrapped',
+});
+
+export type WrapperState = typeof WrapperState[keyof typeof WrapperState];
+
+export function getWrapperState(fuses: PartialFuseSet): WrapperState {
+  if (fuses.parent.PARENT_CANNOT_CONTROL) {
+    if (fuses.child.CANNOT_UNWRAP) return WrapperState.LOCKED;
+    return WrapperState.EMANCIPATED;
+  }
+  return WrapperState.WRAPPED;
+}

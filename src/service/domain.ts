@@ -15,7 +15,10 @@ import {
   Version,
 }                         from '../base';
 import { NetworkName }    from './network';
-import { decodeFuses }    from '../utils/fuse';
+import { 
+  decodeFuses, 
+  getWrapperState 
+}                         from '../utils/fuse';
 import { getNamehash }    from '../utils/namehash';
 
 const eth =
@@ -139,16 +142,23 @@ export async function getDomain(
       } = await request(SUBGRAPH_URL, GET_WRAPPED_DOMAIN, {
         tokenId: namehash,
       });
+      const decodedFuses = decodeFuses(fuses);
       metadata.addAttribute({
         trait_type: 'Namewrapper Fuse States',
         display_type: 'object',
-        value: decodeFuses(fuses),
+        value: decodedFuses,
       });
 
       metadata.addAttribute({
         trait_type: 'Namewrapper Expiry Date',
         display_type: 'date',
         value: expiryDate * 1000,
+      });
+
+      metadata.addAttribute({
+        trait_type: 'Namewrapper State',
+        display_type: 'string',
+        value: getWrapperState(decodedFuses),
       });
     }
   }
