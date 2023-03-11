@@ -73,6 +73,10 @@ export default function getNetwork(network: NetworkName): {
     default:
       throw new UnsupportedNetwork(`Unknown network '${network}'`, 501);
   }
+
+  // add source param at the end for better request measurability
+  SUBGRAPH_URL = SUBGRAPH_URL + "?source=ens-metadata";
+
   const provider = new ethers.providers.StaticJsonRpcProvider(WEB3_URL);
   return { WEB3_URL, SUBGRAPH_URL, provider };
 }
