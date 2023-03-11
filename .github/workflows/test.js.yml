@@ -11,7 +11,7 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -26,6 +26,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
     # - name: Install Pango
-      # run: sudo apt-get install libsdl-pango-dev libgif-dev
+    #   run: sudo apt-get install libsdl-pango-dev libgif-dev
+    - name: Install pango
+      run: |
+        brew update
+        brew install cairo
+        brew install pango
+        brew upgrade
     - run: yarn --frozen-lockfile
     - run: yarn test
