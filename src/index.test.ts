@@ -24,6 +24,7 @@ const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } =
 const WEB3_URL = new URL(web3_url);
 const SERVER_URL = new URL(server_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
+const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 const NAME_WRAPPER_ADDRESS = ADDRESS_NAME_WRAPPER;
 const NON_CONTRACT_ADDRESS = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B';
 
@@ -290,7 +291,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
     statusCode: 404,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -323,7 +324,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
     statusCode: 500,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -356,7 +357,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
     statusCode: 500,
   };
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,
@@ -382,7 +383,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
 
 test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => {
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS,
       variables: {
         tokenId: sub1Wrappertest.namehash,

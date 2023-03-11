@@ -21,6 +21,7 @@ const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
+const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 
 export class MockEntry {
   public name: string;
@@ -50,7 +51,7 @@ export class MockEntry {
     if (!registered) {
       this.expect = 'No results found.';
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+        .post(SUBGRAPH_PATH, {
           query: GET_DOMAINS,
           variables: {
             tokenId: this.namehash,
@@ -74,7 +75,7 @@ export class MockEntry {
       });
       this.expect = JSON.parse(JSON.stringify(unknownMetadata));
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+        .post(SUBGRAPH_PATH, {
           query: GET_DOMAINS,
           variables: {
             tokenId: this.namehash,
@@ -145,7 +146,7 @@ export class MockEntry {
       });
 
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+        .post(SUBGRAPH_PATH, {
           query: GET_REGISTRATIONS,
           variables: {
             labelhash,
@@ -162,8 +163,8 @@ export class MockEntry {
       const fuses = 1;
       this.wrappedDomainResponse = {
         wrappedDomain: {
-          expiryDate: expiryDate,
           fuses,
+          expiryDate: expiryDate,
         },
       };
 
@@ -187,7 +188,7 @@ export class MockEntry {
       });
 
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname, {
+        .post(SUBGRAPH_PATH, {
           query: GET_WRAPPED_DOMAIN,
           variables: {
             tokenId: this.namehash,
@@ -203,7 +204,7 @@ export class MockEntry {
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
 
     nock(SUBGRAPH_URL.origin)
-      .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+      .post(SUBGRAPH_PATH, {
         query: GET_DOMAINS,
         variables: {
           tokenId: this.namehash,
