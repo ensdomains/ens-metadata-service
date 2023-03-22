@@ -13,11 +13,11 @@
 ### Request
 - __network:__ Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)
 - __contactAddress:__ accepts contractAddress of the NFT which represented by the tokenId
-- __NFT v1 - tokenId:__ accepts labelhash of ENS name in both hex and int format
-- __NFT v2 - tokenId:__ accepts namehash of ENS name in both hex and int format
+- __NFT v1 - tokenId:__ accepts ENS name or labelhash of ENS name in both hex and int format
+- __NFT v2 - tokenId:__ accepts ENS name or namehash of ENS name in both hex and int format
 
 ```
-/{networkName}/{contractAddress}/{tokenId}
+/{network}/{contractAddress}/{tokenId}
 ```
 
 Request (example)
@@ -28,13 +28,29 @@ https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/
 
 ```json
 {
+  "is_normalized": true,
   "name": "nick.eth",
   "description": "nick.eth, an ENS name.",
   "attributes": [
     {
       "trait_type": "Created Date",
       "display_type": "date",
-      "value": 1580803395000
+      "value": 1571924851000
+    },
+    {
+      "trait_type": "Length",
+      "display_type": "number",
+      "value": 4
+    },
+    {
+      "trait_type": "Segment Length",
+      "display_type": "number",
+      "value": 4
+    },
+    {
+      "trait_type": "Character Set",
+      "display_type": "string",
+      "value": "letter"
     },
     {
       "trait_type": "Registration Date",
@@ -44,15 +60,15 @@ https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/
     {
       "trait_type": "Expiration Date",
       "display_type": "date",
-      "value": 1698131707000
+      "value": 1699709554000
     }
   ],
   "name_length": 4,
-  "short_name": null,
-  "length": 0,
+  "segment_length": 4,
   "url": "https://app.ens.domains/name/nick.eth",
   "version": 0,
   "background_image": "https://metadata.ens.domains/mainnet/avatar/nick.eth",
+  "image": "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image",
   "image_url": "https://metadata.ens.domains/mainnet/0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85/0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f/image"
 }
 
@@ -101,6 +117,9 @@ yarn test:cov
 | INAMEWRAPPER | InterfaceId of NameWrapper Contract | 0xe89c48dc | - |
 | ADDRESS_ETH_REGISTRAR | Ethereum address of ENSBaseRegistrar Contract | 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 | - |
 | ADDRESS_NAME_WRAPPER | Ethereum address of NameWrapper Contract | 0x582224b8d4534F4749EFA4f22eF7241E0C56D4B8 | - |
+| WEB3_NODE_URL | Ethereum Node Provider API | - | - |
+| NODE_PROVIDER | Ethereum Node Provider | Cloudflare | Cloudflare/Google/Infura/Local |
+| NODE_PROVIDER_URL | Ethereum Node Provider API Endpoint | - | - |
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
