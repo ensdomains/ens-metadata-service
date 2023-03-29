@@ -21,13 +21,12 @@ export async function checkContract(
     [
       'function ownerOf(uint256 id) view returns (address)',
       'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+      'function isWrapped(bytes32 node) public view returns (bool)',
     ],
     provider
   );
 
-  if (_contractAddress === ADDRESS_NAME_WRAPPER) {
-    return { tokenId: getNamehash(identifier), version: Version.v2 };
-  } else if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
+  if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
     const _tokenId = getLabelhash(identifier);
     try {
       const nftOwner = await contract.ownerOf(_tokenId);
@@ -42,19 +41,26 @@ export async function checkContract(
     }
     return { tokenId: _tokenId, version: Version.v1 };
   } else {
-    try {
-      const isInterfaceSupported = await contract.supportsInterface(
-        INAMEWRAPPER
-      );
-      assert(isInterfaceSupported);
-      return { tokenId: getNamehash(identifier), version: Version.v2 };
-    } catch (error) {
-      console.warn(`error for ${_contractAddress}`, error);
+    const namehash = getNamehash(identifier);
+    if (_contractAddress !== ADDRESS_NAME_WRAPPER) {
+      try {
+        const isInterfaceSupported = await contract.supportsInterface(
+          INAMEWRAPPER
+        );
+        assert(isInterfaceSupported);
+      } catch (error) {
+        throw new ContractMismatchError(
+          `${_contractAddress} does not match with any ENS related contract`,
+          400
+        );
+      }
     }
-  }
 
-  throw new ContractMismatchError(
-    `${_contractAddress} does not match with any ENS related contract`,
-    400
-  );
+    // if the queried name on NameWrapper is not wrapped, then throw
+    // check either by assert or throw a custom error.
+    const isWrapped = await contract.isWrapped(namehash);
+    assert(isWrapped);
+
+    return { tokenId: namehash, version: Version.v2 };
+  }
 }

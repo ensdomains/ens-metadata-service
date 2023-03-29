@@ -4,7 +4,7 @@ import nock from 'nock';
 import { nockProvider } from '../../mock/helper';
 import { TestContext } from '../../mock/interface';
 import { NamehashMismatchError, Version } from '../base';
-import { ADDRESS_ETH_REGISTRAR } from '../config';
+import { ADDRESS_ETH_REGISTRAR, ADDRESS_ETH_REGISTRY } from '../config';
 import { getDomain } from './domain';
 import getNetwork from './network';
 import { GET_DOMAINS_BY_LABELHASH, GET_REGISTRATIONS } from './subgraph';
@@ -28,7 +28,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   nockProvider(WEB3_URL, 'net_version', [], {
     jsonrpc: '2.0',
     id: 1,
-    result: '4',
+    result: '1',
   });
   nockProvider(
     WEB3_URL,
@@ -50,7 +50,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     'eth_call',
     [
       {
-        to: '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+        to: ADDRESS_ETH_REGISTRY.toLowerCase(),
         data: '0x0178b8bfb9fab6dd33ccdfd1f65ea203855508034652c2e01f585a7b742c3698c0c8d6b1',
       },
       'latest',

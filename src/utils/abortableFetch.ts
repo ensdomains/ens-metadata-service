@@ -17,9 +17,10 @@ export async function abortableFetch(
     });
     return response;
   } catch (error) {
-    if (signal && signal.aborted) {
-      console.log(error);
-    }
+    // in case the fetch error will be customized for signal, follow the pattern
+    // if (signal && signal.aborted) {
+    //   console.log(`abortableFetch:`, error);
+    // }
     return null;
   }
 }

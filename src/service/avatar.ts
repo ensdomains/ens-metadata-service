@@ -63,9 +63,7 @@ export class AvatarMetadata {
       if (typeof error === 'string') {
         console.log(`${this.uri} - error:`, error);
       }
-      if (error === 'Image is not available') {
-        throw new RetrieveURIFailed(error, 404);
-      }
+      throw new RetrieveURIFailed(`Error fetching avatar: Provided url or NFT source is broken.`, 404);
     }
 
     if (!avatarURI) {

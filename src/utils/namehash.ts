@@ -1,4 +1,4 @@
-import { utils, BigNumber } from 'ethers';
+import { utils, BigNumber, ethers } from 'ethers';
 import { Version }          from '../base';
 
 const sha3     = require('js-sha3').keccak_256;
@@ -26,8 +26,16 @@ export function constructEthNameHash(tokenId: string, version: Version): string 
 
 export function getNamehash(nameOrNamehash: string) {
   const _name = nameOrNamehash.substring(0, nameOrNamehash.lastIndexOf('.'));
-  // if not name, return original
-  if (!_name) return nameOrNamehash;
+  // if not name, return original (in case intID provided convert to hexID)
+  if (!_name) {
+    if (!nameOrNamehash.match(/^0x/)) {
+      return ethers.utils.hexZeroPad(
+        ethers.utils.hexlify(ethers.BigNumber.from(nameOrNamehash)),
+        32
+      );
+    }
+    return nameOrNamehash;
+  }
 
   const _lhexId = namehash.hash(nameOrNamehash);
   return _lhexId;
