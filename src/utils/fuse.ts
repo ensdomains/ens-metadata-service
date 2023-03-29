@@ -53,7 +53,7 @@ export const fullFuseEnum = {
 };
 
 export const unnamedChildFuses = [
-  64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
+  128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
 ] as const;
 
 export const unnamedParentFuses = [
