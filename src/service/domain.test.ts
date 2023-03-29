@@ -15,6 +15,7 @@ const NETWORK = 'mainnet';
 const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } = getNetwork(NETWORK);
 const WEB3_URL = new URL(web3_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
+const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 
 test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
@@ -62,7 +63,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // fake vitalik.eth with nullifier
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS_BY_LABELHASH,
       variables: {
         tokenId:
@@ -90,7 +91,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
 
   // original vitalik.eth
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_DOMAINS_BY_LABELHASH,
       variables: {
         tokenId:
@@ -120,7 +121,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     });
 
   nock(SUBGRAPH_URL.origin)
-    .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+    .post(SUBGRAPH_PATH, {
       query: GET_REGISTRATIONS,
       variables: {
         labelhash:

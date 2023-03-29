@@ -57,3 +57,19 @@ export const GET_REGISTRATIONS = gql`
     }
   }
 `;
+
+export const GET_WRAPPED_DOMAIN = gql`
+query getWrappedDomain($tokenId: String) {
+  wrappedDomain(id: $tokenId) {
+    id
+    owner {
+      id
+    }
+    fuses
+    expiryDate
+    domain {
+      name
+    }
+  }
+}
+`;

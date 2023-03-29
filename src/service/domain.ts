@@ -4,6 +4,7 @@ import {
   GET_REGISTRATIONS,
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
+  GET_WRAPPED_DOMAIN,
 }                         from './subgraph';
 import { Metadata }       from './metadata';
 import { getAvatarImage } from './avatar';
@@ -14,6 +15,10 @@ import {
   Version,
 }                         from '../base';
 import { NetworkName }    from './network';
+import { 
+  decodeFuses, 
+  getWrapperState 
+}                         from '../utils/fuse';
 import { getNamehash }    from '../utils/namehash';
 
 const eth =
@@ -129,6 +134,32 @@ export async function getDomain(
           value: expiration_date,
         });
       }
+    }
+
+    if (version === Version.v2) {
+      const {
+        wrappedDomain: { fuses, expiryDate },
+      } = await request(SUBGRAPH_URL, GET_WRAPPED_DOMAIN, {
+        tokenId: namehash,
+      });
+      const decodedFuses = decodeFuses(fuses);
+      metadata.addAttribute({
+        trait_type: 'Namewrapper Fuse States',
+        display_type: 'object',
+        value: decodedFuses,
+      });
+
+      metadata.addAttribute({
+        trait_type: 'Namewrapper Expiry Date',
+        display_type: 'date',
+        value: expiryDate * 1000,
+      });
+
+      metadata.addAttribute({
+        trait_type: 'Namewrapper State',
+        display_type: 'string',
+        value: getWrapperState(decodedFuses),
+      });
     }
   }
   const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');
