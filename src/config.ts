@@ -8,7 +8,7 @@ const ENV = process.env.ENV || 'local'; // local/prod
 const FONT_FOLDER = path.join((ENV === 'local' ? 'src' : 'dist'), 'assets');
 const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'Satoshi-Bold.ttf');
 const CANVAS_EMOJI_FONT_PATH = path.join(FONT_FOLDER, 'NotoColorEmoji.ttf');
-const INAMEWRAPPER = process.env.INAMEWRAPPER || '0x81b4e24c';
+const INAMEWRAPPER = process.env.INAMEWRAPPER || '0xd82c42d8';
 
 const IPFS_GATEWAY = process.env.IPFS_GATEWAY || 'https://ipfs.io';
 const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
