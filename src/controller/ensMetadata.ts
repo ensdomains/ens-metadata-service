@@ -47,6 +47,9 @@ export async function ensMetadata(req: Request, res: Response) {
       version,
       false
     );
+
+    // add timestamp of the request date
+    result.last_request_date = Date.now();
     /* #swagger.responses[200] = { 
       description: 'Metadata object',
       schema: { $ref: '#/definitions/ENSMetadata' }
@@ -97,6 +100,8 @@ export async function ensMetadata(req: Request, res: Response) {
         created_date: 1580346653000,
         tokenId: '',
         version: Version.v1,
+        // add timestamp of the request date
+        last_request_date: Date.now()
       });
       res.status(200).json({
         message: unknownMetadata,
