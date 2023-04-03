@@ -25,28 +25,30 @@ try {
 
 
 export interface MetadataInit {
-  name            : string;
-  description?    : string;
-  created_date    : number;
-  registered_date?: Date | null;
-  expiration_date?: Date | null;
-  tokenId         : string;
-  version         : Version;
+  name               : string;
+  description?       : string;
+  created_date       : number;
+  registered_date?   : Date | null;
+  expiration_date?   : Date | null;
+  tokenId            : string;
+  version            : Version;
+  last_request_date? : number;
 }
 
 export interface Metadata {
-  name             : string;
-  description      : string;
-  attributes       : object[];
-  name_length?     : number;
-  segment_length?  : number;
-  image            : string;
-  image_url?       : string; // same as image, keep for backward compatibility
-  is_normalized    : boolean;
-  background_image?: string;
-  mimeType?        : string;
-  url?             : string | null;
-  version          : Version;
+  name               : string;
+  description        : string;
+  attributes         : object[];
+  name_length?       : number;
+  segment_length?    : number;
+  image              : string;
+  image_url?         : string; // same as image, keep for backward compatibility
+  is_normalized      : boolean;
+  background_image?  : string;
+  mimeType?          : string;
+  url?               : string | null;
+  version            : Version;
+  last_request_date? : number;
 }
 
 export class Metadata {
@@ -57,6 +59,7 @@ export class Metadata {
     created_date,
     tokenId,
     version,
+    last_request_date
   }: MetadataInit) {
     const label = name.substring(0, name.indexOf('.'));
     const is_valid = validate(name);
@@ -109,6 +112,7 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
       display_type: 'string',
       value: findCharacterSet(label),
     });
+    this.last_request_date = last_request_date;
   }
 
   addAttribute(attribute: object) {
