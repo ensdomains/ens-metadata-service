@@ -31,6 +31,7 @@ export async function ensMetadata(req: Request, res: Response) {
 
   const { contractAddress, networkName, tokenId: identifier } = req.params;
   const { provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName);
+  const last_request_date = Date.now();
   let tokenId, version;
   try {
     ({ tokenId, version } = await checkContract(
@@ -47,6 +48,9 @@ export async function ensMetadata(req: Request, res: Response) {
       version,
       false
     );
+
+    // add timestamp of the request date
+    result.last_request_date = last_request_date;
     /* #swagger.responses[200] = { 
       description: 'Metadata object',
       schema: { $ref: '#/definitions/ENSMetadata' }
@@ -97,6 +101,8 @@ export async function ensMetadata(req: Request, res: Response) {
         created_date: 1580346653000,
         tokenId: '',
         version: Version.v1,
+        // add timestamp of the request date
+        last_request_date
       });
       res.status(200).json({
         message: unknownMetadata,

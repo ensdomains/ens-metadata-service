@@ -25,28 +25,30 @@ try {
 
 
 export interface MetadataInit {
-  name            : string;
-  description?    : string;
-  created_date    : number;
-  registered_date?: Date | null;
-  expiration_date?: Date | null;
-  tokenId         : string;
-  version         : Version;
+  name               : string;
+  description?       : string;
+  created_date       : number;
+  registered_date?   : Date | null;
+  expiration_date?   : Date | null;
+  tokenId            : string;
+  version            : Version;
+  last_request_date? : number;
 }
 
 export interface Metadata {
-  name             : string;
-  description      : string;
-  attributes       : object[];
-  name_length?     : number;
-  segment_length?  : number;
-  image            : string;
-  image_url?       : string; // same as image, keep for backward compatibility
-  is_normalized    : boolean;
-  background_image?: string;
-  mimeType?        : string;
-  url?             : string | null;
-  version          : Version;
+  name               : string;
+  description        : string;
+  attributes         : object[];
+  name_length?       : number;
+  segment_length?    : number;
+  image              : string;
+  image_url?         : string; // same as image, keep for backward compatibility
+  is_normalized      : boolean;
+  background_image?  : string;
+  mimeType?          : string;
+  url?               : string | null;
+  version            : Version;
+  last_request_date? : number;
 }
 
 export class Metadata {
@@ -57,6 +59,7 @@ export class Metadata {
     created_date,
     tokenId,
     version,
+    last_request_date
   }: MetadataInit) {
     const label = this.getLabel(name);
     const is_valid = validate(name);
@@ -65,6 +68,7 @@ export class Metadata {
     this.description = this.formatDescription(name, description, is_valid);
     this.attributes = this.initializeAttributes(created_date, label);
     this.url = this.is_normalized ? `https://app.ens.domains/name/${name}` : null;
+    this.last_request_date = last_request_date;
     this.version = version;
   }
 

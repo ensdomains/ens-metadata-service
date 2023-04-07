@@ -20,6 +20,7 @@ import {
 import getNetwork from './service/network';
 import { GET_DOMAINS } from './service/subgraph';
 import { nockProvider, requireUncached } from '../mock/helper';
+import { Metadata } from './service/metadata';
 
 const TEST_NETWORK = 'goerli';
 
@@ -184,56 +185,63 @@ test('get welcome message', async (t: ExecutionContext<TestContext>) => {
 });
 
 test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${wrappertest3.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, wrappertest3.expect);
 });
 
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
   const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
-  const result = await got(`${METADATA_PATH}/${intId}`, options).json();
+  const result: Metadata = await got(`${METADATA_PATH}/${intId}`, options).json();
+  delete result.last_request_date;
   t.deepEqual(result, wrappertest3.expect);
 });
 
 test('get /:contractAddress/:tokenId for subdomain returns auto generated image', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${sub1Wrappertest.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, sub1Wrappertest.expect);
 });
 
 test('get /:contractAddress/:tokenId for subdomain returns image from text record', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${sub2Wrappertest9.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, sub2Wrappertest9.expect);
 });
 
 test('get /:contractAddress/:tokenId for a 21 char long domain', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${handle21character.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, handle21character.expect);
 });
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long domain', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${supercalifragilisticexpialidocious.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, supercalifragilisticexpialidocious.expect);
 });
 
 test('get /:contractAddress/:tokenId for a greater than MAX_CHAR long subdomain', async (t: ExecutionContext<TestContext>) => {
-  const result = await got(
+  const result: Metadata = await got(
     `${METADATA_PATH}/${longsubdomainconsistof34charactersMdt.namehash}`,
     options
   ).json();
+  delete result.last_request_date;
   t.deepEqual(result, longsubdomainconsistof34charactersMdt.expect);
 });
 
@@ -250,10 +258,11 @@ test('get /:contractAddress/:tokenId for unknown namehash', async (t: ExecutionC
 });
 
 test('get /:contractAddress/:tokenId for unknown namehash on subgraph but registered', async (t: ExecutionContext<TestContext>) => {
-  const { message }: any = await got(
+  const { message }: { message: Metadata } = await got(
     `${METADATA_PATH}/${unknownRegistered.namehash}`,
     options
   ).json();
+  delete message.last_request_date;
   t.deepEqual(message, unknownRegistered.expect);
 });
 
