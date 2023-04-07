@@ -17,7 +17,8 @@ interface CheckContractResult {
 
 async function checkV1Contract(
   contract: ethers.Contract,
-  identifier: string
+  identifier: string,
+  provider: ethers.providers.BaseProvider
 ): Promise<CheckContractResult> {
   const _tokenId = getLabelhash(identifier);
   try {
@@ -25,6 +26,18 @@ async function checkV1Contract(
     if (nftOwner === ADDRESS_NAME_WRAPPER) {
       return { tokenId: _tokenId, version: Version.v1w };
     }
+    const wrapperContract = new ethers.Contract(
+      nftOwner,
+      [
+        'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+      ],
+      provider
+    );
+    const isInterfaceSupported = await wrapperContract.supportsInterface(
+      INAMEWRAPPER
+    );
+    assert(isInterfaceSupported);
+    return { tokenId: _tokenId, version: Version.v1w };
   } catch (error) {
     console.warn(`error for ${contract.address}`, error);
   }
@@ -37,7 +50,9 @@ async function checkV2Contract(
 ): Promise<CheckContractResult> {
   if (contract.address !== ADDRESS_NAME_WRAPPER) {
     try {
-      const isInterfaceSupported = await contract.supportsInterface(INAMEWRAPPER);
+      const isInterfaceSupported = await contract.supportsInterface(
+        INAMEWRAPPER
+      );
       assert(isInterfaceSupported);
     } catch (error) {
       throw new ContractMismatchError(
@@ -71,7 +86,7 @@ export async function checkContract(
   );
 
   if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
-    return checkV1Contract(contract, identifier);
+    return checkV1Contract(contract, identifier, provider);
   } else {
     return checkV2Contract(contract, identifier);
   }
