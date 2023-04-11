@@ -67,5 +67,10 @@ export async function avatarImage(req: Request, res: Response) {
       }
       return;
     }
+    if (!res.headersSent) {
+      res.status(404).json({
+        message: 'No image found.',
+      });
+    }
   }
 }

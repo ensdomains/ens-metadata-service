@@ -75,9 +75,9 @@ export class AvatarMetadata {
 
     if (avatarURI?.startsWith('http')) {
       // abort fetching image after 5sec
-      const response = await abortableFetch(avatarURI, { timeout: 5000 });
+      const response = await abortableFetch(avatarURI, { timeout: 7000 });
 
-      assert(response, 'Response is empty');
+      assert(!!response, 'Response is empty');
 
       const mimeType = response?.headers.get('Content-Type');
       const data = await response?.buffer();
@@ -138,6 +138,9 @@ export class AvatarMetadata {
         );
       }
     }
+    // replace back original url after fetch
+    metadata.image = metadata.image.replace(IPFS_GATEWAY, 'https://ipfs.io');
+
     return metadata;
   }
 }
