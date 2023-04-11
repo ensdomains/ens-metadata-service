@@ -61,58 +61,75 @@ export class Metadata {
     version,
     last_request_date
   }: MetadataInit) {
-    const label = name.substring(0, name.indexOf('.'));
+    const label = this.getLabel(name);
     const is_valid = validate(name);
     this.is_normalized = is_valid && this._checkNormalized(name);
-    this.name = this.is_normalized
+    this.name = this.formatName(name, tokenId);
+    this.description = this.formatDescription(name, description, is_valid);
+    this.attributes = this.initializeAttributes(created_date, label);
+    this.url = this.is_normalized ? `https://app.ens.domains/name/${name}` : null;
+    this.last_request_date = last_request_date;
+    this.version = version;
+  }
+
+  getLabel(name: string) {
+    return name.substring(0, name.indexOf('.'));
+  }
+
+  formatName(name: string, tokenId: string) {
+    return this.is_normalized
       ? name
       : tokenId.replace(
           new RegExp('^(.{0,6}).*(.{4})$', 'im'),
           '[$1...$2].eth'
         );
-    this.description =
-      description ||
-      `${this.name}, an ENS name.${
-        !this.is_normalized ? ` (${name} is not in normalized form)` : ''
-      }`;
+  }
+
+  formatDescription(name: string, description?: string, is_valid?: boolean) {
+    const baseDescription = description || `${this.name}, an ENS name.`;
+    const normalizedNote = !this.is_normalized ? ` (${name} is not in normalized form)` : '';
+    const asciiWarning = this.generateAsciiWarning(this.getLabel(name), is_valid);
+    return `${baseDescription}${normalizedNote}${asciiWarning}`;
+  }
+
+  generateAsciiWarning(label: string, is_valid?: boolean) {
     if (!is_valid || !isASCII(label)) {
-      this.description +=
-        ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. \
-Please be aware that there are characters that look identical or very \
-similar to English letters, especially characters from Cyrillic and Greek. \
-Also, traditional Chinese characters can look identical or very similar to \
-simplified variants. For more information: \
-https://en.wikipedia.org/wiki/IDN_homograph_attack';
+      return ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. ' +
+        'Please be aware that there are characters that look identical or very ' +
+        'similar to English letters, especially characters from Cyrillic and Greek. ' +
+        'Also, traditional Chinese characters can look identical or very similar to ' +
+        'simplified variants. For more information: ' +
+        'https://en.wikipedia.org/wiki/IDN_homograph_attack';
     }
-    this.attributes = [
+    return '';
+  }
+
+  initializeAttributes(created_date: number, label: string) {
+    const name_length = this._labelCharLength(label);
+    const segment_length = this._labelSegmentLength(label);
+    const character_set = findCharacterSet(label);
+    return [
       {
         trait_type: 'Created Date',
         display_type: 'date',
         value: created_date * 1000,
       },
+      {
+        trait_type: 'Length',
+        display_type: 'number',
+        value: name_length,
+      },
+      {
+        trait_type: 'Segment Length',
+        display_type: 'number',
+        value: segment_length,
+      },
+      {
+        trait_type: 'Character Set',
+        display_type: 'string',
+        value: character_set,
+      },
     ];
-    this.name_length = this._labelCharLength(label);
-    this.segment_length = this._labelSegmentLength(label);
-    this.addAttribute({
-      trait_type: 'Length',
-      display_type: 'number',
-      value: this.name_length,
-    });
-    this.addAttribute({
-      trait_type: 'Segment Length',
-      display_type: 'number',
-      value: this.segment_length,
-    });
-    this.url = this.is_normalized
-      ? `https://app.ens.domains/name/${name}`
-      : null;
-    this.version = version;
-    this.addAttribute({
-      trait_type: 'Character Set',
-      display_type: 'string',
-      value: findCharacterSet(label),
-    });
-    this.last_request_date = last_request_date;
   }
 
   addAttribute(attribute: object) {
@@ -133,53 +150,66 @@ https://en.wikipedia.org/wiki/IDN_homograph_attack';
 
   generateImage() {
     const name = this.name;
-    let subdomainText, domain, subdomain, domainFontSize, subdomainFontSize;
     const labels = name.split('.');
     const isSubdomain = labels.length > 2;
+
+    const { domain, subdomainText } = this.processSubdomain(name, isSubdomain);
+    const { processedDomain, domainFontSize } = this.processDomain(domain);
+    const svg = this._generateByVersion(domainFontSize, subdomainText, isSubdomain, processedDomain);
+
+    try {
+      this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
+    } catch (e) {
+      console.log(processedDomain, e);
+      this.setImage('');
+    }
+  }
+
+  processSubdomain(name: string, isSubdomain: boolean) {
+    let subdomainText;
+    let domain = name;
+    
     if (isSubdomain && !name.includes('...')) {
-      subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
+      const labels = name.split('.');
+      let subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
       domain = labels.slice(-2).join('.');
+
       if (getSegmentLength(subdomain) > Metadata.MAX_CHAR) {
         subdomain = Metadata._textEllipsis(subdomain);
       }
-      subdomainFontSize = Metadata._getFontSize(subdomain);
+
+      const subdomainFontSize = Metadata._getFontSize(subdomain);
       subdomainText = `
-      <text
-        x="32.5"
-        y="200"
-        font-size="${subdomainFontSize}px"
-        fill="white"
-      >
-        ${subdomain}
-      </text>
+        <text
+          x="32.5"
+          y="200"
+          font-size="${subdomainFontSize}px"
+          fill="white"
+        >
+          ${subdomain}
+        </text>
       `;
-    } else {
-      domain = name;
     }
+
+    return { domain, subdomainText };
+  }
+
+  processDomain(domain: string) {
     let charSegmentLength = getSegmentLength(domain);
+
     if (charSegmentLength > Metadata.MAX_CHAR) {
       domain = Metadata._textEllipsis(domain);
-      domainFontSize = Metadata._getFontSize(domain);
       charSegmentLength = Metadata.MAX_CHAR;
-    } else {
-      domainFontSize = Metadata._getFontSize(domain);
     }
+
+    let domainFontSize = Metadata._getFontSize(domain);
+
     if (charSegmentLength > 25) {
       domain = this._addSpan(domain, charSegmentLength / 2);
       domainFontSize *= 2;
     }
-    const svg = this._generateByVersion(
-      domainFontSize,
-      subdomainText,
-      isSubdomain,
-      domain
-    );
-    try {
-      this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
-    } catch (e) {
-      console.log(domain, e);
-      this.setImage('');
-    }
+
+    return { processedDomain: domain, domainFontSize };
   }
 
   private _addSpan(str: string, index: number) {
