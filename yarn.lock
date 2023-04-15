@@ -404,10 +404,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@ensdomains/ens-avatar@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.2.tgz#48e90a4393f65dbb269b69d5088add0d2437a9dd"
-  integrity sha512-M+1+CRRTu0XZcLls6yPRdeOKZxAf3D67Lb0KlNJuw1idqxy1ovQKwrKUmEkAmAzHICkscm46S+HtGChwZGfsSA==
+"@ensdomains/ens-avatar@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.3.tgz#70aec2e1e0047a16b70bbae1ebdb51ec09f56dc4"
+  integrity sha512-kequCbN1TbifcfkRVJNSVY3zsWSpd07tfxUmy7gQ6xLAIVYTmmn0OgY7yzWlDLcAQZ+D4lUCFO5OARQRlwOhug==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
@@ -415,7 +415,7 @@
     axios "^0.25.0"
     axios-cache-interceptor "^0.9.3"
     buffer "^6.0.3"
-    dompurify "^2.3.5"
+    dompurify "^3.0.1"
     is-svg "^4.3.2"
     multiformats "^9.6.2"
     url-join "^4.0.1"
@@ -2274,15 +2274,15 @@ domexception@^4.0.0:
   dependencies:
     webidl-conversions "^7.0.0"
 
-dompurify@^2.3.5:
-  version "2.4.5"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.4.5.tgz#0e89a27601f0bad978f9a924e7a05d5d2cccdd87"
-  integrity sha512-jggCCd+8Iqp4Tsz0nIvpcb22InKEBrGz5dw3EQJMs8HPJDsKbFIO3STYtAvCfDx26Muevn1MHVI0XxjgFfmiSA==
-
 dompurify@^2.3.9:
   version "2.3.9"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.9.tgz#a4be5e7278338d6db09922dffcf6182cd099d70a"
   integrity sha512-3zOnuTwup4lPV/GfGS6UzG4ub9nhSYagR/5tB3AvDEwqyy5dtyCM2dVjwGDCnrPerXifBKTYh/UWCGKK7ydhhw==
+
+dompurify@^3.0.1:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.0.2.tgz#bc4c7c011c825e7704341a285461d8d407d9429a"
+  integrity sha512-B8c6JdiEpxAKnd8Dm++QQxJL4lfuc757scZtcapj6qjTjrQzyq5iAyznLKVvK+77eYNiFblHBlt7MM0fOeqoKw==
 
 dotenv@^10.0.0:
   version "10.0.0"
