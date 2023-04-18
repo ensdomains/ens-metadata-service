@@ -2,6 +2,7 @@ import path                                         from 'path';
 import cors                                         from 'cors';
 import compression                                  from 'compression';
 import express, { Request, Response, NextFunction } from 'express';
+import helmet                                       from 'helmet';
 import docUI                                        from 'redoc-express';
 
 import endpoints                                    from './endpoint';
@@ -25,6 +26,27 @@ const setCacheHeader = function (
 
 const app = express();
 app.use(cors());
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'none'"],
+      scriptSrc: ["'none'"],
+      imgSrc: ['*', 'data:'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'", 'data:'],
+      connectSrc: ['*', 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      frameSrc: ["'none'"],
+      childSrc: ["'none'"],
+      workerSrc: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
 
 if (process.env.ENV === 'local') {
   app.use('/assets', express.static(path.join(__dirname, 'assets')));

@@ -404,10 +404,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@ensdomains/ens-avatar@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.2.tgz#48e90a4393f65dbb269b69d5088add0d2437a9dd"
-  integrity sha512-M+1+CRRTu0XZcLls6yPRdeOKZxAf3D67Lb0KlNJuw1idqxy1ovQKwrKUmEkAmAzHICkscm46S+HtGChwZGfsSA==
+"@ensdomains/ens-avatar@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.4.tgz#581ff279c97412a55496e1e9dfb84d461faac606"
+  integrity sha512-IGO1xPL9qJtYnR/d7hZj5wJLrdyWvk66ebyhhFZxL0KEY4eGRVAzcz3xO3Y6lSuUn7t/PWKxaRU14U0dag2FAA==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
@@ -415,7 +415,7 @@
     axios "^0.25.0"
     axios-cache-interceptor "^0.9.3"
     buffer "^6.0.3"
-    dompurify "^2.3.5"
+    dompurify "^3.0.1"
     is-svg "^4.3.2"
     multiformats "^9.6.2"
     url-join "^4.0.1"
@@ -2274,15 +2274,15 @@ domexception@^4.0.0:
   dependencies:
     webidl-conversions "^7.0.0"
 
-dompurify@^2.3.5:
-  version "2.3.6"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.6.tgz#2e019d7d7617aacac07cbbe3d88ae3ad354cf875"
-  integrity sha512-OFP2u/3T1R5CEgWCEONuJ1a5+MFKnOYpkywpUSxv/dj1LeBT1erK+JwM7zK0ROy2BRhqVCf0LRw/kHqKuMkVGg==
-
 dompurify@^2.3.9:
   version "2.3.9"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.9.tgz#a4be5e7278338d6db09922dffcf6182cd099d70a"
   integrity sha512-3zOnuTwup4lPV/GfGS6UzG4ub9nhSYagR/5tB3AvDEwqyy5dtyCM2dVjwGDCnrPerXifBKTYh/UWCGKK7ydhhw==
+
+dompurify@^3.0.1:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.0.2.tgz#bc4c7c011c825e7704341a285461d8d407d9429a"
+  integrity sha512-B8c6JdiEpxAKnd8Dm++QQxJL4lfuc757scZtcapj6qjTjrQzyq5iAyznLKVvK+77eYNiFblHBlt7MM0fOeqoKw==
 
 dotenv@^10.0.0:
   version "10.0.0"
@@ -3168,6 +3168,11 @@ hasha@^5.0.0:
   dependencies:
     is-stream "^2.0.0"
     type-fest "^0.8.0"
+
+helmet@^6.1.5:
+  version "6.1.5"
+  resolved "https://registry.yarnpkg.com/helmet/-/helmet-6.1.5.tgz#2153387f6d73cce6efdfd85d3a65417cfb7db80c"
+  integrity sha512-UgAvdoG0BhF9vcCh/j0bWtElo2ZHHk6OzC98NLCM6zK03DEVSM0vUAtT7iR+oTo2Mi6sGelAH3tL6B/uUWxV4g==
 
 hmac-drbg@^1.0.1:
   version "1.0.1"
