@@ -1,3 +1,4 @@
+import { namehash }             from '@ensdomains/ensjs/utils/normalise';
 import { utils }                from 'ethers';
 import nock                     from 'nock';
 import { Version }              from '../src/base';
@@ -17,7 +18,6 @@ import {
   WrappedDomainResponse,
 }                               from './interface';
 
-const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
@@ -46,7 +46,7 @@ export class MockEntry {
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
-    this.namehash = namehash.hash(name);
+    this.namehash = namehash(name);
 
     if (!registered) {
       this.expect = 'No results found.';
