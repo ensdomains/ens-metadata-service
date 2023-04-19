@@ -1,3 +1,4 @@
+import {ens_normalize}                          from '@adraffy/ens-normalize';
 import { Version }                              from '../base';
 import {
   CANVAS_FONT_PATH,
@@ -9,10 +10,7 @@ import { isASCII, findCharacterSet }            from '../utils/characterSet';
 import { getCodePointLength, getSegmentLength } from '../utils/charLength';
 
 // no ts declaration files
-
 const { createCanvas, registerFont } = require('canvas');
-const namehash                       = require('@ensdomains/eth-ens-namehash');
-const { validate }                   = require('@ensdomains/ens-validation');
 
 
 try {
@@ -62,10 +60,9 @@ export class Metadata {
     last_request_date
   }: MetadataInit) {
     const label = this.getLabel(name);
-    const is_valid = validate(name);
-    this.is_normalized = is_valid && this._checkNormalized(name);
+    this.is_normalized = this._checkNormalized(name);
     this.name = this.formatName(name, tokenId);
-    this.description = this.formatDescription(name, description, is_valid);
+    this.description = this.formatDescription(name, description);
     this.attributes = this.initializeAttributes(created_date, label);
     this.url = this.is_normalized ? `https://app.ens.domains/name/${name}` : null;
     this.last_request_date = last_request_date;
@@ -85,15 +82,15 @@ export class Metadata {
         );
   }
 
-  formatDescription(name: string, description?: string, is_valid?: boolean) {
+  formatDescription(name: string, description?: string) {
     const baseDescription = description || `${this.name}, an ENS name.`;
     const normalizedNote = !this.is_normalized ? ` (${name} is not in normalized form)` : '';
-    const asciiWarning = this.generateAsciiWarning(this.getLabel(name), is_valid);
+    const asciiWarning = this.generateAsciiWarning(this.getLabel(name));
     return `${baseDescription}${normalizedNote}${asciiWarning}`;
   }
 
-  generateAsciiWarning(label: string, is_valid?: boolean) {
-    if (!is_valid || !isASCII(label)) {
+  generateAsciiWarning(label: string) {
+    if (!isASCII(label)) {
       return ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. ' +
         'Please be aware that there are characters that look identical or very ' +
         'similar to English letters, especially characters from Cyrillic and Greek. ' +
@@ -256,7 +253,7 @@ export class Metadata {
   private _checkNormalized(name: string) {
     // this method can be used to filter many informal name types
     try {
-      return name === namehash.normalize(name);
+      return name === ens_normalize(name);
     } catch {
       return false;
     }
