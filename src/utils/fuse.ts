@@ -49,6 +49,7 @@ export const userSettableFuseEnum = {
 
 export const fullFuseEnum = {
   ...userSettableFuseEnum,
+  ...fullParentFuseEnum,
   CAN_DO_EVERYTHING,
 };
 
@@ -116,9 +117,8 @@ const decodeNamedFuses = (fuses: number, arr: readonly string[]) => {
   const fuseObj = Object.fromEntries(
     arr.map((fuse) => [
       fuse,
-      (fuses &
-        userSettableFuseEnum[fuse as keyof typeof userSettableFuseEnum]) >
-        0,
+      (fuses & fullFuseEnum[fuse as keyof typeof fullFuseEnum]) ===
+        fullFuseEnum[fuse as keyof typeof fullFuseEnum],
     ])
   );
 
@@ -127,7 +127,7 @@ const decodeNamedFuses = (fuses: number, arr: readonly string[]) => {
 
 const decodeUnnamedFuses = (fuses: number, arr: readonly number[]) => {
   const fuseObj = Object.fromEntries(
-    arr.map((fuse) => [fuse, (fuses & fuse) > 0])
+    arr.map((fuse) => [fuse, (fuses & fuse) === fuse])
   );
 
   return fuseObj;
@@ -176,7 +176,7 @@ export const WrapperState = Object.freeze({
   WRAPPED: 'Wrapped',
 });
 
-export type WrapperState = typeof WrapperState[keyof typeof WrapperState];
+export type WrapperState = (typeof WrapperState)[keyof typeof WrapperState];
 
 export function getWrapperState(fuses: PartialFuseSet): WrapperState {
   if (fuses.parent.PARENT_CANNOT_CONTROL) {
