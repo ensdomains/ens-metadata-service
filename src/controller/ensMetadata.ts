@@ -27,6 +27,7 @@ export async function ensMetadata(req: Request, res: Response) {
   // #swagger.parameters['tokenId'] = { type: 'string', description: 'Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
   res.setTimeout(RESPONSE_TIMEOUT, () => {
     res.status(504).json({ message: 'Timeout' });
+    return;
   });
 
   const { contractAddress, networkName, tokenId: identifier } = req.params;

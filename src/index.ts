@@ -31,7 +31,9 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'none'"],
-      scriptSrc: ["'none'"],
+      scriptSrc: [
+        'https://unpkg.com/redoc@latest/bundles/redoc.standalone.js'
+      ],
       imgSrc: ['*', 'data:'],
       styleSrc: ["'self'", "'unsafe-inline'"],
       fontSrc: ["'self'", 'data:'],
