@@ -4,6 +4,7 @@ require('dotenv').config();
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || 'localhost';
 const ENV = process.env.ENV || 'local'; // local/prod
+const REDIS_URL = process.env.REDIS_URL;
 
 const FONT_FOLDER = path.join((ENV === 'local' ? 'src' : 'dist'), 'assets');
 const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'Satoshi-Bold.ttf');
@@ -43,6 +44,7 @@ export {
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
+  REDIS_URL,
   NODE_PROVIDER,
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
