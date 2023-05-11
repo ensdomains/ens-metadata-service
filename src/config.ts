@@ -4,6 +4,7 @@ require('dotenv').config();
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || 'localhost';
 const ENV = process.env.ENV || 'local'; // local/prod
+const PROJECT_ID = process.env.PROJECT_ID;
 
 const FONT_FOLDER = path.join((ENV === 'local' ? 'src' : 'dist'), 'assets');
 const CANVAS_FONT_PATH = path.join(FONT_FOLDER, 'Satoshi-Bold.ttf');
@@ -47,6 +48,7 @@ export {
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
   NODE_PROVIDER_URL_GOERLI,
+  PROJECT_ID,
   RESPONSE_TIMEOUT,
   SERVER_URL,
 };
