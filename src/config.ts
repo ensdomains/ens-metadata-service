@@ -32,7 +32,7 @@ const ETH_REGISTRY_ABI = [
 ];
 
 // response timeout: 1 min
-const RESPONSE_TIMEOUT = 10 * 1000;
+const RESPONSE_TIMEOUT = 60 * 1000;
 
 export {
   ADDRESS_ETH_REGISTRAR,

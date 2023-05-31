@@ -11,7 +11,8 @@ const NODE_PROVIDERS = {
   INFURA    : 'INFURA',
   CLOUDFLARE: 'CLOUDFLARE',
   GOOGLE    : 'GOOGLE',
-  GETH      : 'GETH'
+  GETH      : 'GETH',
+  TENDERLY  : 'TENDERLY'
 };
 
 export const NETWORK = {
@@ -31,6 +32,7 @@ function getWeb3URL(
 ): string {
   switch (providerName.toUpperCase()) {
     case NODE_PROVIDERS.INFURA:
+    case NODE_PROVIDERS.TENDERLY:
       return `${api.replace('https://', `https://${network}.`)}`;
     case NODE_PROVIDERS.CLOUDFLARE:
       return `${api}/${network}`;
