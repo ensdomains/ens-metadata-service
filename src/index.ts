@@ -6,6 +6,8 @@ import helmet                                       from 'helmet';
 import docUI                                        from 'redoc-express';
 
 import endpoints                                    from './endpoint';
+import { blockRecursiveCalls }                      from './utils/blockRecursiveCalls';
+import { rateLimitMiddleware }                      from './utils/rateLimiter';
 
 const setCacheHeader = function (
   req: Request,
@@ -53,6 +55,9 @@ app.use(
 if (process.env.ENV === 'local') {
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
+
+app.use(rateLimitMiddleware);
+app.use(blockRecursiveCalls);
 
 // apply cache header for all get requests
 app.use(setCacheHeader);

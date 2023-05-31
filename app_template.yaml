@@ -1,0 +1,18 @@
+runtime: nodejs16 # or another supported version
+
+instance_class: F2
+
+handlers:
+  - url: /stylesheets
+    static_dir: stylesheets
+  - url: /assets
+    static_dir: dist/assets
+    http_headers:
+      Access-Control-Allow-Origin: '*'
+  - url: /.*
+    secure: optional
+    script: auto
+
+# remove this module if VPC Access Connector is not needed on your setup
+vpc_access_connector:
+  name: {VPC_ACCESS_CONNECTOR}

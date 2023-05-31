@@ -11,7 +11,7 @@
 
 
 ### Request
-- __network:__ Name of the chain to query for. (mainnet | rinkeby | ropsten | goerli ...)
+- __network:__ Name of the chain to query for. (mainnet | goerli ...)
 - __contactAddress:__ accepts contractAddress of the NFT which represented by the tokenId
 - __NFT v1 - tokenId:__ accepts ENS name or labelhash of ENS name in both hex and int format
 - __NFT v2 - tokenId:__ accepts ENS name or namehash of ENS name in both hex and int format
@@ -88,7 +88,9 @@ yarn dev
 ```
 
 
-## How to deploy
+## How to deploy (Google App Engine)
+
+Modify the app_template.yaml according to your needs. Then run;
 
 ```
 yarn deploy
@@ -114,12 +116,14 @@ yarn test:cov
 | ---- | ----------- | ------------- | ------- |
 | HOST | Host (ip/domain) address of the running service | localhost | - | No |
 | ENV | Project scope | local | local/prod |
+| REDIS_URL | (Optional) Redis connection if you want to enable rate limiter | - | - |
 | INAMEWRAPPER | InterfaceId of NameWrapper Contract | 0xe89c48dc | - |
 | ADDRESS_ETH_REGISTRAR | Ethereum address of ENSBaseRegistrar Contract | 0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85 | - |
 | ADDRESS_NAME_WRAPPER | Ethereum address of NameWrapper Contract | 0x582224b8d4534F4749EFA4f22eF7241E0C56D4B8 | - |
 | WEB3_NODE_URL | Ethereum Node Provider API | - | - |
 | NODE_PROVIDER | Ethereum Node Provider | Cloudflare | Cloudflare/Google/Infura/Local |
 | NODE_PROVIDER_URL | Ethereum Node Provider API Endpoint | - | - |
+| VPC_ACCESS_CONNECTOR | (Optional) Needed if you will setup Memorystore for GAE | - | - |
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
