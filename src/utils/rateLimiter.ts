@@ -18,8 +18,8 @@ if (REDIS_URL) {
 
   const opts = {
     storeClient: redisClient,
-    points: 100,  // Number of total points
-    duration: 5,  // Per second(s)
+    points: 10,  // Number of total points
+    duration: 2,  // Per second(s)
     execEvenly: false,  // Do not delay actions evenly
     blockDuration: 0,   // Do not block the caller if consumed more than points
     keyPrefix: 'ensrl', // Assign unique keys for each limiters with different purposes

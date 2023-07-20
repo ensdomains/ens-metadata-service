@@ -81,10 +81,12 @@ export async function ensImage(req: Request, res: Response) {
       error instanceof NamehashMismatchError ||
       error instanceof UnsupportedNetwork
     ) {
-      res.status(errCode).json({
-        message: error.message,
-      });
-      return;
+      if (!res.headersSent) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+        return;
+      }
     }
 
     /* #swagger.responses[404] = { 

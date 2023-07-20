@@ -8,7 +8,10 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                           from '../base';
-import { IPFS_GATEWAY }     from '../config';
+import { 
+  IPFS_GATEWAY, 
+  OPENSEA_API_KEY 
+}                           from '../config';
 import { abortableFetch }   from '../utils/abortableFetch';
 
 const window = new JSDOM('').window;
@@ -46,7 +49,13 @@ export class AvatarMetadata {
   avtResolver: AvatarResolver;
   constructor(provider: ethers.providers.BaseProvider, uri: string) {
     this.defaultProvider = provider;
-    this.avtResolver = new AvatarResolver(provider, { ipfs: IPFS_GATEWAY });
+    this.avtResolver = new AvatarResolver(provider, 
+      { 
+        ipfs: IPFS_GATEWAY, 
+        apiKey: { opensea: OPENSEA_API_KEY },
+        urlDenyList: [ 'metadata.ens.domains' ]
+      }
+    );
     this.uri = uri;
   }
 
