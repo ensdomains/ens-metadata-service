@@ -454,10 +454,10 @@
     dns-packet "^5.2.1"
     ethers "^5.0.30"
 
-"@ensdomains/ens-avatar@^0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.5.tgz#f89e53c4e1fb706b27c504f5bbeb7851f3af13af"
-  integrity sha512-2Tko+KgXQvsYyX8BZ8zapLpzxMZ9oLEzUsyUFgWfM0O83SvURSEqHXW+GyEGkgNRg2ZPte5qnq0+FnthxXZQRA==
+"@ensdomains/ens-avatar@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.3.0.tgz#93506b3ab12e4e4f9127c0044aa27809b57db6db"
+  integrity sha512-AN6vzQPSOO8eDqO90EgqpIu1QSi0EAfwYgeG1/FNdWl0ScWPiWhDu10l7a7b1op/BnbcCpiwaSwME6M5OUtsQA==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
