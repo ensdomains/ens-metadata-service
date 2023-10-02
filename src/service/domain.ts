@@ -160,6 +160,9 @@ export async function getDomain(
         display_type: 'string',
         value: getWrapperState(decodedFuses),
       });
+      metadata.description += metadata.generateRuggableWarning(
+        metadata.name, version, getWrapperState(decodedFuses)
+      );
     }
   }
   const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');
