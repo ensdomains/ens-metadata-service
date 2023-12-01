@@ -1,7 +1,7 @@
 import { AvatarResolver }   from '@ensdomains/ens-avatar';
-import { BaseProvider }     from '@ethersproject/providers';
 import { strict as assert } from 'assert';
-import { ethers }           from 'ethers';
+import { ethers, JsonRpcProvider } from 'ethers';
+import createDOMPurify      from 'dompurify';
 import { JSDOM }            from 'jsdom';
 import {
   ResolverNotFound,
@@ -45,9 +45,9 @@ export interface AvatarMetadata {
 }
 
 export class AvatarMetadata {
-  defaultProvider: ethers.providers.BaseProvider;
+  defaultProvider: ethers.Provider;
   avtResolver: AvatarResolver;
-  constructor(provider: ethers.providers.BaseProvider, uri: string) {
+  constructor(provider: ethers.JsonRpcProvider, uri: string) {
     this.defaultProvider = provider;
     this.avtResolver = new AvatarResolver(provider, 
       { 
@@ -90,6 +90,13 @@ export class AvatarMetadata {
 
       const mimeType = response?.headers.get('Content-Type');
       const data = await response?.buffer();
+
+      if (mimeType?.includes('svg')) {
+        const DOMPurify = createDOMPurify(window);
+        const cleanData = DOMPurify.sanitize(data.toString());
+        return [Buffer.from(cleanData), mimeType];
+      }
+
       return [data, mimeType];
     }
 
@@ -155,7 +162,7 @@ export class AvatarMetadata {
 }
 
 export async function getAvatarMeta(
-  provider: BaseProvider,
+  provider: JsonRpcProvider,
   name: string,
   networkName: string
 ): Promise<any> {
@@ -164,7 +171,7 @@ export async function getAvatarMeta(
 }
 
 export async function getAvatarImage(
-  provider: BaseProvider,
+  provider: JsonRpcProvider,
   name: string
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);

@@ -10,7 +10,7 @@
   "dependencies": {
     "@adraffy/ens-normalize": "^1.9.0",
     "@ensdomains/ens-avatar": "^0.3.3",
-    "@ensdomains/ensjs": "^3.0.0-alpha.61",
+    "@ensdomains/ensjs": "^3.0.0-alpha.67",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
     "canvas": "^2.11.2",
@@ -19,7 +19,7 @@
     "dompurify": "^3.0.5",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^5.7.2",
+    "ethers": "^6.8.1",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",

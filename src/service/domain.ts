@@ -1,5 +1,9 @@
 import { request }        from 'graphql-request';
-import { ethers }         from 'ethers';
+import { 
+  JsonRpcProvider, 
+  hexlify, 
+  zeroPadValue 
+}                         from 'ethers';
 import {
   GET_REGISTRATIONS,
   GET_DOMAINS,
@@ -18,15 +22,16 @@ import { NetworkName }    from './network';
 import { 
   decodeFuses, 
   getWrapperState 
-}                         from '../utils/fuse';
-import { getNamehash }    from '../utils/namehash';
+}                          from '../utils/fuse';
+import { getNamehash }     from '../utils/namehash';
+import { bigToUint8Array } from '../utils/bigIntToUintArray';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
 const GRACE_PERIOD_MS = 7776000000; // 90 days as milliseconds
 
 export async function getDomain(
-  provider: ethers.providers.BaseProvider,
+  provider: JsonRpcProvider,
   networkName: NetworkName,
   SUBGRAPH_URL: string,
   contractAddress: string,
@@ -37,12 +42,9 @@ export async function getDomain(
   let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
-    hexId = ethers.utils.hexZeroPad(
-      ethers.utils.hexlify(ethers.BigNumber.from(tokenId)),
-      32
-    );
+    hexId = zeroPadValue(hexlify(bigToUint8Array(BigInt(tokenId))), 32);
   } else {
-    intId = ethers.BigNumber.from(tokenId).toString();
+    intId = BigInt(tokenId).toString();
     hexId = tokenId;
   }
   const queryDocument: string =

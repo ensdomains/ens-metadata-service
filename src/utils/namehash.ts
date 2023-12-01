@@ -1,5 +1,5 @@
 import { namehash }                 from '@ensdomains/ensjs/utils/normalise';
-import { utils, BigNumber, ethers } from 'ethers';
+import { hexlify, zeroPadBytes }    from 'ethers';
 import { Version }                  from '../base';
 
 const sha3 = require('js-sha3').keccak_256;
@@ -13,8 +13,7 @@ export function constructEthNameHash(
 ): string {
   if (version > Version.v1) return tokenId;
 
-  const label0x = utils
-    .hexZeroPad(utils.hexlify(BigNumber.from(tokenId)), 32)
+  const label0x = zeroPadBytes(hexlify(BigInt(tokenId).toString()), 32)
     .replace('0x', '');
   const labels = [label0x, eth0x];
 
@@ -26,14 +25,13 @@ export function constructEthNameHash(
   }
   return '0x' + node;
 }
-
 export function getNamehash(nameOrNamehash: string) {
   const _name = nameOrNamehash.substring(0, nameOrNamehash.lastIndexOf('.'));
   // if not name, return original (in case intID provided convert to hexID)
   if (!_name) {
     if (!nameOrNamehash.match(/^0x/)) {
-      return ethers.utils.hexZeroPad(
-        ethers.utils.hexlify(ethers.BigNumber.from(nameOrNamehash)),
+      return zeroPadBytes(
+        hexlify(BigInt(nameOrNamehash).toString()),
         32
       );
     }

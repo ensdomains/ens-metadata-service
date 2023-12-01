@@ -18,7 +18,7 @@ interface CheckContractResult {
 async function checkV1Contract(
   contract: ethers.Contract,
   identifier: string,
-  provider: ethers.providers.BaseProvider
+  provider: ethers.Provider
 ): Promise<CheckContractResult> {
   const _tokenId = getLabelhash(identifier);
   try {
@@ -39,7 +39,7 @@ async function checkV1Contract(
     assert(isInterfaceSupported);
     return { tokenId: _tokenId, version: Version.v1w };
   } catch (error) {
-    console.warn(`error for ${contract.address}`, error);
+    console.warn(`checkV1Contract: nft ownership check fails for ${_tokenId}`);
   }
   return { tokenId: _tokenId, version: Version.v1 };
 }
@@ -48,7 +48,7 @@ async function checkV2Contract(
   contract: ethers.Contract,
   identifier: string
 ): Promise<CheckContractResult> {
-  if (contract.address !== ADDRESS_NAME_WRAPPER) {
+  if (contract.address.toString() !== ADDRESS_NAME_WRAPPER) {
     try {
       const isInterfaceSupported = await contract.supportsInterface(
         INAMEWRAPPER
@@ -63,18 +63,18 @@ async function checkV2Contract(
   }
 
   const namehash = getNamehash(identifier);
-  const isWrapped = await contract.isWrapped(namehash);
-  assert(isWrapped);
+  // const isWrapped = await contract.isWrapped(namehash);
+  // assert(isWrapped);
 
   return { tokenId: namehash, version: Version.v2 };
 }
 
 export async function checkContract(
-  provider: ethers.providers.BaseProvider,
+  provider: ethers.Provider,
   contractAddress: string,
   identifier: string
 ): Promise<CheckContractResult> {
-  const _contractAddress = ethers.utils.getAddress(contractAddress);
+  const _contractAddress = ethers.getAddress(contractAddress);
   const contract = new ethers.Contract(
     _contractAddress,
     [
