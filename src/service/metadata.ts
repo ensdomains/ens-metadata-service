@@ -13,13 +13,13 @@ import { getCodePointLength, getSegmentLength } from '../utils/charLength';
 const { createCanvas, registerFont } = require('canvas');
 
 
-// try {
-//   registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
-//   registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
-// } catch(error) {
-//   console.warn("Font registeration is failed.");
-//   console.warn(error);
-// }
+try {
+  registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
+  // registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
+} catch(error) {
+  console.warn("Font registeration is failed.");
+  console.warn(error);
+}
 
 
 export interface MetadataInit {
