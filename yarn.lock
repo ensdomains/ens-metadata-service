@@ -470,10 +470,10 @@
     multiformats "^9.6.2"
     url-join "^4.0.1"
 
-"@ensdomains/ensjs@^3.0.0-alpha.61":
-  version "3.0.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-3.0.0-alpha.61.tgz#a9b7386633625acce996e528627b396e1b93349e"
-  integrity sha512-ThHj9c2wCsl4At6arwEwxmQwTJLCgeW1f9MHBrcM8OH/8BpZXfUuO1UTxHeZqy6gGPb58eWQpGMDW8uI7iGoNg==
+"@ensdomains/ensjs@^3.0.0-alpha.67":
+  version "3.0.0-alpha.67"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-3.0.0-alpha.67.tgz#fa69ba63d39e7bdbb2291dd1e9329b6f3e3d8197"
+  integrity sha512-fV5KPIfxcWjkKnQ1iicndJRl8ADQDgoPVvEw02q6on6HTx5QNvUqc/+vccv3dPqIas7yTRShXpT87hweDxPE+g==
   dependencies:
     "@adraffy/ens-normalize" "1.9.0"
     "@ensdomains/address-encoder" "^0.2.18"
