@@ -454,10 +454,10 @@
     dns-packet "^5.2.1"
     ethers "^5.0.30"
 
-"@ensdomains/ens-avatar@^0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.2.5.tgz#f89e53c4e1fb706b27c504f5bbeb7851f3af13af"
-  integrity sha512-2Tko+KgXQvsYyX8BZ8zapLpzxMZ9oLEzUsyUFgWfM0O83SvURSEqHXW+GyEGkgNRg2ZPte5qnq0+FnthxXZQRA==
+"@ensdomains/ens-avatar@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-0.3.2.tgz#f182085a8d865b6048ca3819b4be3c14e79a5c97"
+  integrity sha512-4PkDxfj4KUC0BoX9lEqonrgq3KJDz1mcznh8u4hapeLnEWgLqlPrHrA84ZxWhH61iE8E7qZSEUN+NHJp1W6QrA==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
@@ -470,10 +470,10 @@
     multiformats "^9.6.2"
     url-join "^4.0.1"
 
-"@ensdomains/ensjs@^3.0.0-alpha.61":
-  version "3.0.0-alpha.61"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-3.0.0-alpha.61.tgz#a9b7386633625acce996e528627b396e1b93349e"
-  integrity sha512-ThHj9c2wCsl4At6arwEwxmQwTJLCgeW1f9MHBrcM8OH/8BpZXfUuO1UTxHeZqy6gGPb58eWQpGMDW8uI7iGoNg==
+"@ensdomains/ensjs@^3.0.0-alpha.67":
+  version "3.0.0-alpha.67"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ensjs/-/ensjs-3.0.0-alpha.67.tgz#fa69ba63d39e7bdbb2291dd1e9329b6f3e3d8197"
+  integrity sha512-fV5KPIfxcWjkKnQ1iicndJRl8ADQDgoPVvEw02q6on6HTx5QNvUqc/+vccv3dPqIas7yTRShXpT87hweDxPE+g==
   dependencies:
     "@adraffy/ens-normalize" "1.9.0"
     "@ensdomains/address-encoder" "^0.2.18"
@@ -1895,13 +1895,13 @@ caniuse-lite@^1.0.30001449:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001472.tgz#3f484885f2a2986c019dc416e65d9d62798cdd64"
   integrity sha512-xWC/0+hHHQgj3/vrKYY0AAzeIUgr7L9wlELIcAvZdDUHlhL/kNxMdnQLOSOQfP8R51ZzPhmHdyMkI0MMpmxCfg==
 
-canvas@^2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/canvas/-/canvas-2.8.0.tgz#f99ca7f25e6e26686661ffa4fec1239bbef74461"
-  integrity sha512-gLTi17X8WY9Cf5GZ2Yns8T5lfBOcGgFehDFb+JQwDqdOoBOcECS9ZWMEAqMSVcMYwXD659J8NyzjRY/2aE+C2Q==
+canvas@^2.11.2:
+  version "2.11.2"
+  resolved "https://registry.yarnpkg.com/canvas/-/canvas-2.11.2.tgz#553d87b1e0228c7ac0fc72887c3adbac4abbd860"
+  integrity sha512-ItanGBMrmRV7Py2Z+Xhs7cT+FNt5K0vPL4p9EZ/UX/Mu7hFbkxSjKF2KVtPwX7UYWp7dRKnrTvReflgrItJbdw==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
-    nan "^2.14.0"
+    nan "^2.17.0"
     simple-get "^3.0.3"
 
 cbor@^8.1.0:
@@ -4639,10 +4639,15 @@ multihashes@^4.0.1:
     uint8arrays "^3.0.0"
     varint "^5.0.2"
 
-nan@^2.12.1, nan@^2.14.0:
+nan@^2.12.1:
   version "2.15.0"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
   integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
+
+nan@^2.17.0:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.17.0.tgz#c0150a2368a182f033e9aa5195ec76ea41a199cb"
+  integrity sha512-2ZTgtl0nJsO0KQCjEpxcIr5D+Yv90plTitZt9JBfQvVJDS5seMl3FOvsh3+9CoYWXf/1l5OaZzzF6nDm4cagaQ==
 
 nano-base32@^1.0.1:
   version "1.0.1"

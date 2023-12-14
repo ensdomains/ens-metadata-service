@@ -13,6 +13,7 @@ const INAMEWRAPPER = process.env.INAMEWRAPPER || '0xd82c42d8';
 
 const IPFS_GATEWAY = process.env.IPFS_GATEWAY || 'https://ipfs.io';
 const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
+const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY || '';
 const NODE_PROVIDER = process.env.NODE_PROVIDER || 'geth';
 const NODE_PROVIDER_URL = process.env.NODE_PROVIDER_URL || 'http://localhost:8545';
 
@@ -32,7 +33,7 @@ const ETH_REGISTRY_ABI = [
 ];
 
 // response timeout: 1 min
-const RESPONSE_TIMEOUT = 10 * 1000;
+const RESPONSE_TIMEOUT = 15 * 1000;
 
 export {
   ADDRESS_ETH_REGISTRAR,
@@ -44,6 +45,7 @@ export {
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
+  OPENSEA_API_KEY,
   REDIS_URL,
   NODE_PROVIDER,
   NODE_PROVIDER_URL,

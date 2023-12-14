@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.9.0",
-    "@ensdomains/ens-avatar": "^0.2.5",
-    "@ensdomains/ensjs": "^3.0.0-alpha.61",
+    "@ensdomains/ens-avatar": "^0.3.2",
+    "@ensdomains/ensjs": "^3.0.0-alpha.67",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
     "canvas": "^2.11.2",
@@ -80,6 +80,6 @@
     ]
   },
   "volta": {
-    "node": "16.15.0"
+    "node": "18.15.0"
   }
 }

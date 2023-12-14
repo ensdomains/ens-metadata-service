@@ -1,4 +1,9 @@
 import {ens_normalize}                          from '@adraffy/ens-normalize';
+import { 
+  CanvasRenderingContext2D, 
+  createCanvas, 
+  registerFont 
+}                                               from 'canvas';
 import { Version }                              from '../base';
 import {
   CANVAS_FONT_PATH,
@@ -9,18 +14,12 @@ import base64EncodeUnicode                      from '../utils/base64encode';
 import { isASCII, findCharacterSet }            from '../utils/characterSet';
 import { getCodePointLength, getSegmentLength } from '../utils/charLength';
 
-// no ts declaration files
-const { createCanvas, registerFont } = require('canvas');
 
-
-try {
-  registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
-  registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
-} catch(error) {
-  console.warn("Font registeration is failed.");
-  console.warn(error);
+interface Attribute {
+  trait_type: string,
+  display_type: string,
+  value: any
 }
-
 
 export interface MetadataInit {
   name               : string;
@@ -36,7 +35,7 @@ export interface MetadataInit {
 export interface Metadata {
   name               : string;
   description        : string;
-  attributes         : object[];
+  attributes         : Attribute[];
   name_length?       : number;
   segment_length?    : number;
   image              : string;
@@ -51,20 +50,24 @@ export interface Metadata {
 
 export class Metadata {
   static MAX_CHAR = 60;
+  static ctx: CanvasRenderingContext2D;
+
   constructor({
     name,
     description,
     created_date,
     tokenId,
     version,
-    last_request_date
+    last_request_date,
   }: MetadataInit) {
     const label = this.getLabel(name);
     this.is_normalized = this._checkNormalized(name);
     this.name = this.formatName(name, tokenId);
     this.description = this.formatDescription(name, description);
     this.attributes = this.initializeAttributes(created_date, label);
-    this.url = this.is_normalized ? `https://app.ens.domains/name/${name}` : null;
+    this.url = this.is_normalized
+      ? `https://app.ens.domains/name/${name}`
+      : null;
     this.last_request_date = last_request_date;
     this.version = version;
   }
@@ -84,19 +87,23 @@ export class Metadata {
 
   formatDescription(name: string, description?: string) {
     const baseDescription = description || `${this.name}, an ENS name.`;
-    const normalizedNote = !this.is_normalized ? ` (${name} is not in normalized form)` : '';
+    const normalizedNote = !this.is_normalized
+      ? ` (${name} is not in normalized form)`
+      : '';
     const asciiWarning = this.generateAsciiWarning(this.getLabel(name));
     return `${baseDescription}${normalizedNote}${asciiWarning}`;
   }
 
   generateAsciiWarning(label: string) {
     if (!isASCII(label)) {
-      return ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. ' +
+      return (
+        ' ⚠️ ATTENTION: This name contains non-ASCII characters as shown above. ' +
         'Please be aware that there are characters that look identical or very ' +
         'similar to English letters, especially characters from Cyrillic and Greek. ' +
         'Also, traditional Chinese characters can look identical or very similar to ' +
         'simplified variants. For more information: ' +
-        'https://en.wikipedia.org/wiki/IDN_homograph_attack';
+        'https://en.wikipedia.org/wiki/IDN_homograph_attack'
+      );
     }
     return '';
   }
@@ -129,7 +136,7 @@ export class Metadata {
     ];
   }
 
-  addAttribute(attribute: object) {
+  addAttribute(attribute: Attribute) {
     this.attributes.push(attribute);
   }
 
@@ -152,7 +159,12 @@ export class Metadata {
 
     const { domain, subdomainText } = this.processSubdomain(name, isSubdomain);
     const { processedDomain, domainFontSize } = this.processDomain(domain);
-    const svg = this._generateByVersion(domainFontSize, subdomainText, isSubdomain, processedDomain);
+    const svg = this._generateByVersion(
+      domainFontSize,
+      subdomainText,
+      isSubdomain,
+      processedDomain
+    );
 
     try {
       this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
@@ -165,7 +177,7 @@ export class Metadata {
   processSubdomain(name: string, isSubdomain: boolean) {
     let subdomainText;
     let domain = name;
-    
+
     if (isSubdomain && !name.includes('...')) {
       const labels = name.split('.');
       let subdomain = labels.slice(0, labels.length - 2).join('.') + '.';
@@ -241,11 +253,20 @@ export class Metadata {
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(270, 270, 'svg');
-    const ctx = canvas.getContext('2d');
-    ctx.font =
-      '20px Satoshi, Noto Color Emoji, Apple Color Emoji, sans-serif';
-    const fontMetrics = ctx.measureText(name);
+    if (!this.ctx) {
+      try {
+        registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
+        registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
+      } catch (error) {
+        console.warn('Font registration is failed.');
+        console.warn(error);
+      }
+      const canvas = createCanvas(270, 270, 'svg');
+      this.ctx = canvas.getContext('2d');
+      this.ctx.font =
+        '20px Satoshi, Noto Color Emoji, Apple Color Emoji, sans-serif';
+    }
+    const fontMetrics = this.ctx.measureText(name);
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
   }
