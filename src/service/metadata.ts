@@ -215,7 +215,7 @@ export class Metadata {
 
     if (charSegmentLength > 25) {
       domain = this._addSpan(domain, charSegmentLength / 2);
-      domainFontSize *= 2;
+      domainFontSize = (domainFontSize - 1) * 2;
     }
 
     return { processedDomain: domain, domainFontSize };
