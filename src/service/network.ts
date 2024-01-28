@@ -91,9 +91,9 @@ export default function getNetwork(network: NetworkName): {
   if (network === NETWORK.SEPOLIA) {
     const ens = new EnsPlugin('0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e');
     const _network = new Network(network, 11155111).attachPlugin(ens);
-    const provider = new JsonRpcProvider(WEB3_URL, _network);
+    const provider = new JsonRpcProvider(WEB3_URL, _network, { staticNetwork: true });
     return { WEB3_URL, SUBGRAPH_URL, provider };
   }
-  const provider = new JsonRpcProvider(WEB3_URL, network);
+  const provider = new JsonRpcProvider(WEB3_URL, network, { staticNetwork: true });
   return { WEB3_URL, SUBGRAPH_URL, provider };
 }

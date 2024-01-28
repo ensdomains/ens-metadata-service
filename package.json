@@ -19,7 +19,7 @@
     "dompurify": "^3.0.5",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^6.8.1",
+    "ethers": "^6.10.0",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",
@@ -34,7 +34,8 @@
     "redoc-express": "^1.0.0",
     "ssrf-req-filter": "^1.0.6",
     "timeout-signal": "^1.0.0",
-    "tsc": "^2.0.3"
+    "tsc": "^2.0.3",
+    "viem": "^2.5.0"
   },
   "scripts": {
     "build": "yarn appconfgen && tsc --project ./ && cpx 'src/assets/**' 'dist/assets'",
@@ -80,6 +81,6 @@
     ]
   },
   "volta": {
-    "node": "16.15.0"
+    "node": "18.5.0"
   }
 }
