@@ -1,4 +1,9 @@
 import { ens_normalize, ens_beautify }              from '@adraffy/ens-normalize';
+import { 
+  CanvasRenderingContext2D, 
+  createCanvas, 
+  registerFont 
+}                                                   from 'canvas';
 import { Version }                                  from '../base';
 import { CANVAS_FONT_PATH, CANVAS_EMOJI_FONT_PATH } from '../config';
 import createSVGfromTemplate                        from '../svg-template';
@@ -7,15 +12,11 @@ import { isASCII, findCharacterSet }                from '../utils/characterSet'
 import { getCodePointLength, getSegmentLength }     from '../utils/charLength';
 import { WrapperState }                             from '../utils/fuse';
 
-// no ts declaration files
-const { createCanvas, registerFont } = require('canvas');
 
-try {
-  registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
-  registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
-} catch (error) {
-  console.warn('Font registeration is failed.');
-  console.warn(error);
+interface Attribute {
+  trait_type: string,
+  display_type: string,
+  value: any
 }
 
 export interface MetadataInit {
@@ -32,7 +33,7 @@ export interface MetadataInit {
 export interface Metadata {
   name               : string;
   description        : string;
-  attributes         : object[];
+  attributes         : Attribute[];
   name_length?       : number;
   segment_length?    : number;
   image              : string;
@@ -47,6 +48,8 @@ export interface Metadata {
 
 export class Metadata {
   static MAX_CHAR = 60;
+  static ctx: CanvasRenderingContext2D;
+
   constructor({
     name,
     description,
@@ -146,7 +149,7 @@ export class Metadata {
     ];
   }
 
-  addAttribute(attribute: object) {
+  addAttribute(attribute: Attribute) {
     this.attributes.push(attribute);
   }
 
@@ -225,7 +228,7 @@ export class Metadata {
 
     if (charSegmentLength > 25) {
       domain = this._addSpan(domain, charSegmentLength / 2);
-      domainFontSize *= 2;
+      domainFontSize = (domainFontSize - 1) * 2;
     }
 
     return { processedDomain: domain, domainFontSize };
@@ -263,10 +266,20 @@ export class Metadata {
   }
 
   static _getFontSize(name: string): number {
-    const canvas = createCanvas(270, 270, 'svg');
-    const ctx = canvas.getContext('2d');
-    ctx.font = '20px Satoshi, Noto Color Emoji, Apple Color Emoji, sans-serif';
-    const fontMetrics = ctx.measureText(name);
+    if (!this.ctx) {
+      try {
+        registerFont(CANVAS_FONT_PATH, { family: 'Satoshi' });
+        registerFont(CANVAS_EMOJI_FONT_PATH, { family: 'Noto Color Emoji' });
+      } catch (error) {
+        console.warn('Font registration is failed.');
+        console.warn(error);
+      }
+      const canvas = createCanvas(270, 270, 'svg');
+      this.ctx = canvas.getContext('2d');
+      this.ctx.font =
+        '20px Satoshi, Noto Color Emoji, Apple Color Emoji, sans-serif';
+    }
+    const fontMetrics = this.ctx.measureText(name);
     const fontSize = Math.floor(20 * (200 / fontMetrics.width));
     return fontSize < 34 ? fontSize : 32;
   }
