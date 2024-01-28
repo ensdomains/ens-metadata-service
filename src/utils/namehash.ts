@@ -1,4 +1,4 @@
-import { namehash }                 from '@ensdomains/ensjs/utils';
+import { namehash }                 from '@ensdomains/ensjs/utils/normalise';
 import { hexlify, zeroPadBytes }    from 'ethers';
 import { Version }                  from '../base';
 

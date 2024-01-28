@@ -11,6 +11,7 @@
     "@adraffy/ens-normalize": "^1.10.0",
     "@ensdomains/ens-avatar": "0.3.6",
     "@ensdomains/ensjs": "^3.0.0-alpha.67",
+    "@ethersproject/solidity": "^5.7.0",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
     "canvas": "^2.11.2",
