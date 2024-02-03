@@ -1,4 +1,4 @@
-export function bigToUint8Array(big: bigint) {
+export function bigIntToUint8Array(big: bigint) {
   // ensure big is positive and determine its byte size
   const isNegative = big < BigInt(0);
   if (isNegative) {

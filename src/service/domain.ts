@@ -22,9 +22,9 @@ import { NetworkName }    from './network';
 import { 
   decodeFuses, 
   getWrapperState 
-}                          from '../utils/fuse';
-import { getNamehash }     from '../utils/namehash';
-import { bigToUint8Array } from '../utils/bigIntToUintArray';
+}                             from '../utils/fuse';
+import { getNamehash }        from '../utils/namehash';
+import { bigIntToUint8Array } from '../utils/bigIntToUint8Array';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
@@ -42,7 +42,7 @@ export async function getDomain(
   let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
-    hexId = zeroPadValue(hexlify(bigToUint8Array(BigInt(tokenId))), 32);
+    hexId = zeroPadValue(hexlify(bigIntToUint8Array(BigInt(tokenId))), 32);
   } else {
     intId = BigInt(tokenId).toString();
     hexId = tokenId;

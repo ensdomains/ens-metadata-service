@@ -1,6 +1,7 @@
-import { namehash }                 from '@ensdomains/ensjs/utils/normalise';
-import { hexlify, zeroPadBytes }    from 'ethers';
-import { Version }                  from '../base';
+import { namehash }              from '@ensdomains/ensjs/utils/normalise';
+import { hexlify, zeroPadBytes } from 'ethers';
+import { Version }               from '../base';
+import { bigIntToUint8Array }    from './bigIntToUint8Array';
 
 const sha3 = require('js-sha3').keccak_256;
 
@@ -31,7 +32,7 @@ export function getNamehash(nameOrNamehash: string) {
   if (!_name) {
     if (!nameOrNamehash.match(/^0x/)) {
       return zeroPadBytes(
-        hexlify(BigInt(nameOrNamehash).toString()),
+        hexlify(bigIntToUint8Array(BigInt(nameOrNamehash))),
         32
       );
     }
