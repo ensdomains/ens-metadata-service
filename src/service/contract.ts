@@ -48,7 +48,8 @@ async function checkV2Contract(
   contract: ethers.Contract,
   identifier: string
 ): Promise<CheckContractResult> {
-  if (await contract.getAddress() !== ADDRESS_NAME_WRAPPER) {
+  const contractAddress = await contract.getAddress();
+  if (contractAddress !== ADDRESS_NAME_WRAPPER) {
     try {
       const isInterfaceSupported = await contract.supportsInterface(
         INAMEWRAPPER
@@ -56,7 +57,7 @@ async function checkV2Contract(
       assert(isInterfaceSupported);
     } catch (error) {
       throw new ContractMismatchError(
-        `${contract.address} does not match with any ENS related contract`,
+        `${contractAddress} does not match with any ENS related contract`,
         400
       );
     }
