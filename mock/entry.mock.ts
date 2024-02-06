@@ -190,6 +190,10 @@ export class MockEntry {
         value: getWrapperState(decodedFuses),
       });
 
+      _metadata.description += _metadata.generateRuggableWarning(
+        _metadata.name, version, getWrapperState(decodedFuses)
+      )
+
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_PATH, {
           query: GET_WRAPPED_DOMAIN,
