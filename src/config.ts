@@ -33,6 +33,10 @@ const ETH_REGISTRY_ABI = [
   'function recordExists(bytes32 node) external view returns (bool)'
 ];
 
+const NAMEWRAPPER_ABI = [
+  'function isWrapped(bytes32 node) public view returns (bool)'
+];
+
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 15 * 1000;
 
@@ -43,6 +47,7 @@ export {
   CANVAS_FONT_PATH,
   CANVAS_EMOJI_FONT_PATH,
   ETH_REGISTRY_ABI,
+  NAMEWRAPPER_ABI,
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,

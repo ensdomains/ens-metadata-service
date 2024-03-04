@@ -20,7 +20,7 @@
     "dompurify": "^3.0.5",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^6.10.0",
+    "ethers": "^6.11.1",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",
