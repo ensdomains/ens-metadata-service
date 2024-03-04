@@ -1,6 +1,6 @@
-import { ethers, utils } from 'ethers';
+import { keccak256, toUtf8Bytes } from 'ethers';
 export const labelhash = (label: string) =>
-  utils.keccak256(utils.toUtf8Bytes(label));
+  keccak256(toUtf8Bytes(label));
 
 export function getLabelhash(nameOrLabelhash: string, isHex = false) {
   // if name remove tld before conversion
@@ -10,6 +10,6 @@ export function getLabelhash(nameOrLabelhash: string, isHex = false) {
 
   const _lhexId = labelhash(_name);
   if (isHex) return _lhexId;
-  const _lintId = ethers.BigNumber.from(_lhexId).toString();
+  const _lintId = BigInt(_lhexId).toString();
   return _lintId;
 }

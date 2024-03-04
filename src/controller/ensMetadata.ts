@@ -12,6 +12,7 @@ import {
 import {
   ADDRESS_ETH_REGISTRY,
   ETH_REGISTRY_ABI,
+  NAMEWRAPPER_ABI,
   RESPONSE_TIMEOUT,
 }                                  from '../config';
 import { checkContract }           from '../service/contract';
@@ -96,6 +97,16 @@ export async function ensMetadata(req: Request, res: Response) {
       const isRecordExist = await registry.recordExists(_namehash);
       assert(isRecordExist, 'ENS name does not exist');
 
+      if (version == Version.v2) {
+        const contract = new Contract(
+          contractAddress,
+          NAMEWRAPPER_ABI,
+          provider
+        );
+        const isNameWrapped = await contract.isWrapped(_namehash);
+        assert(isNameWrapped, 'Name is not wrapped');
+      }
+
       // When entry is not available on subgraph yet,
       // return unknown name metadata with 200 status code
       const { url, ...unknownMetadata } = new Metadata({
@@ -105,7 +116,7 @@ export async function ensMetadata(req: Request, res: Response) {
         tokenId: '',
         version: Version.v1,
         // add timestamp of the request date
-        last_request_date
+        last_request_date,
       });
       res.status(200).json({
         message: unknownMetadata,

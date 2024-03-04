@@ -59,7 +59,7 @@ const doc = {
     tokenId: '4221908525551133525058944220830153...',
     networkName: {
       description: 'Name of the chain to query for.',
-      '@enum': ['mainnet', 'rinkeby', 'ropsten', 'goerli'],
+      '@enum': ['mainnet', 'rinkeby', 'ropsten', 'goerli', 'sepolia'],
     },
   },
   components: {

@@ -1,5 +1,4 @@
 import avaTest, { ExecutionContext, TestFn } from 'ava';
-import { ethers } from 'ethers';
 import * as http from 'http';
 import got, {
   HTTPError,
@@ -107,11 +106,12 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     [
       {
         to: ADDRESS_NAME_WRAPPER.toLowerCase(),
-        data: /^0xfd0cd0.*$/,
+        data: '0xfd0cd0d97857c9824139b8a8c3cb04712b41558b4878c55fa9c1e5390e910ee3220c3cce',
       },
       'latest',
     ],
     {
+      id: 2,
       result:
         '0x0000000000000000000000000000000000000000000000000000000000000001',
     }
@@ -144,6 +144,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
       'latest',
     ],
     {
+      id: 1,
       result:
         '0x0000000000000000000000000000000000000000000000000000000000000001',
     }
@@ -194,7 +195,7 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
 });
 
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
-  const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
+  const intId = BigInt(wrappertest3.namehash).toString();
   const result: Metadata = await got(`${METADATA_PATH}/${intId}`, options).json();
   delete result.last_request_date;
   t.deepEqual(result, wrappertest3.expect);
