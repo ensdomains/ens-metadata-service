@@ -1,5 +1,5 @@
 import { namehash }              from '@ensdomains/ensjs/utils/normalise';
-import { hexlify, zeroPadBytes } from 'ethers';
+import { hexlify, zeroPadValue } from 'ethers';
 import { Version }               from '../base';
 import { bigIntToUint8Array }    from './bigIntToUint8Array';
 
@@ -14,7 +14,7 @@ export function constructEthNameHash(
 ): string {
   if (version > Version.v1) return tokenId;
 
-  const label0x = zeroPadBytes(hexlify(BigInt(tokenId).toString()), 32)
+  const label0x = zeroPadValue(hexlify(bigIntToUint8Array(BigInt(tokenId))), 32)
     .replace('0x', '');
   const labels = [label0x, eth0x];
 
@@ -31,7 +31,7 @@ export function getNamehash(nameOrNamehash: string) {
   // if not name, return original (in case intID provided convert to hexID)
   if (!_name) {
     if (!nameOrNamehash.match(/^0x/)) {
-      return zeroPadBytes(
+      return zeroPadValue(
         hexlify(bigIntToUint8Array(BigInt(nameOrNamehash))),
         32
       );
