@@ -171,6 +171,15 @@ export class MockEntry {
         display_type: 'date',
         value: expiryDate * 1000,
       });
+      _metadata.addAttribute({
+        trait_type: 'Namewrapper State',
+        display_type: 'string',
+        value: getWrapperState(decodedFuses),
+      });
+
+      _metadata.description += _metadata.generateRuggableWarning(
+        _metadata.name, version, getWrapperState(decodedFuses)
+      )
     }
 
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
