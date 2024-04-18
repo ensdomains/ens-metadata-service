@@ -1,5 +1,8 @@
-import fetch         from 'node-fetch';
-import timeoutSignal from 'timeout-signal';
+import fetch           from 'node-fetch';
+import { AbortSignal } from 'node-fetch/externals';
+import timeoutSignal   from 'timeout-signal';
+
+const ssrfFilter = require('ssrf-req-filter');
 
 interface AbortableFetchOpts {
   timeout?: number;
@@ -13,13 +16,15 @@ export async function abortableFetch(
   try {
     const response = await fetch(url, {
       ...options,
-      signal: signal as any,
+      signal: signal as AbortSignal,
+      agent: ssrfFilter(url, { stopPortScanningByUrlRedirection: true })
     });
     return response;
   } catch (error) {
-    if (signal && signal.aborted) {
-      console.log(error);
-    }
+    // in case the fetch error will be customized for signal, follow the pattern
+    // if (signal && signal.aborted) {
+    //   console.log(`abortableFetch:`, error);
+    // }
     return null;
   }
 }

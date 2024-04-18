@@ -61,5 +61,10 @@ export async function avatarMetadata(req: Request, res: Response) {
       }
       return;
     }
+    if (!res.headersSent) {
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    }
   }
 }

@@ -1,17 +1,20 @@
-import { utils, BigNumber } from 'ethers';
-import { Version }          from '../base';
+import { namehash }              from '@ensdomains/ensjs/utils/normalise';
+import { hexlify, zeroPadValue } from 'ethers';
+import { Version }               from '../base';
+import { bigIntToUint8Array }    from './bigIntToUint8Array';
 
-const sha3     = require('js-sha3').keccak_256;
-const namehash = require('@ensdomains/eth-ens-namehash');
+const sha3 = require('js-sha3').keccak_256;
 
 const eth0x =
   '4f5b812789fc606be1b3b16908db13fc7a9adf7ca72641f84d75b47069d3d7f0';
 
-export function constructEthNameHash(tokenId: string, version: Version): string {
+export function constructEthNameHash(
+  tokenId: string,
+  version: Version
+): string {
   if (version > Version.v1) return tokenId;
 
-  const label0x = utils
-    .hexZeroPad(utils.hexlify(BigNumber.from(tokenId)), 32)
+  const label0x = zeroPadValue(hexlify(bigIntToUint8Array(BigInt(tokenId))), 32)
     .replace('0x', '');
   const labels = [label0x, eth0x];
 
@@ -23,12 +26,19 @@ export function constructEthNameHash(tokenId: string, version: Version): string 
   }
   return '0x' + node;
 }
-
 export function getNamehash(nameOrNamehash: string) {
   const _name = nameOrNamehash.substring(0, nameOrNamehash.lastIndexOf('.'));
-  // if not name, return original
-  if (!_name) return nameOrNamehash;
+  // if not name, return original (in case intID provided convert to hexID)
+  if (!_name) {
+    if (!nameOrNamehash.match(/^0x/)) {
+      return zeroPadValue(
+        hexlify(bigIntToUint8Array(BigInt(nameOrNamehash))),
+        32
+      );
+    }
+    return nameOrNamehash;
+  }
 
-  const _lhexId = namehash.hash(nameOrNamehash);
+  const _lhexId = namehash(nameOrNamehash);
   return _lhexId;
 }

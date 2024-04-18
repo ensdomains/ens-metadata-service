@@ -2,9 +2,12 @@ import path                                         from 'path';
 import cors                                         from 'cors';
 import compression                                  from 'compression';
 import express, { Request, Response, NextFunction } from 'express';
+import helmet                                       from 'helmet';
 import docUI                                        from 'redoc-express';
 
 import endpoints                                    from './endpoint';
+import { blockRecursiveCalls }                      from './utils/blockRecursiveCalls';
+import { rateLimitMiddleware }                      from './utils/rateLimiter';
 
 const setCacheHeader = function (
   req: Request,
@@ -26,9 +29,35 @@ const setCacheHeader = function (
 const app = express();
 app.use(cors());
 
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'none'"],
+      scriptSrc: [
+        'https://unpkg.com/redoc@latest/bundles/redoc.standalone.js'
+      ],
+      imgSrc: ['*', 'data:'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      connectSrc: ['*', 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      frameSrc: ["'none'"],
+      childSrc: ["'none'"],
+      workerSrc: ['blob:'],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  })
+);
+
 if (process.env.ENV === 'local') {
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
+
+app.use(rateLimitMiddleware);
+app.use(blockRecursiveCalls);
 
 // apply cache header for all get requests
 app.use(setCacheHeader);

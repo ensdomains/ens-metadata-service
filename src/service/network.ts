@@ -1,37 +1,48 @@
-import { ethers }                          from 'ethers';
-import { UnsupportedNetwork }              from '../base';
-import { INFURA_API_KEY, GOOGLE_WEB3_URL } from '../config';
+import { EnsPlugin, JsonRpcProvider, Network } from 'ethers';
+import { UnsupportedNetwork } from '../base';
+import {
+  NODE_PROVIDER,
+  NODE_PROVIDER_URL,
+  NODE_PROVIDER_URL_CF,
+  NODE_PROVIDER_URL_GOERLI,
+  NODE_PROVIDER_URL_SEPOLIA,
+} from '../config';
 
-const WEB3_API = {
-  INFURA      : 'https://infura.io/v3/',
-  CLOUDFLARE  : 'https://web3metadata.ens.domains/v1',
-  CLOUDFLARE_2: 'https://web3metadata2.ens.domains/v1',
-  GOOGLE      : GOOGLE_WEB3_URL,
+const NODE_PROVIDERS = {
+  INFURA: 'INFURA',
+  CLOUDFLARE: 'CLOUDFLARE',
+  GOOGLE: 'GOOGLE',
+  GETH: 'GETH',
 };
 
 export const NETWORK = {
-  LOCAL  : 'local',
+  LOCAL: 'local',
   RINKEBY: 'rinkeby',
   ROPSTEN: 'ropsten',
-  GOERLI : 'goerli',
+  GOERLI: 'goerli',
+  SEPOLIA: 'sepolia',
   MAINNET: 'mainnet',
 } as const;
 
-export type NetworkName = typeof NETWORK[keyof typeof NETWORK];
+export type NetworkName = (typeof NETWORK)[keyof typeof NETWORK];
 
-function getWeb3URL(api: string, network: NetworkName): string {
-  switch (api) {
-    case WEB3_API.INFURA:
-      return `${api.replace(
-        'https://',
-        `https://${network}.`
-      )}${INFURA_API_KEY}`;
-    case WEB3_API.CLOUDFLARE:
-    case WEB3_API.CLOUDFLARE_2:
+function getWeb3URL(
+  providerName: string,
+  api: string,
+  network: NetworkName
+): string {
+  switch (providerName.toUpperCase()) {
+    case NODE_PROVIDERS.INFURA:
+      return `${api.replace('https://', `https://${network}.`)}`;
+    case NODE_PROVIDERS.CLOUDFLARE:
       return `${api}/${network}`;
-    case WEB3_API.GOOGLE:
+    case NODE_PROVIDERS.GOOGLE:
       if (network === NETWORK.MAINNET) return api;
-      return `${WEB3_API.CLOUDFLARE}/${network}`;
+      if (network === NETWORK.GOERLI) return NODE_PROVIDER_URL_GOERLI;
+      if (network === NETWORK.SEPOLIA) return NODE_PROVIDER_URL_SEPOLIA;
+      return `${NODE_PROVIDER_URL_CF}/${network}`;
+    case NODE_PROVIDERS.GETH:
+      return api;
     default:
       throw Error('');
   }
@@ -40,39 +51,49 @@ function getWeb3URL(api: string, network: NetworkName): string {
 export default function getNetwork(network: NetworkName): {
   WEB3_URL: string;
   SUBGRAPH_URL: string;
-  provider: ethers.providers.BaseProvider;
+  provider: JsonRpcProvider;
 } {
   // currently subgraphs used under this function are outdated,
   // we will have namewrapper support and more attributes when latest subgraph goes to production
   let SUBGRAPH_URL: string;
-  let WEB3_URL = WEB3_API.CLOUDFLARE;
   switch (network) {
     case NETWORK.LOCAL:
       SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';
-      WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.RINKEBY);
       break;
     case NETWORK.RINKEBY:
       SUBGRAPH_URL =
         'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby';
-      WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.RINKEBY);
       break;
     case NETWORK.ROPSTEN:
       SUBGRAPH_URL =
         'https://api.thegraph.com/subgraphs/name/ensdomains/ensropsten';
-      WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.ROPSTEN);
       break;
     case NETWORK.GOERLI:
       SUBGRAPH_URL =
         'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli';
-      WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.GOERLI);
+      break;
+    case NETWORK.SEPOLIA:
+      SUBGRAPH_URL =
+        'https://api.studio.thegraph.com/query/49574/enssepolia/version/latest';
       break;
     case NETWORK.MAINNET:
       SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens';
-      WEB3_URL = getWeb3URL(WEB3_URL, NETWORK.MAINNET);
       break;
     default:
       throw new UnsupportedNetwork(`Unknown network '${network}'`, 501);
   }
-  const provider = new ethers.providers.StaticJsonRpcProvider(WEB3_URL);
-  return { WEB3_URL, SUBGRAPH_URL: `${SUBGRAPH_URL}?source=ens-metadata`, provider };
+
+  const WEB3_URL = getWeb3URL(NODE_PROVIDER, NODE_PROVIDER_URL, network);
+
+  // add source param at the end for better request measurability
+  SUBGRAPH_URL = SUBGRAPH_URL + '?source=ens-metadata';
+
+  if (network === NETWORK.SEPOLIA) {
+    const ens = new EnsPlugin('0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e');
+    const _network = new Network(network, 11155111).attachPlugin(ens);
+    const provider = new JsonRpcProvider(WEB3_URL, _network, { staticNetwork: true });
+    return { WEB3_URL, SUBGRAPH_URL, provider };
+  }
+  const provider = new JsonRpcProvider(WEB3_URL, network, { staticNetwork: true });
+  return { WEB3_URL, SUBGRAPH_URL, provider };
 }

@@ -1,14 +1,17 @@
 import { AvatarResolver }   from '@ensdomains/ens-avatar';
-import { BaseProvider }     from '@ethersproject/providers';
 import { strict as assert } from 'assert';
-import { ethers }           from 'ethers';
+import { ethers, JsonRpcProvider } from 'ethers';
+import createDOMPurify      from 'dompurify';
 import { JSDOM }            from 'jsdom';
 import {
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
 }                           from '../base';
-import { IPFS_GATEWAY }     from '../config';
+import { 
+  IPFS_GATEWAY, 
+  OPENSEA_API_KEY 
+}                           from '../config';
 import { abortableFetch }   from '../utils/abortableFetch';
 
 const window = new JSDOM('').window;
@@ -42,11 +45,17 @@ export interface AvatarMetadata {
 }
 
 export class AvatarMetadata {
-  defaultProvider: ethers.providers.BaseProvider;
+  defaultProvider: ethers.Provider;
   avtResolver: AvatarResolver;
-  constructor(provider: ethers.providers.BaseProvider, uri: string) {
+  constructor(provider: ethers.JsonRpcProvider, uri: string) {
     this.defaultProvider = provider;
-    this.avtResolver = new AvatarResolver(provider, { ipfs: IPFS_GATEWAY });
+    this.avtResolver = new AvatarResolver(provider, 
+      { 
+        ipfs: IPFS_GATEWAY, 
+        apiKey: { opensea: OPENSEA_API_KEY },
+        urlDenyList: [ 'metadata.ens.domains' ]
+      }
+    );
     this.uri = uri;
   }
 
@@ -63,9 +72,7 @@ export class AvatarMetadata {
       if (typeof error === 'string') {
         console.log(`${this.uri} - error:`, error);
       }
-      if (error === 'Image is not available') {
-        throw new RetrieveURIFailed(error, 404);
-      }
+      throw new RetrieveURIFailed(`Error fetching avatar: Provided url or NFT source is broken.`, 404);
     }
 
     if (!avatarURI) {
@@ -77,12 +84,19 @@ export class AvatarMetadata {
 
     if (avatarURI?.startsWith('http')) {
       // abort fetching image after 5sec
-      const response = await abortableFetch(avatarURI, { timeout: 5000 });
+      const response = await abortableFetch(avatarURI, { timeout: 7000 });
 
-      assert(response, 'Response is empty');
+      assert(!!response, 'Response is empty');
 
       const mimeType = response?.headers.get('Content-Type');
       const data = await response?.buffer();
+
+      if (mimeType?.includes('svg')) {
+        const DOMPurify = createDOMPurify(window);
+        const cleanData = DOMPurify.sanitize(data.toString());
+        return [Buffer.from(cleanData), mimeType];
+      }
+
       return [data, mimeType];
     }
 
@@ -140,12 +154,15 @@ export class AvatarMetadata {
         );
       }
     }
+    // replace back original url after fetch
+    metadata.image = metadata.image.replace(IPFS_GATEWAY, 'https://ipfs.io');
+
     return metadata;
   }
 }
 
 export async function getAvatarMeta(
-  provider: BaseProvider,
+  provider: JsonRpcProvider,
   name: string,
   networkName: string
 ): Promise<any> {
@@ -154,7 +171,7 @@ export async function getAvatarMeta(
 }
 
 export async function getAvatarImage(
-  provider: BaseProvider,
+  provider: JsonRpcProvider,
   name: string
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);

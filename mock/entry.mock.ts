@@ -1,11 +1,15 @@
-import { utils }                from 'ethers';
+import { namehash }             from '@ensdomains/ensjs/utils/normalise';
+import { 
+  keccak256, 
+  toUtf8Bytes 
+}                               from 'ethers';
 import nock                     from 'nock';
 import { Version }              from '../src/base';
 import { ADDRESS_NAME_WRAPPER } from '../src/config';
 import { Metadata }             from '../src/service/metadata';
 import getNetwork               from '../src/service/network';
-import { decodeFuses }          from '../src/utils/fuse';
 import { createBatchQuery }     from '../src/utils/batchQuery';
+import { decodeFuses, getWrapperState }          from '../src/utils/fuse';
 import {
   GET_DOMAINS,
   GET_REGISTRATIONS,
@@ -18,10 +22,10 @@ import {
   WrappedDomainResponse,
 }                               from './interface';
 
-const namehash = require('@ensdomains/eth-ens-namehash'); // no types
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
+const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 
 export class MockEntry {
   public name: string;
@@ -46,7 +50,7 @@ export class MockEntry {
   }: MockEntryBody) {
     if (!name) throw Error('There must be a valid name.');
     this.name = name;
-    this.namehash = namehash.hash(name);
+    this.namehash = namehash(name);
 
     if (!registered) {
       this.expect = 'No results found.';
@@ -93,7 +97,7 @@ export class MockEntry {
     const registrationDate = +new Date() - 157680000000;
     const expiryDate = +new Date() + 31536000000;
     const labelName = name.split('.')[0];
-    const labelhash = utils.keccak256(utils.toUtf8Bytes(labelName));
+    const labelhash = keccak256(toUtf8Bytes(labelName));
     const _metadata = new Metadata({
       name,
       created_date: +randomDate,
@@ -150,15 +154,17 @@ export class MockEntry {
       const fuses = 1;
       this.wrappedDomainResponse = {
         wrappedDomain: {
-          expiryDate: expiryDate,
           fuses,
+          expiryDate: expiryDate,
         },
       };
+
+      const decodedFuses = decodeFuses(fuses);
 
       _metadata.addAttribute({
         trait_type: 'Namewrapper Fuse States',
         display_type: 'object',
-        value: decodeFuses(fuses),
+        value: decodedFuses,
       });
       _metadata.addAttribute({
         trait_type: 'Namewrapper Expiry Date',

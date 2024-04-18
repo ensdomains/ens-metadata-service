@@ -1,5 +1,10 @@
-import request              from 'graphql-request';
 import { ethers }           from 'ethers';
+import { request }        from 'graphql-request';
+import { 
+  JsonRpcProvider, 
+  hexlify, 
+  zeroPadValue 
+}                         from 'ethers';
 import {
   GET_REGISTRATIONS,
   GET_DOMAINS,
@@ -13,18 +18,22 @@ import {
   NamehashMismatchError,
   SubgraphRecordNotFound,
   Version,
-}                           from '../base';
-import { NetworkName }      from './network';
-import { decodeFuses }      from '../utils/fuse';
-import { getNamehash }      from '../utils/namehash';
-import { createBatchQuery } from '../utils/batchQuery';
+}                         from '../base';
+import { NetworkName }    from './network';
+import { 
+  decodeFuses, 
+  getWrapperState 
+}                             from '../utils/fuse';
+import { createBatchQuery }   from '../utils/batchQuery';
+import { getNamehash }        from '../utils/namehash';
+import { bigIntToUint8Array } from '../utils/bigIntToUint8Array';
 
 const eth =
   '0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae';
 const GRACE_PERIOD_MS = 7776000000; // 90 days as milliseconds
 
 export async function getDomain(
-  provider: ethers.providers.BaseProvider,
+  provider: JsonRpcProvider,
   networkName: NetworkName,
   SUBGRAPH_URL: string,
   contractAddress: string,
@@ -35,12 +44,9 @@ export async function getDomain(
   let hexId: string, intId;
   if (!tokenId.match(/^0x/)) {
     intId = tokenId;
-    hexId = ethers.utils.hexZeroPad(
-      ethers.utils.hexlify(ethers.BigNumber.from(tokenId)),
-      32
-    );
+    hexId = zeroPadValue(hexlify(bigIntToUint8Array(BigInt(tokenId))), 32);
   } else {
-    intId = ethers.BigNumber.from(tokenId).toString();
+    intId = BigInt(tokenId).toString();
     hexId = tokenId;
   }
   const queryDocument: string =
@@ -140,10 +146,12 @@ export async function getDomain(
       const {
         wrappedDomain: { fuses, expiryDate },
       } = domainQueryResult;
+      const decodedFuses = decodeFuses(fuses);
+
       metadata.addAttribute({
         trait_type: 'Namewrapper Fuse States',
         display_type: 'object',
-        value: decodeFuses(fuses),
+        value: decodedFuses,
       });
 
       metadata.addAttribute({
@@ -151,6 +159,15 @@ export async function getDomain(
         display_type: 'date',
         value: expiryDate * 1000,
       });
+
+      metadata.addAttribute({
+        trait_type: 'Namewrapper State',
+        display_type: 'string',
+        value: getWrapperState(decodedFuses),
+      });
+      metadata.description += metadata.generateRuggableWarning(
+        metadata.name, version, getWrapperState(decodedFuses)
+      );
     }
   }
   const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');

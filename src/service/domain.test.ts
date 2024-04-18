@@ -1,18 +1,14 @@
 import avaTest, { ExecutionContext, TestFn } from 'ava';
-import { ethers }                            from 'ethers';
-import nock                                  from 'nock';
-import { nockProvider }                      from '../../mock/helper';
-import { TestContext }                       from '../../mock/interface';
-import { NamehashMismatchError, Version }    from '../base';
-import { ADDRESS_ETH_REGISTRAR }             from '../config';
-import { createBatchQuery }                  from '../utils/batchQuery';
-import { getDomain }                         from './domain';
-import getNetwork                            from './network';
-import {
-  GET_DOMAINS_BY_LABELHASH,
-  GET_REGISTRATIONS,
-  GET_WRAPPED_DOMAIN,
-}                                            from './subgraph';
+import { ethers } from 'ethers';
+import nock from 'nock';
+import { nockProvider } from '../../mock/helper';
+import { TestContext } from '../../mock/interface';
+import { NamehashMismatchError, Version } from '../base';
+import { ADDRESS_ETH_REGISTRAR, ADDRESS_ETH_REGISTRY } from '../config';
+import { createBatchQuery } from '../utils/batchQuery';
+import { getDomain } from './domain';
+import getNetwork from './network';
+import { GET_DOMAINS_BY_LABELHASH, GET_REGISTRATIONS, GET_WRAPPED_DOMAIN } from './subgraph';
 
 const test = avaTest as TestFn<TestContext>;
 const NETWORK = 'mainnet';
@@ -20,6 +16,7 @@ const NETWORK = 'mainnet';
 const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } = getNetwork(NETWORK);
 const WEB3_URL = new URL(web3_url);
 const SUBGRAPH_URL = new URL(subgraph_url);
+const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 
 test.before(async (t: ExecutionContext<TestContext>) => {
   nock.disableNetConnect();
@@ -32,7 +29,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   nockProvider(WEB3_URL, 'net_version', [], {
     jsonrpc: '2.0',
     id: 1,
-    result: '4',
+    result: '1',
   });
   nockProvider(
     WEB3_URL,
@@ -54,7 +51,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     'eth_call',
     [
       {
-        to: '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+        to: ADDRESS_ETH_REGISTRY.toLowerCase(),
         data: '0x0178b8bfb9fab6dd33ccdfd1f65ea203855508034652c2e01f585a7b742c3698c0c8d6b1',
       },
       'latest',
@@ -145,7 +142,7 @@ test.after.always((t: ExecutionContext<TestContext>) => {
 });
 
 test('should raise an error if namehash of the name is not match with subgraph', async (t: ExecutionContext<TestContext>) => {
-  const provider = new ethers.providers.StaticJsonRpcProvider(
+  const provider = new ethers.JsonRpcProvider(
     WEB3_URL.origin,
     NETWORK
   );
@@ -171,7 +168,7 @@ test('should raise an error if namehash of the name is not match with subgraph',
 });
 
 test('should return successfully if namehash is matches with subgraph', async (t: ExecutionContext<TestContext>) => {
-  const provider = new ethers.providers.StaticJsonRpcProvider(
+  const provider = new ethers.JsonRpcProvider(
     WEB3_URL.origin,
     NETWORK
   );

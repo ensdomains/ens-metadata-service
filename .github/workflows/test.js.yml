@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [18.x, 19.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -25,7 +25,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
+    - run: sudo apt-get update
     - name: Install Pango
       run: sudo apt-get install libsdl-pango-dev libgif-dev
-    - run: yarn
-    - run: npm test
+    - run: yarn --frozen-lockfile
+    - run: yarn test

@@ -10,51 +10,85 @@ import {
 import { getLabelhash } from '../utils/labelhash';
 import { getNamehash } from '../utils/namehash';
 
-export async function checkContract(
-  provider: ethers.providers.BaseProvider,
-  contractAddress: string,
-  identifier: string
-): Promise<{ tokenId: string; version: Version }> {
-  const _contractAddress = ethers.utils.getAddress(contractAddress);
-  const contract = new ethers.Contract(
-    _contractAddress,
-    [
-      'function ownerOf(uint256 id) view returns (address)',
-      'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
-    ],
-    provider
-  );
+interface CheckContractResult {
+  tokenId: string;
+  version: Version;
+}
 
-  if (_contractAddress === ADDRESS_NAME_WRAPPER) {
-    return { tokenId: getNamehash(identifier), version: Version.v2 };
-  } else if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
-    const _tokenId = getLabelhash(identifier);
-    try {
-      const nftOwner = await contract.ownerOf(_tokenId);
-      if (nftOwner === ADDRESS_NAME_WRAPPER) {
-        return { tokenId: _tokenId, version: Version.v1w };
-      }
-    } catch (error) {
-      console.warn(`error for ${_contractAddress}`, error);
-      // throw new OwnerNotFoundError(
-      //   `Checking owner of ${tokenId} failed. Reason: ${error}`
-      // );
+async function checkV1Contract(
+  contract: ethers.Contract,
+  identifier: string,
+  provider: ethers.Provider
+): Promise<CheckContractResult> {
+  const _tokenId = getLabelhash(identifier);
+  try {
+    const nftOwner = await contract.ownerOf(_tokenId);
+    if (nftOwner === ADDRESS_NAME_WRAPPER) {
+      return { tokenId: _tokenId, version: Version.v1w };
     }
-    return { tokenId: _tokenId, version: Version.v1 };
-  } else {
+    const wrapperContract = new ethers.Contract(
+      nftOwner,
+      [
+        'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+      ],
+      provider
+    );
+    const isInterfaceSupported = await wrapperContract.supportsInterface(
+      INAMEWRAPPER
+    );
+    assert(isInterfaceSupported);
+    return { tokenId: _tokenId, version: Version.v1w };
+  } catch (error) {
+    console.warn(`checkV1Contract: nft ownership check fails for ${_tokenId}`);
+  }
+  return { tokenId: _tokenId, version: Version.v1 };
+}
+
+async function checkV2Contract(
+  contract: ethers.Contract,
+  identifier: string
+): Promise<CheckContractResult> {
+  const contractAddress = await contract.getAddress();
+  if (contractAddress !== ADDRESS_NAME_WRAPPER) {
     try {
       const isInterfaceSupported = await contract.supportsInterface(
         INAMEWRAPPER
       );
       assert(isInterfaceSupported);
-      return { tokenId: getNamehash(identifier), version: Version.v2 };
     } catch (error) {
-      console.warn(`error for ${_contractAddress}`, error);
+      throw new ContractMismatchError(
+        `${contractAddress} does not match with any ENS related contract`,
+        400
+      );
     }
   }
 
-  throw new ContractMismatchError(
-    `${_contractAddress} does not match with any ENS related contract`,
-    400
+  const namehash = getNamehash(identifier);
+  // const isWrapped = await contract.isWrapped(namehash);
+  // assert(isWrapped);
+
+  return { tokenId: namehash, version: Version.v2 };
+}
+
+export async function checkContract(
+  provider: ethers.Provider,
+  contractAddress: string,
+  identifier: string
+): Promise<CheckContractResult> {
+  const _contractAddress = ethers.getAddress(contractAddress);
+  const contract = new ethers.Contract(
+    _contractAddress,
+    [
+      'function ownerOf(uint256 id) view returns (address)',
+      'function supportsInterface(bytes4 interfaceId) external view returns (bool)',
+      'function isWrapped(bytes32 node) public view returns (bool)',
+    ],
+    provider
   );
+
+  if (_contractAddress === ADDRESS_ETH_REGISTRAR) {
+    return checkV1Contract(contract, identifier, provider);
+  } else {
+    return checkV2Contract(contract, identifier);
+  }
 }

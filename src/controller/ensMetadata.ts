@@ -12,6 +12,7 @@ import {
 import {
   ADDRESS_ETH_REGISTRY,
   ETH_REGISTRY_ABI,
+  NAMEWRAPPER_ABI,
   RESPONSE_TIMEOUT,
 }                                  from '../config';
 import { checkContract }           from '../service/contract';
@@ -27,10 +28,12 @@ export async function ensMetadata(req: Request, res: Response) {
   // #swagger.parameters['tokenId'] = { type: 'string', description: 'Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names', schema: { $ref: '#/definitions/tokenId' } }
   res.setTimeout(RESPONSE_TIMEOUT, () => {
     res.status(504).json({ message: 'Timeout' });
+    return;
   });
 
   const { contractAddress, networkName, tokenId: identifier } = req.params;
   const { provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName);
+  const last_request_date = Date.now();
   let tokenId, version;
   try {
     ({ tokenId, version } = await checkContract(
@@ -47,6 +50,9 @@ export async function ensMetadata(req: Request, res: Response) {
       version,
       false
     );
+
+    // add timestamp of the request date
+    result.last_request_date = last_request_date;
     /* #swagger.responses[200] = { 
       description: 'Metadata object',
       schema: { $ref: '#/definitions/ENSMetadata' }
@@ -68,10 +74,12 @@ export async function ensMetadata(req: Request, res: Response) {
       error instanceof NamehashMismatchError ||
       error instanceof UnsupportedNetwork
     ) {
-      res.status(errCode).json({
-        message: error.message,
-      });
-      return;
+      if (!res.headersSent) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+        return;
+      }
     }
 
     try {
@@ -89,6 +97,16 @@ export async function ensMetadata(req: Request, res: Response) {
       const isRecordExist = await registry.recordExists(_namehash);
       assert(isRecordExist, 'ENS name does not exist');
 
+      if (version == Version.v2) {
+        const contract = new Contract(
+          contractAddress,
+          NAMEWRAPPER_ABI,
+          provider
+        );
+        const isNameWrapped = await contract.isWrapped(_namehash);
+        assert(isNameWrapped, 'Name is not wrapped');
+      }
+
       // When entry is not available on subgraph yet,
       // return unknown name metadata with 200 status code
       const { url, ...unknownMetadata } = new Metadata({
@@ -97,6 +115,8 @@ export async function ensMetadata(req: Request, res: Response) {
         created_date: 1580346653000,
         tokenId: '',
         version: Version.v1,
+        // add timestamp of the request date
+        last_request_date,
       });
       res.status(200).json({
         message: unknownMetadata,
