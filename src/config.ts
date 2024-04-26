@@ -16,6 +16,7 @@ const INFURA_API_KEY = process.env.INFURA_API_KEY || '';
 const OPENSEA_API_KEY = process.env.OPENSEA_API_KEY || '';
 const NODE_PROVIDER = process.env.NODE_PROVIDER || 'geth';
 const NODE_PROVIDER_URL = process.env.NODE_PROVIDER_URL || 'http://localhost:8545';
+const THE_GRAPH_API_KEY = process.env.THE_GRAPH_API_KEY || '';
 
 // undocumented, temporary keys
 const NODE_PROVIDER_URL_CF = process.env.NODE_PROVIDER_URL_CF || '';
@@ -53,4 +54,5 @@ export {
   NODE_PROVIDER_URL_GOERLI,
   RESPONSE_TIMEOUT,
   SERVER_URL,
+  THE_GRAPH_API_KEY
 };

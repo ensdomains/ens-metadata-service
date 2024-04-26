@@ -5,6 +5,7 @@ import {
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
   NODE_PROVIDER_URL_GOERLI,
+  THE_GRAPH_API_KEY,
 } from '../config';
 
 const NODE_PROVIDERS = {
@@ -70,7 +71,8 @@ export default function getNetwork(network: NetworkName): {
         'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli';
       break;
     case NETWORK.MAINNET:
-      SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/ensdomains/ens';
+      SUBGRAPH_URL = 
+        `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH`;
       break;
     default:
       throw new UnsupportedNetwork(`Unknown network '${network}'`, 501);
