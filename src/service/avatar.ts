@@ -45,12 +45,12 @@ export interface AvatarMetadata {
 }
 
 export class AvatarMetadata {
-  defaultProvider: ethers.Provider;
+  defaultProvider: JsonRpcProvider;
   avtResolver: AvatarResolver;
-  constructor(provider: ethers.JsonRpcProvider, uri: string) {
+  constructor(provider: JsonRpcProvider, uri: string) {
     this.defaultProvider = provider;
     this.avtResolver = new AvatarResolver(provider, 
-      { 
+      {
         ipfs: IPFS_GATEWAY, 
         apiKey: { opensea: OPENSEA_API_KEY },
         urlDenyList: [ 'metadata.ens.domains' ]

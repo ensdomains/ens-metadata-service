@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.10.0",
-    "@ensdomains/ens-avatar": "1.0.0-alpha.0.ethers.6",
+    "@ensdomains/ens-avatar": "^1.0.0-alpha.1.ethers.6",
     "@ensdomains/ensjs": "^3.0.0-alpha.67",
     "@ethersproject/solidity": "^5.7.0",
     "@types/lodash": "^4.14.170",
@@ -20,7 +20,7 @@
     "dompurify": "^3.0.5",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^6.11.1",
+    "ethers": "6.12.0",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",
