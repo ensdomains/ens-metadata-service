@@ -6,6 +6,7 @@ import {
   ContractMismatchError,
   ExpiredNameError,
   NamehashMismatchError,
+  SubgraphRecordNotFound,
   UnsupportedNetwork,
   Version,
 }                                  from '../base';
@@ -68,7 +69,6 @@ export async function ensMetadata(req: Request, res: Response) {
            description: 'Unsupported network' 
     } */
     if (
-      error instanceof FetchError ||
       error instanceof ContractMismatchError ||
       error instanceof ExpiredNameError ||
       error instanceof NamehashMismatchError ||
@@ -82,47 +82,49 @@ export async function ensMetadata(req: Request, res: Response) {
       }
     }
 
-    try {
-      // Here is the case; if subgraph did not index fresh ENS name but registry has the record,
-      // instead of 'not found' send positive unknown metadata information
-      const registry = new Contract(
-        ADDRESS_ETH_REGISTRY,
-        ETH_REGISTRY_ABI,
-        provider
-      );
-      if (!tokenId || !version) {
-        throw 'Missing parameters to construct namehash';
-      }
-      const _namehash = constructEthNameHash(tokenId, version as Version);
-      const isRecordExist = await registry.recordExists(_namehash);
-      assert(isRecordExist, 'ENS name does not exist');
-
-      if (version == Version.v2) {
-        const contract = new Contract(
-          contractAddress,
-          NAMEWRAPPER_ABI,
+    if (error instanceof SubgraphRecordNotFound) {
+      try {
+        // Here is the case; if subgraph did not index fresh ENS name but registry has the record,
+        // instead of 'not found' send positive unknown metadata information
+        const registry = new Contract(
+          ADDRESS_ETH_REGISTRY,
+          ETH_REGISTRY_ABI,
           provider
         );
-        const isNameWrapped = await contract.isWrapped(_namehash);
-        assert(isNameWrapped, 'Name is not wrapped');
-      }
+        if (!tokenId || !version) {
+          throw 'Missing parameters to construct namehash';
+        }
+        const _namehash = constructEthNameHash(tokenId, version as Version);
+        const isRecordExist = await registry.recordExists(_namehash);
+        assert(isRecordExist, 'ENS name does not exist');
 
-      // When entry is not available on subgraph yet,
-      // return unknown name metadata with 200 status code
-      const { url, ...unknownMetadata } = new Metadata({
-        name: 'unknown.name',
-        description: 'Unknown ENS name',
-        created_date: 1580346653000,
-        tokenId: '',
-        version: Version.v1,
-        // add timestamp of the request date
-        last_request_date,
-      });
-      res.status(200).json({
-        message: unknownMetadata,
-      });
-      return;
-    } catch (error) {}
+        if (version == Version.v2) {
+          const contract = new Contract(
+            contractAddress,
+            NAMEWRAPPER_ABI,
+            provider
+          );
+          const isNameWrapped = await contract.isWrapped(_namehash);
+          assert(isNameWrapped, 'Name is not wrapped');
+        }
+
+        // When entry is not available on subgraph yet,
+        // return unknown name metadata with 200 status code
+        const { url, ...unknownMetadata } = new Metadata({
+          name: 'unknown.name',
+          description: 'Unknown ENS name',
+          created_date: 1580346653000,
+          tokenId: '',
+          version: Version.v1,
+          // add timestamp of the request date
+          last_request_date,
+        });
+        res.status(200).json({
+          message: unknownMetadata,
+        });
+        return;
+      } catch (error) {}
+    }
 
     /* #swagger.responses[404] = {
       description: 'No results found'
