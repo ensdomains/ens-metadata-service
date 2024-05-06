@@ -9,9 +9,8 @@
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.10.0",
-    "@ensdomains/ens-avatar": "1.0.0-alpha.0.ethers.6",
-    "@ensdomains/ensjs": "^3.0.0-alpha.67",
-    "@ethersproject/solidity": "^5.7.0",
+    "@ensdomains/ens-avatar": "^1.0.0-alpha.1.ethers.6",
+    "@ensdomains/ensjs": "3.0.0-alpha.67",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
     "canvas": "^2.11.2",
@@ -20,7 +19,7 @@
     "dompurify": "^3.0.5",
     "dotenv": "^10.0.0",
     "emoji-regex": "^10.1.0",
-    "ethers": "^6.11.1",
+    "ethers": "6.12.0",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
     "graphql": "^16.5.0",
@@ -35,8 +34,7 @@
     "redoc-express": "^1.0.0",
     "ssrf-req-filter": "^1.0.6",
     "timeout-signal": "^1.0.0",
-    "tsc": "^2.0.3",
-    "viem": "^2.5.0"
+    "tsc": "^2.0.3"
   },
   "scripts": {
     "build": "yarn appconfgen && tsc --project ./ && cpx 'src/assets/**' 'dist/assets'",
@@ -44,7 +42,7 @@
     "start": "node dist/index.js",
     "deploy": "ENV=prod yarn build && gcloud app deploy --project=ens-metadata-service",
     "deploy:test": "ENV=prod yarn build && gcloud app deploy --no-promote --project=ens-metadata-service",
-    "test": "ENV=local ava -v --serial --timeout=1m",
+    "test": "ENV=local ava -v --serial --timeout=2m",
     "test:cov": "nyc --reporter=json --reporter=text ava --serial",
     "docgen": "node docgen.js",
     "appconfgen": "node appconfgen.js"
