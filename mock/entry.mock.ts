@@ -1,27 +1,23 @@
-import { namehash }             from '@ensdomains/ensjs/utils/normalise';
-import { 
-  keccak256, 
-  toUtf8Bytes 
-}                               from 'ethers';
-import nock                     from 'nock';
-import { Version }              from '../src/base';
-import { ADDRESS_NAME_WRAPPER } from '../src/config';
-import { Metadata }             from '../src/service/metadata';
-import getNetwork               from '../src/service/network';
-import { createBatchQuery }     from '../src/utils/batchQuery';
-import { decodeFuses, getWrapperState }          from '../src/utils/fuse';
+import { namehash }                     from '@ensdomains/ensjs/utils/normalise';
+import { keccak256, toUtf8Bytes }       from 'ethers';
+import nock                             from 'nock';
+import { Version }                      from '../src/base';
+import { ADDRESS_NAME_WRAPPER }         from '../src/config';
+import { Metadata }                     from '../src/service/metadata';
+import getNetwork                       from '../src/service/network';
+import { createBatchQuery }             from '../src/utils/batchQuery';
+import { decodeFuses, getWrapperState } from '../src/utils/fuse';
 import {
   GET_DOMAINS,
   GET_REGISTRATIONS,
   GET_WRAPPED_DOMAIN,
-}                               from '../src/service/subgraph';
+}                                       from '../src/service/subgraph';
 import {
   DomainResponse,
   MockEntryBody,
   RegistrationResponse,
   WrappedDomainResponse,
-}                               from './interface';
-
+}                                       from './interface';
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
@@ -54,13 +50,17 @@ export class MockEntry {
 
     if (!registered) {
       this.expect = 'No results found.';
+      const newBatchQuery = createBatchQuery('getDomainInfo')
+        .add(GET_DOMAINS)
+        .add(GET_REGISTRATIONS)
+        .add(GET_WRAPPED_DOMAIN);
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
-          query: GET_DOMAINS,
+        .post(SUBGRAPH_PATH, {
+          query: newBatchQuery.query(),
           variables: {
             tokenId: this.namehash,
           },
-          operationName: 'getDomains',
+          operationName: 'getDomainInfo',
         })
         .reply(statusCode, {
           data: null,
@@ -78,16 +78,20 @@ export class MockEntry {
         version: Version.v1,
       });
       this.expect = JSON.parse(JSON.stringify(unknownMetadata));
+      const newBatchQuery = createBatchQuery('getDomainInfo')
+        .add(GET_DOMAINS)
+        .add(GET_REGISTRATIONS)
+        .add(GET_WRAPPED_DOMAIN);
       nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
-          query: GET_DOMAINS,
+        .post(SUBGRAPH_PATH, {
+          query: newBatchQuery.query(),
           variables: {
             tokenId: this.namehash,
           },
-          operationName: 'getDomains',
+          operationName: 'getDomainInfo',
         })
         .reply(statusCode, {
-          data: { domain: {} },
+          data: { domain: {}, registrations: {}, wrappedDomain: {} },
         })
         .persist(persist);
       return;
@@ -178,8 +182,10 @@ export class MockEntry {
       });
 
       _metadata.description += _metadata.generateRuggableWarning(
-        _metadata.name, version, getWrapperState(decodedFuses)
-      )
+        _metadata.name,
+        version,
+        getWrapperState(decodedFuses)
+      );
     }
 
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
@@ -190,7 +196,7 @@ export class MockEntry {
       .add(GET_WRAPPED_DOMAIN);
 
     nock(SUBGRAPH_URL.origin)
-      .post(SUBGRAPH_URL.pathname + SUBGRAPH_URL.search, {
+      .post(SUBGRAPH_PATH, {
         query: newBatchQuery.query(),
         variables: {
           tokenId: this.namehash,

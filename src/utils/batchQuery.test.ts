@@ -22,7 +22,6 @@ test('should retrieve letter character set for nick.eth', (t: ExecutionContext<T
   `;
   const batchedQuery = createBatchQuery('combinedQuery');
   batchedQuery.add(query1).add(query2);
-  console.log(batchedQuery.query());
   t.deepEqual(
     batchedQuery.query(),
     'query combinedQuery($id:String, $name:String) { domain(id: $id) { name },registry(name: $name) { id } }'

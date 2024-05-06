@@ -182,7 +182,7 @@ export class Metadata {
     try {
       this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
     } catch (e) {
-      console.log(processedDomain, e);
+      console.log("generateImage", processedDomain, e);
       this.setImage('');
     }
   }

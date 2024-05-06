@@ -1,7 +1,6 @@
 import { strict as assert }        from 'assert';
 import { Contract }                from 'ethers';
 import { Request, Response }       from 'express';
-import { FetchError }              from 'node-fetch';
 import {
   ContractMismatchError,
   ExpiredNameError,
