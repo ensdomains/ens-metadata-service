@@ -1,5 +1,8 @@
 import { namehash }             from '@ensdomains/ensjs/utils/normalise';
-import { utils }                from 'ethers';
+import { 
+  keccak256, 
+  toUtf8Bytes 
+}                               from 'ethers';
 import nock                     from 'nock';
 import { Version }              from '../src/base';
 import { ADDRESS_NAME_WRAPPER } from '../src/config';
@@ -93,7 +96,7 @@ export class MockEntry {
     const registrationDate = +new Date() - 157680000000;
     const expiryDate = +new Date() + 31536000000;
     const labelName = name.split('.')[0];
-    const labelhash = utils.keccak256(utils.toUtf8Bytes(labelName));
+    const labelhash = keccak256(toUtf8Bytes(labelName));
     const _metadata = new Metadata({
       name,
       created_date: +randomDate,
@@ -186,6 +189,10 @@ export class MockEntry {
         display_type: 'string',
         value: getWrapperState(decodedFuses),
       });
+
+      _metadata.description += _metadata.generateRuggableWarning(
+        _metadata.name, version, getWrapperState(decodedFuses)
+      )
 
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_PATH, {

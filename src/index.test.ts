@@ -1,5 +1,4 @@
 import avaTest, { ExecutionContext, TestFn } from 'ava';
-import { ethers } from 'ethers';
 import * as http from 'http';
 import got, {
   HTTPError,
@@ -107,11 +106,12 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     [
       {
         to: ADDRESS_NAME_WRAPPER.toLowerCase(),
-        data: /^0xfd0cd0.*$/,
+        data: '0xfd0cd0d97857c9824139b8a8c3cb04712b41558b4878c55fa9c1e5390e910ee3220c3cce',
       },
       'latest',
     ],
     {
+      id: 2,
       result:
         '0x0000000000000000000000000000000000000000000000000000000000000001',
     }
@@ -132,6 +132,42 @@ test.before(async (t: ExecutionContext<TestContext>) => {
     }
   );
 
+  nockProvider(
+    WEB3_URL,
+    'eth_call',
+    [
+      {
+        to: ADDRESS_ETH_REGISTRY.toLowerCase(),
+        data: '0xf79fe538b71788e9ec63be108fba9c0b01c927e4d8f1887d53787ff84752be3d8db1dd9a',
+      },
+      'latest'
+    ],
+    {
+      id: 1,
+      result:
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+    },
+    1
+  );
+
+  nockProvider(
+    WEB3_URL,
+    'eth_call',
+    [
+      {
+        to: '0x114d4603199df73e7d157787f8778e21fcd13066',
+        data: '0xfd0cd0d9b71788e9ec63be108fba9c0b01c927e4d8f1887d53787ff84752be3d8db1dd9a',
+      },
+      'latest'
+    ],
+    {
+      id: 2,
+      result:
+        '0x0000000000000000000000000000000000000000000000000000000000000001',
+    },
+    2
+  );
+
   // something.eth recordExist true
   nockProvider(
     WEB3_URL,
@@ -144,6 +180,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
       'latest',
     ],
     {
+      id: 1,
       result:
         '0x0000000000000000000000000000000000000000000000000000000000000001',
     }
@@ -194,8 +231,11 @@ test('get /:contractAddress/:tokenId for domain (wrappertest3.eth)', async (t: E
 });
 
 test('get /:contractAddress/:tokenId by decimal id', async (t: ExecutionContext<TestContext>) => {
-  const intId = ethers.BigNumber.from(wrappertest3.namehash).toString();
-  const result: Metadata = await got(`${METADATA_PATH}/${intId}`, options).json();
+  const intId = BigInt(wrappertest3.namehash).toString();
+  const result: Metadata = await got(
+    `${METADATA_PATH}/${intId}`,
+    options
+  ).json();
   delete result.last_request_date;
   t.deepEqual(result, wrappertest3.expect);
 });
@@ -288,6 +328,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
       variables: {
         tokenId: sub1Wrappertest.namehash,
       },
+      operationName: 'getDomains',
     })
     .replyWithError(fetchError);
   const {
@@ -297,6 +338,7 @@ test('raise 404 status from subgraph connection', async (t: ExecutionContext<Tes
       got(`${METADATA_PATH}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
+        throwHttpErrors: true
       }),
     {
       instanceOf: HTTPError,
@@ -321,6 +363,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
       variables: {
         tokenId: sub1Wrappertest.namehash,
       },
+      operationName: 'getDomains',
     })
     .replyWithError(fetchError);
   const {
@@ -330,6 +373,7 @@ test('raise ECONNREFUSED from subgraph connection', async (t: ExecutionContext<T
       got(`${METADATA_PATH}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
+        throwHttpErrors: true
       }),
     {
       instanceOf: HTTPError,
@@ -354,6 +398,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
       variables: {
         tokenId: sub1Wrappertest.namehash,
       },
+      operationName: 'getDomains',
     })
     .replyWithError(fetchError);
   const {
@@ -363,6 +408,7 @@ test('raise Internal Server Error from subgraph', async (t: ExecutionContext<Tes
       got(`${METADATA_PATH}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
+        throwHttpErrors: true
       }),
     {
       instanceOf: HTTPError,
@@ -380,8 +426,9 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
       variables: {
         tokenId: sub1Wrappertest.namehash,
       },
+      operationName: 'getDomains',
     })
-    .delayConnection(2000) // 2 seconds
+    .delayConnection(3000) // 3 seconds
     .replyWithError({ code: 'ETIMEDOUT' })
     .persist(false);
   const {
@@ -391,6 +438,7 @@ test('raise timeout from subgraph', async (t: ExecutionContext<TestContext>) => 
       got(`${METADATA_PATH}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
+        throwHttpErrors: true
       }),
     {
       instanceOf: HTTPError,

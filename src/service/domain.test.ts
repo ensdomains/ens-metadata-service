@@ -147,7 +147,7 @@ test.after.always((t: ExecutionContext<TestContext>) => {
 });
 
 test('should raise an error if namehash of the name is not match with subgraph', async (t: ExecutionContext<TestContext>) => {
-  const provider = new ethers.providers.StaticJsonRpcProvider(
+  const provider = new ethers.JsonRpcProvider(
     WEB3_URL.origin,
     NETWORK
   );
@@ -173,7 +173,7 @@ test('should raise an error if namehash of the name is not match with subgraph',
 });
 
 test('should return successfully if namehash is matches with subgraph', async (t: ExecutionContext<TestContext>) => {
-  const provider = new ethers.providers.StaticJsonRpcProvider(
+  const provider = new ethers.JsonRpcProvider(
     WEB3_URL.origin,
     NETWORK
   );

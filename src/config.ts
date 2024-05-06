@@ -20,6 +20,7 @@ const NODE_PROVIDER_URL = process.env.NODE_PROVIDER_URL || 'http://localhost:854
 // undocumented, temporary keys
 const NODE_PROVIDER_URL_CF = process.env.NODE_PROVIDER_URL_CF || '';
 const NODE_PROVIDER_URL_GOERLI = process.env.NODE_PROVIDER_URL_GOERLI || '';
+const NODE_PROVIDER_URL_SEPOLIA = process.env.NODE_PROVIDER_URL_SEPOLIA || '';
 
 const ADDRESS_ETH_REGISTRAR = process.env.ADDRESS_ETH_REGISTRAR || '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85';
 const ADDRESS_ETH_REGISTRY = process.env.ADDRESS_ETH_REGISTRY || '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
@@ -32,6 +33,10 @@ const ETH_REGISTRY_ABI = [
   'function recordExists(bytes32 node) external view returns (bool)'
 ];
 
+const NAMEWRAPPER_ABI = [
+  'function isWrapped(bytes32 node) public view returns (bool)'
+];
+
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 15 * 1000;
 
@@ -42,6 +47,7 @@ export {
   CANVAS_FONT_PATH,
   CANVAS_EMOJI_FONT_PATH,
   ETH_REGISTRY_ABI,
+  NAMEWRAPPER_ABI,
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
@@ -51,6 +57,7 @@ export {
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
   NODE_PROVIDER_URL_GOERLI,
+  NODE_PROVIDER_URL_SEPOLIA,
   RESPONSE_TIMEOUT,
   SERVER_URL,
 };
