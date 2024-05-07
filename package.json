@@ -10,7 +10,7 @@
   "dependencies": {
     "@adraffy/ens-normalize": "^1.10.0",
     "@ensdomains/ens-avatar": "^1.0.0-alpha.1.ethers.6",
-    "@ensdomains/ensjs": "3.0.0-alpha.67",
+    "@ensdomains/ensjs": "^3.7.0",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
     "canvas": "^2.11.2",
@@ -34,7 +34,8 @@
     "redoc-express": "^1.0.0",
     "ssrf-req-filter": "^1.0.6",
     "timeout-signal": "^1.0.0",
-    "tsc": "^2.0.3"
+    "tsc": "^2.0.3",
+    "viem": "^2.10.1"
   },
   "scripts": {
     "build": "yarn appconfgen && tsc --project ./ && cpx 'src/assets/**' 'dist/assets'",
