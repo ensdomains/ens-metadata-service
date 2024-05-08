@@ -1,4 +1,4 @@
-import { namehash }                     from '@ensdomains/ensjs/utils/normalise';
+import { namehash }                     from '@ensdomains/ensjs/utils';
 import { keccak256, toUtf8Bytes }       from 'ethers';
 import nock                             from 'nock';
 import { Version }                      from '../src/base';
@@ -7,6 +7,7 @@ import { Metadata }                     from '../src/service/metadata';
 import getNetwork                       from '../src/service/network';
 import { createBatchQuery }             from '../src/utils/batchQuery';
 import { decodeFuses, getWrapperState } from '../src/utils/fuse';
+
 import {
   GET_DOMAINS,
   GET_REGISTRATIONS,
