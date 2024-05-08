@@ -1,4 +1,3 @@
-import { ethers }           from 'ethers';
 import { request }        from 'graphql-request';
 import { 
   JsonRpcProvider, 
