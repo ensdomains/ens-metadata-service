@@ -38,8 +38,22 @@ async function checkV1Contract(
     );
     assert(isInterfaceSupported);
     return { tokenId: _tokenId, version: Version.v1w };
-  } catch (error) {
-    console.warn(`checkV1Contract: nft ownership check fails for ${_tokenId}`);
+  } catch (error: any) {
+    if (
+      // ethers error: given address is not contract, or does not have the supportsInterface method available
+      error?.info?.method === 'supportsInterface' ||
+      // assert error: given address is a contract but given INAMEWRAPPER interface is not available
+      (typeof error?.actual === 'boolean' && !error?.actual)
+    ) {
+      // fail is expected for regular owners since the owner is not a contract and do not have supportsInterface method
+      console.warn(
+        `checkV1Contract: supportsInterface check fails for ${_tokenId}`
+      );
+    } else {
+      console.warn(
+        `checkV1Contract: nft ownership check fails for ${_tokenId}`
+      );
+    }
   }
   return { tokenId: _tokenId, version: Version.v1 };
 }
