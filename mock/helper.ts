@@ -9,14 +9,15 @@ export function nockProvider(
     WEB3_URL: URL,
     method: string,
     params: any[],
-    response: EthCallResponse | EthChainIdResponse | NetVersionResponse
+    response: EthCallResponse | EthChainIdResponse | NetVersionResponse,
+    id?: number
   ) {
     nock(WEB3_URL.origin)
       .persist()
       .post(WEB3_URL.pathname, {
         method,
         params,
-        id: /[0-9]/,
+        id: id || /[0-9]/,
         jsonrpc: '2.0',
       })
       .reply(200, response);

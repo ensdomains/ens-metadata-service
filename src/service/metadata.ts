@@ -1,18 +1,16 @@
-import {ens_normalize}                          from '@adraffy/ens-normalize';
+import { ens_normalize, ens_beautify }              from '@adraffy/ens-normalize';
 import { 
   CanvasRenderingContext2D, 
   createCanvas, 
   registerFont 
-}                                               from 'canvas';
-import { Version }                              from '../base';
-import {
-  CANVAS_FONT_PATH,
-  CANVAS_EMOJI_FONT_PATH,
-}                                               from '../config';
-import createSVGfromTemplate                    from '../svg-template';
-import base64EncodeUnicode                      from '../utils/base64encode';
-import { isASCII, findCharacterSet }            from '../utils/characterSet';
-import { getCodePointLength, getSegmentLength } from '../utils/charLength';
+}                                                   from 'canvas';
+import { Version }                                  from '../base';
+import { CANVAS_FONT_PATH, CANVAS_EMOJI_FONT_PATH } from '../config';
+import createSVGfromTemplate                        from '../svg-template';
+import base64EncodeUnicode                          from '../utils/base64encode';
+import { isASCII, findCharacterSet }                from '../utils/characterSet';
+import { getCodePointLength, getSegmentLength }     from '../utils/charLength';
+import { WrapperState }                             from '../utils/fuse';
 
 
 interface Attribute {
@@ -78,7 +76,7 @@ export class Metadata {
 
   formatName(name: string, tokenId: string) {
     return this.is_normalized
-      ? name
+      ? ens_beautify(name)
       : tokenId.replace(
           new RegExp('^(.{0,6}).*(.{4})$', 'im'),
           '[$1...$2].eth'
@@ -104,6 +102,21 @@ export class Metadata {
         'simplified variants. For more information: ' +
         'https://en.wikipedia.org/wiki/IDN_homograph_attack'
       );
+    }
+    return '';
+  }
+
+  generateRuggableWarning(
+    label: string,
+    version: Version,
+    wrapperState: WrapperState
+  ) {
+    if (
+      version == Version.v2 &&
+      wrapperState === WrapperState.WRAPPED &&
+      (label.split('.').length > 1 || !label.endsWith('.eth'))
+    ) {
+      return ' [ ⚠️ ATTENTION: THE NFT FOR THIS NAME CAN BE REVOKED AT ANY TIME WHILE IT IS IN THE WRAPPED STATE ]';
     }
     return '';
   }
@@ -169,7 +182,7 @@ export class Metadata {
     try {
       this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
     } catch (e) {
-      console.log(processedDomain, e);
+      console.log("generateImage", processedDomain, e);
       this.setImage('');
     }
   }

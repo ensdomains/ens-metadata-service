@@ -1,29 +1,31 @@
-import { ethers } from 'ethers';
+import { EnsPlugin, JsonRpcProvider, Network } from 'ethers';
 import { UnsupportedNetwork } from '../base';
 import {
   NODE_PROVIDER,
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
   NODE_PROVIDER_URL_GOERLI,
+  NODE_PROVIDER_URL_SEPOLIA,
   THE_GRAPH_API_KEY,
 } from '../config';
 
 const NODE_PROVIDERS = {
-  INFURA    : 'INFURA',
+  INFURA: 'INFURA',
   CLOUDFLARE: 'CLOUDFLARE',
-  GOOGLE    : 'GOOGLE',
-  GETH      : 'GETH'
+  GOOGLE: 'GOOGLE',
+  GETH: 'GETH',
 };
 
 export const NETWORK = {
-  LOCAL  : 'local',
+  LOCAL: 'local',
   RINKEBY: 'rinkeby',
   ROPSTEN: 'ropsten',
-  GOERLI : 'goerli',
+  GOERLI: 'goerli',
+  SEPOLIA: 'sepolia',
   MAINNET: 'mainnet',
 } as const;
 
-export type NetworkName = typeof NETWORK[keyof typeof NETWORK];
+export type NetworkName = (typeof NETWORK)[keyof typeof NETWORK];
 
 function getWeb3URL(
   providerName: string,
@@ -38,6 +40,7 @@ function getWeb3URL(
     case NODE_PROVIDERS.GOOGLE:
       if (network === NETWORK.MAINNET) return api;
       if (network === NETWORK.GOERLI) return NODE_PROVIDER_URL_GOERLI;
+      if (network === NETWORK.SEPOLIA) return NODE_PROVIDER_URL_SEPOLIA;
       return `${NODE_PROVIDER_URL_CF}/${network}`;
     case NODE_PROVIDERS.GETH:
       return api;
@@ -49,7 +52,7 @@ function getWeb3URL(
 export default function getNetwork(network: NetworkName): {
   WEB3_URL: string;
   SUBGRAPH_URL: string;
-  provider: ethers.providers.BaseProvider;
+  provider: JsonRpcProvider;
 } {
   // currently subgraphs used under this function are outdated,
   // we will have namewrapper support and more attributes when latest subgraph goes to production
@@ -70,6 +73,10 @@ export default function getNetwork(network: NetworkName): {
       SUBGRAPH_URL =
         'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli';
       break;
+    case NETWORK.SEPOLIA:
+      SUBGRAPH_URL =
+        'https://api.studio.thegraph.com/query/49574/enssepolia/version/latest';
+      break;
     case NETWORK.MAINNET:
       SUBGRAPH_URL = 
         `https://gateway-arbitrum.network.thegraph.com/api/${THE_GRAPH_API_KEY}/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH`;
@@ -83,6 +90,12 @@ export default function getNetwork(network: NetworkName): {
   // add source param at the end for better request measurability
   SUBGRAPH_URL = SUBGRAPH_URL + '?source=ens-metadata';
 
-  const provider = new ethers.providers.StaticJsonRpcProvider(WEB3_URL);
+  if (network === NETWORK.SEPOLIA) {
+    const ens = new EnsPlugin('0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e');
+    const _network = new Network(network, 11155111).attachPlugin(ens);
+    const provider = new JsonRpcProvider(WEB3_URL, _network, { staticNetwork: true });
+    return { WEB3_URL, SUBGRAPH_URL, provider };
+  }
+  const provider = new JsonRpcProvider(WEB3_URL, network, { staticNetwork: true });
   return { WEB3_URL, SUBGRAPH_URL, provider };
 }
