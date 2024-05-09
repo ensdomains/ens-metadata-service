@@ -4,9 +4,6 @@ import { UnsupportedNetwork }                 from '../base';
 
 const networks: { [key: string]: string } = {
   '1': 'mainnet',
-  '3': 'ropsten',
-  '4': 'rinkeby',
-  '5': 'goerli',
   '11155111': 'sepolia'
 };
 

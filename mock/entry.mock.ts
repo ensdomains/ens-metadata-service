@@ -20,7 +20,7 @@ import {
   WrappedDomainResponse,
 }                                       from './interface';
 
-const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
+const { SUBGRAPH_URL: subgraph_url } = getNetwork('sepolia');
 const SUBGRAPH_URL = new URL(subgraph_url);
 const SUBGRAPH_PATH = SUBGRAPH_URL.pathname + SUBGRAPH_URL.search;
 
@@ -111,10 +111,10 @@ export class MockEntry {
     });
 
     (_metadata as Metadata).setImage(
-      `https://metadata.ens.domains/goerli/${ADDRESS_NAME_WRAPPER}/${this.namehash}/image`
+      `https://metadata.ens.domains/sepolia/${ADDRESS_NAME_WRAPPER}/${this.namehash}/image`
     );
     (_metadata as Metadata).setBackground(
-      `https://metadata.ens.domains/goerli/avatar/${name}`
+      `https://metadata.ens.domains/sepolia/avatar/${name}`
     );
 
     this.domainResponse = {

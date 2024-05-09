@@ -4,7 +4,6 @@ import {
   NODE_PROVIDER,
   NODE_PROVIDER_URL,
   NODE_PROVIDER_URL_CF,
-  NODE_PROVIDER_URL_GOERLI,
   NODE_PROVIDER_URL_SEPOLIA,
 } from '../config';
 
@@ -17,9 +16,6 @@ const NODE_PROVIDERS = {
 
 export const NETWORK = {
   LOCAL: 'local',
-  RINKEBY: 'rinkeby',
-  ROPSTEN: 'ropsten',
-  GOERLI: 'goerli',
   SEPOLIA: 'sepolia',
   MAINNET: 'mainnet',
 } as const;
@@ -38,7 +34,6 @@ function getWeb3URL(
       return `${api}/${network}`;
     case NODE_PROVIDERS.GOOGLE:
       if (network === NETWORK.MAINNET) return api;
-      if (network === NETWORK.GOERLI) return NODE_PROVIDER_URL_GOERLI;
       if (network === NETWORK.SEPOLIA) return NODE_PROVIDER_URL_SEPOLIA;
       return `${NODE_PROVIDER_URL_CF}/${network}`;
     case NODE_PROVIDERS.GETH:
@@ -59,18 +54,6 @@ export default function getNetwork(network: NetworkName): {
   switch (network) {
     case NETWORK.LOCAL:
       SUBGRAPH_URL = 'http://127.0.0.1:8000/subgraphs/name/graphprotocol/ens';
-      break;
-    case NETWORK.RINKEBY:
-      SUBGRAPH_URL =
-        'https://api.thegraph.com/subgraphs/name/makoto/ensrinkeby';
-      break;
-    case NETWORK.ROPSTEN:
-      SUBGRAPH_URL =
-        'https://api.thegraph.com/subgraphs/name/ensdomains/ensropsten';
-      break;
-    case NETWORK.GOERLI:
-      SUBGRAPH_URL =
-        'https://api.thegraph.com/subgraphs/name/ensdomains/ensgoerli';
       break;
     case NETWORK.SEPOLIA:
       SUBGRAPH_URL =
