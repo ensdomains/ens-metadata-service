@@ -13,6 +13,7 @@ import {
   OPENSEA_API_KEY 
 }                           from '../config';
 import { abortableFetch }   from '../utils/abortableFetch';
+import isSvg                from '../utils/isSVG';
 
 const window = new JSDOM('').window;
 
@@ -91,7 +92,7 @@ export class AvatarMetadata {
       const mimeType = response?.headers.get('Content-Type');
       const data = await response?.buffer();
 
-      if (mimeType?.includes('svg')) {
+      if (mimeType?.includes('svg') || isSvg(data.toString())) {
         const DOMPurify = createDOMPurify(window);
         const cleanData = DOMPurify.sanitize(data.toString());
         return [Buffer.from(cleanData), mimeType];
