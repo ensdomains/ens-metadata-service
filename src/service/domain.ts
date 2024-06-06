@@ -9,9 +9,9 @@ import {
   GET_DOMAINS,
   GET_DOMAINS_BY_LABELHASH,
   GET_WRAPPED_DOMAIN,
-}                         from './subgraph';
-import { Metadata }       from './metadata';
-import { getAvatarImage } from './avatar';
+}                           from './subgraph';
+import { Metadata }         from './metadata';
+import { getAvatarImage }   from './avatar';
 import {
   ExpiredNameError,
   NamehashMismatchError,
@@ -23,6 +23,7 @@ import {
   decodeFuses, 
   getWrapperState 
 }                             from '../utils/fuse';
+import { createBatchQuery }   from '../utils/batchQuery';
 import { getNamehash }        from '../utils/namehash';
 import { bigIntToUint8Array } from '../utils/bigIntToUint8Array';
 
@@ -49,11 +50,16 @@ export async function getDomain(
   }
   const queryDocument: string =
     version !== Version.v2 ? GET_DOMAINS_BY_LABELHASH : GET_DOMAINS;
-  const result = await request(SUBGRAPH_URL, queryDocument, { tokenId: hexId });
-  const domain = version !== Version.v2 ? result.domains[0] : result.domain;
+
+  const newBatch = createBatchQuery('getDomainInfo');
+  newBatch.add(queryDocument).add(GET_REGISTRATIONS).add(GET_WRAPPED_DOMAIN);
+
+  const domainQueryResult = await request(SUBGRAPH_URL, newBatch.query(), { tokenId: hexId });
+
+  const domain = version !== Version.v2 ? domainQueryResult.domains[0] : domainQueryResult.domain;
   if (!(domain && Object.keys(domain).length))
     throw new SubgraphRecordNotFound(`No record for ${hexId}`);
-  const { name, labelhash, createdAt, parent, resolver, id: namehash } = domain;
+  const { name, createdAt, parent, resolver, id: namehash } = domain;
 
   /**
    * IMPORTANT
@@ -109,11 +115,8 @@ export async function getDomain(
   }
 
   async function requestAttributes() {
-    if (parent.id === eth) {
-      const { registrations } = await request(SUBGRAPH_URL, GET_REGISTRATIONS, {
-        labelhash,
-      });
-      const registration = registrations[0];
+    if (parent.id === eth && domainQueryResult.registrations?.length) {
+      const registration = domainQueryResult.registrations[0];
       const registered_date = registration.registrationDate * 1000;
       const expiration_date = registration.expiryDate * 1000;
       if (expiration_date + GRACE_PERIOD_MS < +new Date()) {
@@ -138,13 +141,12 @@ export async function getDomain(
       }
     }
 
-    if (version === Version.v2) {
+    if (version === Version.v2 && domainQueryResult.wrappedDomain) {
       const {
         wrappedDomain: { fuses, expiryDate },
-      } = await request(SUBGRAPH_URL, GET_WRAPPED_DOMAIN, {
-        tokenId: namehash,
-      });
+      } = domainQueryResult;
       const decodedFuses = decodeFuses(fuses);
+
       metadata.addAttribute({
         trait_type: 'Namewrapper Fuse States',
         display_type: 'object',

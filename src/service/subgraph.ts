@@ -45,11 +45,11 @@ export const GET_DOMAINS_BY_LABELHASH = gql`
 `;
 
 export const GET_REGISTRATIONS = gql`
-  query getRegistration($labelhash: String) {
+  query getRegistration($tokenId: String) {
     registrations(
       orderBy: registrationDate
       orderDirection: desc
-      where: { id: $labelhash }
+      where: { id: $tokenId }
     ) {
       labelName
       registrationDate
@@ -59,17 +59,17 @@ export const GET_REGISTRATIONS = gql`
 `;
 
 export const GET_WRAPPED_DOMAIN = gql`
-query getWrappedDomain($tokenId: String) {
-  wrappedDomain(id: $tokenId) {
-    id
-    owner {
+  query getWrappedDomain($tokenId: String) {
+    wrappedDomain(id: $tokenId) {
       id
-    }
-    fuses
-    expiryDate
-    domain {
-      name
+      owner {
+        id
+      }
+      fuses
+      expiryDate
+      domain {
+        name
+      }
     }
   }
-}
 `;

@@ -1,26 +1,24 @@
-import { namehash }             from '@ensdomains/ensjs/utils';
-import { 
-  keccak256, 
-  toUtf8Bytes 
-}                               from 'ethers';
-import nock                     from 'nock';
-import { Version }              from '../src/base';
-import { ADDRESS_NAME_WRAPPER } from '../src/config';
-import { Metadata }             from '../src/service/metadata';
-import getNetwork               from '../src/service/network';
-import { decodeFuses, getWrapperState }          from '../src/utils/fuse';
+import { namehash }                     from '@ensdomains/ensjs/utils';
+import { keccak256, toUtf8Bytes }       from 'ethers';
+import nock                             from 'nock';
+import { Version }                      from '../src/base';
+import { ADDRESS_NAME_WRAPPER }         from '../src/config';
+import { Metadata }                     from '../src/service/metadata';
+import getNetwork                       from '../src/service/network';
+import { createBatchQuery }             from '../src/utils/batchQuery';
+import { decodeFuses, getWrapperState } from '../src/utils/fuse';
+
 import {
   GET_DOMAINS,
   GET_REGISTRATIONS,
   GET_WRAPPED_DOMAIN,
-}                               from '../src/service/subgraph';
+}                                       from '../src/service/subgraph';
 import {
   DomainResponse,
   MockEntryBody,
   RegistrationResponse,
   WrappedDomainResponse,
-}                               from './interface';
-
+}                                       from './interface';
 
 const { SUBGRAPH_URL: subgraph_url } = getNetwork('goerli');
 const SUBGRAPH_URL = new URL(subgraph_url);
@@ -53,13 +51,17 @@ export class MockEntry {
 
     if (!registered) {
       this.expect = 'No results found.';
+      const newBatchQuery = createBatchQuery('getDomainInfo')
+        .add(GET_DOMAINS)
+        .add(GET_REGISTRATIONS)
+        .add(GET_WRAPPED_DOMAIN);
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_PATH, {
-          query: GET_DOMAINS,
+          query: newBatchQuery.query(),
           variables: {
             tokenId: this.namehash,
           },
-          operationName: 'getDomains',
+          operationName: 'getDomainInfo',
         })
         .reply(statusCode, {
           data: null,
@@ -77,16 +79,20 @@ export class MockEntry {
         version: Version.v1,
       });
       this.expect = JSON.parse(JSON.stringify(unknownMetadata));
+      const newBatchQuery = createBatchQuery('getDomainInfo')
+        .add(GET_DOMAINS)
+        .add(GET_REGISTRATIONS)
+        .add(GET_WRAPPED_DOMAIN);
       nock(SUBGRAPH_URL.origin)
         .post(SUBGRAPH_PATH, {
-          query: GET_DOMAINS,
+          query: newBatchQuery.query(),
           variables: {
             tokenId: this.namehash,
           },
-          operationName: 'getDomains',
+          operationName: 'getDomainInfo',
         })
         .reply(statusCode, {
-          data: { domain: {} },
+          data: { domain: {}, registrations: {}, wrappedDomain: {} },
         })
         .persist(persist);
       return;
@@ -147,19 +153,6 @@ export class MockEntry {
         display_type: 'date',
         value: expiryDate * 1000,
       });
-
-      nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_PATH, {
-          query: GET_REGISTRATIONS,
-          variables: {
-            labelhash,
-          },
-          operationName: 'getRegistration',
-        })
-        .reply(statusCode, {
-          data: this.registrationResponse,
-        })
-        .persist(persist);
     }
 
     if (version === Version.v2) {
@@ -183,7 +176,6 @@ export class MockEntry {
         display_type: 'date',
         value: expiryDate * 1000,
       });
-
       _metadata.addAttribute({
         trait_type: 'Namewrapper State',
         display_type: 'string',
@@ -191,35 +183,33 @@ export class MockEntry {
       });
 
       _metadata.description += _metadata.generateRuggableWarning(
-        _metadata.name, version, getWrapperState(decodedFuses)
-      )
-
-      nock(SUBGRAPH_URL.origin)
-        .post(SUBGRAPH_PATH, {
-          query: GET_WRAPPED_DOMAIN,
-          variables: {
-            tokenId: this.namehash,
-          },
-          operationName: 'getWrappedDomain',
-        })
-        .reply(statusCode, {
-          data: this.wrappedDomainResponse,
-        })
-        .persist(persist);
+        _metadata.name,
+        version,
+        getWrapperState(decodedFuses)
+      );
     }
 
     this.expect = JSON.parse(JSON.stringify(_metadata)); //todo: find better serialization option
 
+    const newBatchQuery = createBatchQuery('getDomainInfo')
+      .add(GET_DOMAINS)
+      .add(GET_REGISTRATIONS)
+      .add(GET_WRAPPED_DOMAIN);
+
     nock(SUBGRAPH_URL.origin)
       .post(SUBGRAPH_PATH, {
-        query: GET_DOMAINS,
+        query: newBatchQuery.query(),
         variables: {
           tokenId: this.namehash,
         },
-        operationName: 'getDomains',
+        operationName: 'getDomainInfo',
       })
       .reply(statusCode, {
-        data: this.domainResponse,
+        data: {
+          ...this.domainResponse,
+          ...this.registrationResponse,
+          ...this.wrappedDomainResponse,
+        },
       })
       .persist(persist);
   }
