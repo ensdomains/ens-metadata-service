@@ -528,9 +528,7 @@
         "type": "string",
         "enum": [
           "mainnet",
-          "rinkeby",
-          "ropsten",
-          "goerli"
+          "sepolia"
         ],
         "xml": {
           "name": "networkName"

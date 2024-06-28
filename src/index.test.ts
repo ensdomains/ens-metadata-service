@@ -21,7 +21,7 @@ import { GET_DOMAINS } from './service/subgraph';
 import { nockProvider, requireUncached } from '../mock/helper';
 import { Metadata } from './service/metadata';
 
-const TEST_NETWORK = 'goerli';
+const TEST_NETWORK = 'sepolia';
 
 const { WEB3_URL: web3_url, SUBGRAPH_URL: subgraph_url } =
   getNetwork(TEST_NETWORK);
@@ -93,7 +93,7 @@ test.before(async (t: ExecutionContext<TestContext>) => {
   nockProvider(WEB3_URL, 'eth_chainId', [], {
     id: 1,
     jsonrpc: '2.0',
-    result: '0x05', // goerli
+    result: '0xAA36A7', // sepolia
   });
   nockProvider(WEB3_URL, 'net_version', [], {
     jsonrpc: '2.0',
@@ -452,7 +452,7 @@ test('raise ContractMismatchError', async (t: ExecutionContext<TestContext>) => 
     response: { body },
   }: HTTPError = (await t.throwsAsync(
     () =>
-      got(`goerli/${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
+      got(`sepolia/${NON_CONTRACT_ADDRESS}/${sub1Wrappertest.namehash}`, {
         ...options,
         retry: 0,
       }),
