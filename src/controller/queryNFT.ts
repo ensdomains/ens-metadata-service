@@ -18,6 +18,12 @@ export async function queryNFTep(req: Request, res: Response) {
     } */
     res.status(200).json(metadata);
   } catch (error) {
+    if (error.code === 'ERR_FR_REDIRECTION_FAILURE') {
+      res.status(500).json({
+        message: "Redirection is not allowed",
+      });
+      return;
+    }
     /* #swagger.responses[500] = { 
           description: 'Internal Server Error'
     } */

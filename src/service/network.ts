@@ -36,7 +36,9 @@ function getWeb3URL(
     case NODE_PROVIDERS.INFURA:
       return `${api.replace('https://', `https://${network}.`)}`;
     case NODE_PROVIDERS.CLOUDFLARE:
-      return `${api}/${network}`;
+      if (network === NETWORK.MAINNET) return `${api}/${network}`;
+      if (network === NETWORK.GOERLI) return NODE_PROVIDER_URL_GOERLI;
+      if (network === NETWORK.SEPOLIA) return NODE_PROVIDER_URL_SEPOLIA;
     case NODE_PROVIDERS.GOOGLE:
       if (network === NETWORK.MAINNET) return api;
       if (network === NETWORK.GOERLI) return NODE_PROVIDER_URL_GOERLI;

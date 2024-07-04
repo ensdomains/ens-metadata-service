@@ -3,9 +3,12 @@
   "info": {
     "version": "0.0.1-alpha.1",
     "title": "ENS Metadata Service",
-    "description": "Set of endpoints to query ENS metadata and more",
+    "description": "Set of endpoints to query ENS metadata and more.<br/><br/><b>Important:</b> While we have taken extensive measures to sanitize the user provided content, developers are advised to exercise caution when interacting with this API endpoint. In case of any advise or question, please reach us.",
     "contact": "contact@ens.domains",
-    "license": "MIT License",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit"
+    },
     "x-logo": {
       "url": "/assets/logo.svg",
       "backgroundColor": "#FFFFFF",
