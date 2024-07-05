@@ -11,7 +11,7 @@
 
 
 ### Request
-- __network:__ Name of the chain to query for. (mainnet | goerli ...)
+- __network:__ Name of the chain to query for. (mainnet | sepolia ...)
 - __contactAddress:__ accepts contractAddress of the NFT which represented by the tokenId
 - __NFT v1 - tokenId:__ accepts ENS name or labelhash of ENS name in both hex and int format
 - __NFT v2 - tokenId:__ accepts ENS name or namehash of ENS name in both hex and int format

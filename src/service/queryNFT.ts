@@ -1,6 +1,11 @@
+import http  from 'http';
+import https from 'https';
+
 import { utils, specs, UnsupportedNamespace } from '@ensdomains/ens-avatar';
 import getNetwork, { NetworkName }            from '../service/network';
 import { UnsupportedNetwork }                 from '../base';
+
+const { requestFilterHandler } = require('ssrf-req-filter');
 
 const networks: { [key: string]: string } = {
   '1': 'mainnet',
@@ -38,7 +43,13 @@ export async function queryNFT(uri: string) {
     provider,
     undefined,
     contractAddress,
-    tokenID
+    tokenID,
+    {
+      agents: {
+        httpAgent: requestFilterHandler(new http.Agent()),
+        httpsAgent: requestFilterHandler(new https.Agent())
+      }
+    }
   );
   return { host_meta, ...metadata };
 }

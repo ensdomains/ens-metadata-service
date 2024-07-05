@@ -5,7 +5,7 @@ import timeoutSignal   from 'timeout-signal';
 const ssrfFilter = require('ssrf-req-filter');
 
 interface AbortableFetchOpts {
-  timeout?: number;
+  [key: string]: any;
 }
 
 export async function abortableFetch(

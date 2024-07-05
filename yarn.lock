@@ -250,10 +250,10 @@
     dns-packet "^5.6.1"
     typescript-logging "^1.0.1"
 
-"@ensdomains/ens-avatar@^1.0.0-alpha.1.ethers.6":
-  version "1.0.0-alpha.1.ethers.6"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-1.0.0-alpha.1.ethers.6.tgz#01829c09803b26f838cf1a78714e9f8100c710ce"
-  integrity sha512-CwkGDegpEZ13WBxK3LNfJUL5cczQHF9Ar8L9faEXLXIh4OkvEZWwpYNEB9Fn/UhYkS8/R4sGtx4ImqfppNujCA==
+"@ensdomains/ens-avatar@^1.0.0-alpha.2.ethers.6":
+  version "1.0.0-alpha.2.ethers.6"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-1.0.0-alpha.2.ethers.6.tgz#b406c20fec6fa98e3427e92970686c8cdafbddeb"
+  integrity sha512-lx8Ggmp6uLPQHzgunMvVUG3MfMLhyhSoY03Fb5HyjAK39OjYl7pMB+nmWnh+l4foKztMqXBfXLJ9WOYls5AyAw==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"
@@ -2511,7 +2511,7 @@ fast-text-encoding@^1.0.0:
   resolved "https://registry.yarnpkg.com/fast-text-encoding/-/fast-text-encoding-1.0.6.tgz#0aa25f7f638222e3396d72bf936afcf1d42d6867"
   integrity sha512-VhXlQgj9ioXCqGstD37E/HBeqEGV/qOD/kmbVG8h5xKBYvM1L3lR1Zn4555cQ8GkYbJa8aJSipLPndE1k6zK2w==
 
-fast-xml-parser@^4.1.3:
+fast-xml-parser@^4.1.3, fast-xml-parser@^4.3.6:
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-4.3.6.tgz#190f9d99097f0c8f2d3a0e681a10404afca052ff"
   integrity sha512-M2SovcRxD4+vC493Uc2GZVcZaj66CCJhWurC4viynVSTvrpErCShNcDz1lAho6n9REQKvL/ll4A4/fw6Y9z8nw==

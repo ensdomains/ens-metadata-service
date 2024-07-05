@@ -1,18 +1,21 @@
-import { AvatarResolver }   from '@ensdomains/ens-avatar';
-import { strict as assert } from 'assert';
-import { ethers, JsonRpcProvider } from 'ethers';
-import createDOMPurify      from 'dompurify';
-import { JSDOM }            from 'jsdom';
+import http                              from 'http';
+import https                             from 'https';
+
+import { AvatarResolver }                from '@ensdomains/ens-avatar';
+import { strict as assert }              from 'assert';
+import { JsonRpcProvider }               from 'ethers';
+import createDOMPurify                   from 'dompurify';
+import { JSDOM }                         from 'jsdom';
 import {
   ResolverNotFound,
   RetrieveURIFailed,
   TextRecordNotFound,
-}                           from '../base';
-import { 
-  IPFS_GATEWAY, 
-  OPENSEA_API_KEY 
-}                           from '../config';
-import { abortableFetch }   from '../utils/abortableFetch';
+}                                        from '../base';
+import { IPFS_GATEWAY, OPENSEA_API_KEY } from '../config';
+import { abortableFetch }                from '../utils/abortableFetch';
+import isSvg                             from '../utils/isSvg';
+
+const { requestFilterHandler } = require('ssrf-req-filter');
 
 const window = new JSDOM('').window;
 
@@ -49,13 +52,15 @@ export class AvatarMetadata {
   avtResolver: AvatarResolver;
   constructor(provider: JsonRpcProvider, uri: string) {
     this.defaultProvider = provider;
-    this.avtResolver = new AvatarResolver(provider, 
-      {
-        ipfs: IPFS_GATEWAY, 
-        apiKey: { opensea: OPENSEA_API_KEY },
-        urlDenyList: [ 'metadata.ens.domains' ]
-      }
-    );
+    this.avtResolver = new AvatarResolver(provider, {
+      ipfs: IPFS_GATEWAY,
+      apiKey: { opensea: OPENSEA_API_KEY },
+      urlDenyList: ['metadata.ens.domains'],
+      agents: {
+        httpAgent: requestFilterHandler(new http.Agent()),
+        httpsAgent: requestFilterHandler(new https.Agent()),
+      },
+    });
     this.uri = uri;
   }
 
@@ -72,7 +77,10 @@ export class AvatarMetadata {
       if (typeof error === 'string') {
         console.log(`${this.uri} - error:`, error);
       }
-      throw new RetrieveURIFailed(`Error fetching avatar: Provided url or NFT source is broken.`, 404);
+      throw new RetrieveURIFailed(
+        `Error fetching avatar: Provided url or NFT source is broken.`,
+        404
+      );
     }
 
     if (!avatarURI) {
@@ -84,16 +92,24 @@ export class AvatarMetadata {
 
     if (avatarURI?.startsWith('http')) {
       // abort fetching image after 5sec
-      const response = await abortableFetch(avatarURI, { timeout: 7000 });
+      const response = await abortableFetch(avatarURI, {
+        timeout: 7000,
+        headers: {
+          'user-agent': 'ENS-ImageFetcher/1.0.0',
+        },
+      })
+
 
       assert(!!response, 'Response is empty');
 
       const mimeType = response?.headers.get('Content-Type');
       const data = await response?.buffer();
 
-      if (mimeType?.includes('svg')) {
+      if (mimeType?.includes('svg') || isSvg(data.toString())) {
         const DOMPurify = createDOMPurify(window);
-        const cleanData = DOMPurify.sanitize(data.toString());
+        const cleanData = DOMPurify.sanitize(data.toString(), {
+          FORBID_TAGS: ['a', 'area', 'base', 'iframe', 'link'],
+        });
         return [Buffer.from(cleanData), mimeType];
       }
 
