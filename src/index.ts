@@ -22,6 +22,7 @@ const setCacheHeader = function (
       `public, max-age=${period}, s-maxage=${period}`
     );
   }
+  res.append('Vary', 'Sec-Fetch-Dest');
 
   next();
 };

@@ -64,7 +64,7 @@ export class AvatarMetadata {
     this.uri = uri;
   }
 
-  async getImage() {
+  async getImage(): Promise<[Buffer, string]> {
     let avatarURI;
     try {
       avatarURI = await this.avtResolver.getAvatar(this.uri, {
@@ -102,7 +102,7 @@ export class AvatarMetadata {
 
       assert(!!response, 'Response is empty');
 
-      const mimeType = response?.headers.get('Content-Type');
+      const mimeType = response?.headers.get('Content-Type') || '';
       const data = await response?.buffer();
 
       if (mimeType?.includes('svg') || isSvg(data.toString())) {
@@ -189,7 +189,7 @@ export async function getAvatarMeta(
 export async function getAvatarImage(
   provider: JsonRpcProvider,
   name: string
-): Promise<any> {
+): Promise<[Buffer, string]> {
   const avatar = new AvatarMetadata(provider, name);
   return await avatar.getImage();
 }

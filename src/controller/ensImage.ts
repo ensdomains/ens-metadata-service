@@ -10,6 +10,7 @@ import { RESPONSE_TIMEOUT }        from '../config';
 import { checkContract }           from '../service/contract';
 import { getDomain }               from '../service/domain';
 import getNetwork, { NetworkName } from '../service/network';
+import createDocumentfromTemplate  from '../template-document';
 
 /* istanbul ignore next */
 export async function ensImage(req: Request, res: Response) {
@@ -39,6 +40,15 @@ export async function ensImage(req: Request, res: Response) {
       version
     );
     if (result.image_url) {
+      if (req.header('sec-fetch-dest') === 'document') {
+        const documentTemplate = createDocumentfromTemplate({ metadata: {...result, network: networkName }});
+        res
+          .writeHead(200, {
+            'Content-Type': 'text/html',
+          })
+          .end(documentTemplate);
+        return;
+      }
       const base64 = result.image_url.replace('data:image/svg+xml;base64,', '');
       const buffer = Buffer.from(base64, 'base64');
       if (!res.headersSent) {
