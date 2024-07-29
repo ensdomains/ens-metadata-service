@@ -256,7 +256,7 @@ export default function createDocumentfromTemplate({
                   <a href="https://metadata.ens.domains/${metadata.network}/${
     buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
   }/${metadata.name}${buffer ? '' : '/image'}">
-                    https://metadata.ens.domains/mainnet/${metadata.network}/${
+                    https://metadata.ens.domains/${metadata.network}/${
     buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
   }/${metadata.name}${buffer ? '' : '/image'}
                   </a>
