@@ -31,6 +31,7 @@ export default function createDocumentfromTemplate({
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8"> 
     <title>${metadata.name}</title>
     <style type="text/css">
       @font-face {
@@ -52,6 +53,16 @@ export default function createDocumentfromTemplate({
       }
       table {
         width: 100%;
+      }
+      pre {
+        display: inline;
+        order-radius: 2px;
+        word-break: break-word;
+        background-color: rgba(51, 51, 51, 0.05);
+        color: rgba(51, 51, 51, 0.9);
+        padding: 0px 5px;
+        border: 1px solid rgba(51, 51, 51, 0.1);
+        font-family: Courier, monospace;
       }
       .banner {
         display: flex;
@@ -98,11 +109,88 @@ export default function createDocumentfromTemplate({
         -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
       }
       .required {
-        color: red;
+        color: rgb(212, 31, 28);
+        font-size: 0.9em;
+        font-weight: normal;
+        margin-left: 20px;
+        line-height: 1;
       }
       h5 {
         text-transform: uppercase;
         border-bottom: 1px solid rgb(159, 180, 190);
+      }
+      .field {
+        box-sizing: border-box;
+        position: relative;
+        padding: 10px 10px 10px 0px;
+
+        vertical-align: top;
+        line-height: 20px;
+        white-space: nowrap;
+        font-size: 13px;
+        font-family: Courier, monospace;
+
+        border-left: 1px solid rgb(124, 124, 187);
+        border-left-width: 1px;
+        box-sizing: border-box;
+        position: relative;
+        padding: 10px 10px 10px 0px;
+      }
+      tr:first-of-type > .field {
+        background-image: linear-gradient(transparent 0%, transparent 22px, rgb(124, 124, 187) 22px, rgb(124, 124, 187) 100%);
+      }
+      tr:first-of-type > .field, tr.last > .field {
+        background-size: 1px 100%;
+        background-repeat: no-repeat;
+        background-position: left top;
+        border-left-width: 0px;
+      }
+
+      tr.last > .field {
+        background-image: linear-gradient(rgb(124, 124, 187) 0%, rgb(124, 124, 187) 22px, transparent 22px, transparent 100%);
+      }
+      .flow::before {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        width: 10px;
+        height: 1px;
+        background: rgb(124, 124, 187);
+      }
+      .flow::after {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        width: 1px;
+        background: rgb(124, 124, 187);
+        height: 7px;
+      }
+      .response {
+        display: block;
+        border: 0px;
+        width: 100%;
+        text-align: left;
+        padding: 10px;
+        border-radius: 2px;
+        margin-bottom: 4px;
+        line-height: 1.5em;
+        cursor: default;
+      }
+      .response::before {
+        content: "—";
+        font-weight: bold;
+        width: 1.5em;
+        text-align: center;
+        display: inline-block;
+        vertical-align: top;
+      }
+      .response--success {
+        color: rgb(29, 129, 39);
+        background-color: rgba(29, 129, 39, 0.07);
+      }
+      .response--fail {
+        color: rgb(212, 31, 28);
+        background-color: rgba(212, 31, 28, 0.07);
       }
       td:nth-child(even) {
         border-bottom: 1px solid rgb(159, 180, 190);
@@ -163,10 +251,14 @@ export default function createDocumentfromTemplate({
           <div>
             <div>
               <div>
-                <h3>ENS NFT ${buffer ? "Avatar" : ""} Image API Endpoint</h3>
+                <h3>ENS NFT ${buffer ? 'Avatar' : ''} Image API Endpoint</h3>
                 <p>
-                  <a href="https://metadata.ens.domains/${metadata.network}/${buffer ? "avatar" : "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"}/${metadata.name}${buffer ? "" : "/image"}">
-                    https://metadata.ens.domains/mainnet/${metadata.network}/${buffer ? "avatar" : "0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85"}/${metadata.name}${buffer ? "" : "/image"}
+                  <a href="https://metadata.ens.domains/${metadata.network}/${
+    buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
+  }/${metadata.name}${buffer ? '' : '/image'}">
+                    https://metadata.ens.domains/mainnet/${metadata.network}/${
+    buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
+  }/${metadata.name}${buffer ? '' : '/image'}
                   </a>
                 </p>
               </div>
@@ -176,8 +268,8 @@ export default function createDocumentfromTemplate({
               <table>
                 <tbody>
                   <tr>
-                    <td kind="field" title="networkName">
-                      <span></span>
+                    <td kind="field" title="networkName" class="field">
+                      <span class="flow"></span>
                       <span>networkName</span>
                       <div class="required">required</div>
                     </td>
@@ -190,8 +282,8 @@ export default function createDocumentfromTemplate({
                         </div>
                         <div>
                           <span>Enum:</span>
-                          <span>"mainnet"</span>
-                          <span>"sepolia"</span>
+                          <pre>"mainnet"</pre>
+                          <pre>"sepolia"</pre>
                         </div>
                         <div>
                           <div>
@@ -203,23 +295,23 @@ export default function createDocumentfromTemplate({
                   </tr>
                   ${
                     buffer
-                    ? ""
-                    : `<tr>
-                    <td kind="field" title="contractAddress">
-                      <span></span>
+                      ? ''
+                      : `<tr>
+                    <td kind="field" title="contractAddress" class="field">
+                      <span class="flow"></span>
                       <span>contractAddress</span>
                       <div class="required">required</div>
                     </td>
                     <td>
                       <div>
-                        <div>
+                        <div class="fieldType">
                           <span></span>
                           <span>string</span>
                           <span>(contractAddress)</span>
                         </div>
                         <div>
                           <span>Example: </span>
-                          <span>0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85</span>
+                          <pre>0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85</pre>
                         </div>
                         <div>
                           <div></div>
@@ -230,9 +322,9 @@ export default function createDocumentfromTemplate({
                   }
                   ${
                     buffer
-                    ? `<tr>
-                    <td kind="field" title="ensName">
-                      <span></span>
+                      ? `<tr class="last">
+                    <td kind="field" title="ensName" class="field">
+                      <span class="flow"></span>
                       <span>name</span>
                       <div class="required">required</div>
                     </td>
@@ -244,7 +336,7 @@ export default function createDocumentfromTemplate({
                           <span>(ensName)</span>
                         </div>
                         <div>
-                          <span>Example: ${metadata.name}</span>
+                          Example: <pre>${metadata.name}</pre>
                         </div>
                         <div>
                           <div>
@@ -254,9 +346,9 @@ export default function createDocumentfromTemplate({
                       </div>
                     </td>
                   </tr>`
-                    : `<tr>
-                    <td kind="field" title="tokenId">
-                      <span></span>
+                      : `<tr class="last">
+                    <td kind="field" title="tokenId" class="field">
+                      <span class="flow"></span>
                       <span>tokenId</span>
                       <div class="required">required</div>
                     </td>
@@ -270,7 +362,7 @@ export default function createDocumentfromTemplate({
                         <div>
                           <span>Example: </span>
                           <br/>
-                          <span>4221908525551133525058944220830153... / ${metadata.name}</span>
+                          <pre>4221908525551133525058944220830153...</pre> /  <pre>${metadata.name}</pre>
                         </div>
                         <div>
                           <div>
@@ -291,25 +383,25 @@ export default function createDocumentfromTemplate({
             <div>
               <h3>Responses</h3>
               <div>
-                <button disabled="">
+                <button disabled="" class="response response--success">
                   <strong>200 </strong>
                   <div>
                     <p>Image file</p>
                   </div>
                 </button>
-                <button disabled="">
+                <button disabled="" class="response response--fail"> 
                   <strong>404 </strong>
                   <div>
                     <p>No results found</p>
                   </div>
                 </button>
-                <button disabled="">
+                <button disabled="" class="response response--fail">
                   <strong>501 </strong>
                   <div>
                     <p>Unsupported network</p>
                   </div>
                 </button>
-                <button disabled="">
+                <button disabled="" class="response response--fail">
                   <strong>504 </strong>
                   <div>
                     <p>Gateway Timeout</p>
