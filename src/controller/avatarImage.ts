@@ -11,6 +11,7 @@ import {
 import { RESPONSE_TIMEOUT }        from '../config';
 import { getAvatarImage }          from '../service/avatar';
 import getNetwork, { NetworkName } from '../service/network';
+import createDocumentfromTemplate  from '../template-document';
 
 export async function avatarImage(req: Request, res: Response) {
   // #swagger.description = 'ENS avatar image'
@@ -29,6 +30,15 @@ export async function avatarImage(req: Request, res: Response) {
            description: 'Image file'
       } */
       if (!res.headersSent) {
+        if (req.header('sec-fetch-dest') === 'document') {
+          const documentTemplate = createDocumentfromTemplate({ buffer, metadata: { name, network: networkName },  mimeType });
+          res
+            .writeHead(200, {
+              'Content-Type': 'text/html',
+            })
+            .end(documentTemplate);
+          return;
+        }
         res
           .writeHead(200, {
             'Content-Type': mimeType,

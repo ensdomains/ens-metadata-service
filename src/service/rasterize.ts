@@ -1,7 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 
 const auth = new GoogleAuth();
-const grRasterize = 'https://rasterize-y3ur7hmkna-uc.a.run.app/rasterize'
+const grRasterize = 'https://us-central1-ens-metadata-service.cloudfunctions.net/rasterize'
 
 export function rasterize(
   contractAddress: string,
