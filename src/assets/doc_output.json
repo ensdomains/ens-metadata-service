@@ -154,6 +154,16 @@
             },
             "type": "string",
             "description": "Labelhash(v1) /Namehash(v2) of your ENS name.\n\nMore: https://docs.ens.domains/contract-api-reference/name-processing#hashing-names"
+          },
+          {
+            "name": "res",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/res"
+            },
+            "type": "string",
+            "description": "Resolution option for the rasterization. Available options: low (default) | high"
           }
         ],
         "responses": {
@@ -405,6 +415,10 @@
                 "type": "string",
                 "example": "Token ID of NFT"
               },
+              "res": {
+                "type": "string",
+                "example": "Resolution query parameter for rasterization"
+              },
               "reference_url": {
                 "type": "string",
                 "example": "Marketplace URL of NFT"
@@ -524,6 +538,13 @@
         "example": "4221908525551133525058944220830153...",
         "xml": {
           "name": "tokenId"
+        }
+      },
+      "res": {
+        "type": "string",
+        "example": "high",
+        "xml": {
+          "name": "res"
         }
       },
       "networkName": {
