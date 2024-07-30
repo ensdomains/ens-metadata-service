@@ -90,7 +90,8 @@ export async function ensMetadata(req: Request, res: Response) {
           ETH_REGISTRY_ABI,
           provider
         );
-        if (!tokenId || !version) {
+
+        if (!tokenId || version?.valueOf() === undefined) {
           throw 'Missing parameters to construct namehash';
         }
         const _namehash = constructEthNameHash(tokenId, version as Version);
