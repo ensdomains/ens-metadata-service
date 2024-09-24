@@ -1,7 +1,7 @@
 import http                              from 'http';
 import https                             from 'https';
 
-import { AvatarResolver }                from '@ensdomains/ens-avatar';
+import { AvatarResolver, utils }         from '@ensdomains/ens-avatar';
 import { strict as assert }              from 'assert';
 import { JsonRpcProvider }               from 'ethers';
 import createDOMPurify                   from 'dompurify';
@@ -18,6 +18,7 @@ import isSvg                             from '../utils/isSvg';
 const { requestFilterHandler } = require('ssrf-req-filter');
 
 const window = new JSDOM('').window;
+const { ALLOWED_IMAGE_MIMETYPES } = utils;
 
 interface HostMeta {
   chain_id?        : number;
@@ -97,13 +98,17 @@ export class AvatarMetadata {
         headers: {
           'user-agent': 'ENS-ImageFetcher/1.0.0',
         },
-      })
-
+      });
 
       assert(!!response, 'Response is empty');
 
       const mimeType = response?.headers.get('Content-Type') || '';
       const data = await response?.buffer();
+
+      assert(
+        ALLOWED_IMAGE_MIMETYPES.includes(mimeType),
+        'Mimetype is not supported'
+      );
 
       if (mimeType?.includes('svg') || isSvg(data.toString())) {
         const DOMPurify = createDOMPurify(window);
@@ -121,8 +126,12 @@ export class AvatarMetadata {
       const mimeType = avatarURI.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
       const base64data = avatarURI.split('base64,')[1];
 
-      assert(base64data, 'base64 format is incorrect: empty data');
-      assert(mimeType, 'base64 format is incorrect: no mimetype');
+      assert(base64data, 'Base64 format is incorrect: Empty data');
+      assert(mimeType, 'Base64 format is incorrect: No mimetype');
+      assert(
+        ALLOWED_IMAGE_MIMETYPES.includes(mimeType[0]),
+        'Mimetype is not supported'
+      );
 
       const data = Buffer.from(base64data, 'base64');
       return [data, mimeType[0]];

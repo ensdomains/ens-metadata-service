@@ -32,10 +32,11 @@ export async function ensMetadata(req: Request, res: Response) {
   });
 
   const { contractAddress, networkName, tokenId: identifier } = req.params;
-  const { provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName);
   const last_request_date = Date.now();
   let tokenId, version;
+  let provider, SUBGRAPH_URL;
   try {
+    ({ provider, SUBGRAPH_URL } = getNetwork(networkName as NetworkName));
     ({ tokenId, version } = await checkContract(
       provider,
       contractAddress,
