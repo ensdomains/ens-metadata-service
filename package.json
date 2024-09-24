@@ -8,7 +8,7 @@
     "node": ">=16.15"
   },
   "dependencies": {
-    "@adraffy/ens-normalize": "^1.10.0",
+    "@adraffy/ens-normalize": "^1.11.0",
     "@ensdomains/ens-avatar": "^1.0.0",
     "@ensdomains/ensjs": "^3.7.0",
     "@types/lodash": "^4.14.170",
