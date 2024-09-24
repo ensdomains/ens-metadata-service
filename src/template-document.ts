@@ -85,11 +85,20 @@ export default function createDocumentfromTemplate({
         padding: 0 25px;
         box-sizing: border-box;
       }
-      .preview img {
-        object-fit: cover;
+      .container {
+        position: relative;
+        overflow: hidden;
         width: 100%;
       }
       #imgSource {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+
         user-select: none !important;
         pointer-events: none !important;
       }
@@ -236,15 +245,20 @@ export default function createDocumentfromTemplate({
       </svg>
     </div>
     <div class="preview">
-      <div id="imgSource">
-        ${
-          mimeType !== 'image/svg+xml'
-            ? `<img
+      <div class="container">
+        <iframe srcdoc="${(mimeType !== 'image/svg+xml'
+          ? `<img
           src="${image}"
           alt="${metadata.name}"
+          style="width:100%;"
         />`
-            : buffer
-        }
+          : "<div style='width:100%;'>" + buffer?.toString() + '</div>' || ''
+        ).replace(/"/g, "'")}" 
+          sandbox="allow-same-origin" 
+          id="imgSource"
+          frameborder="0" 
+          scrolling="no">
+        </iframe>
       </div>
       <div class="docs">
         <div>
