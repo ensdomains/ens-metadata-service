@@ -5,10 +5,18 @@ declare namespace Intl {
 }
 
 export function getSegmentLength(name: string): number {
-  return [...new Intl.Segmenter().segment(name)].length;
+  let count = 0;
+  for (const _ of new Intl.Segmenter().segment(name)) {
+    count++;
+  }
+  return count;
 }
 
 export function getCodePointLength(name: string): number {
-  // spread operator will split string into its codepoints
-  return [...name].length;
+  // for...of operator will split string into its codepoints
+  let count = 0;
+  for (const _ of name) {
+    count++;
+  }
+  return count;
 }

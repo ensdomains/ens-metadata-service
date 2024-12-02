@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@adraffy/ens-normalize": "^1.11.0",
-    "@ensdomains/ens-avatar": "^1.0.0",
+    "@ensdomains/ens-avatar": "^1.0.3",
     "@ensdomains/ensjs": "^3.7.0",
     "@types/lodash": "^4.14.170",
     "btoa": "^1.2.1",
