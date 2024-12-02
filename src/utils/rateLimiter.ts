@@ -4,12 +4,13 @@ import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { REDIS_URL } from '../config';
 
 let rateLimiter: RateLimiterRedis | null = null;
+let redisClient: Redis | null = null;
 
 if (REDIS_URL) {
-  const redisClient = new Redis({
+  redisClient = new Redis({
     port: 6379,
     host: REDIS_URL,
-    enableOfflineQueue: false 
+    enableOfflineQueue: false,
   });
 
   redisClient.on('error', (error: any) => {
@@ -18,10 +19,10 @@ if (REDIS_URL) {
 
   const opts = {
     storeClient: redisClient,
-    points: 40,  // Number of total points
-    duration: 2,  // Per second(s)
-    execEvenly: false,  // Do not delay actions evenly
-    blockDuration: 0,   // Do not block the caller if consumed more than points
+    points: 40, // Number of total points
+    duration: 2, // Per second(s)
+    execEvenly: false, // Do not delay actions evenly
+    blockDuration: 0, // Do not block the caller if consumed more than points
     keyPrefix: 'ensrl', // Assign unique keys for each limiters with different purposes
   };
 
@@ -34,6 +35,12 @@ export async function rateLimitMiddleware(
   next: NextFunction
 ) {
   if (!rateLimiter) {
+    console.warn('Rate limiter not ready, skipping...');
+    return next();
+  }
+
+  if (redisClient?.status !== 'ready') {
+    console.warn('Redis client not ready, skipping...');
     return next();
   }
 

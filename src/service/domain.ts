@@ -169,7 +169,8 @@ export async function getDomain(
       );
     }
   }
-  const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');
-  await Promise.all([requestMedia(isAvatarExist), requestAttributes()]);
+  // disable onchain guard to be able to retrieve offchain avatars
+  // const isAvatarExist = resolver?.texts && resolver.texts.includes('avatar');
+  await Promise.all([requestMedia(true), requestAttributes()]);
   return metadata;
 }

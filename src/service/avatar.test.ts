@@ -8,9 +8,9 @@ import { IPFS_GATEWAY } from '../config';
 const test = avaTest as TestFn<TestContext>;
 
 test('should return data URIs without any changes', async (t: ExecutionContext<TestContext>) => {
-  const uri = 'data:text/plain;base64,dGVzdGluZw==';
+  const uri = 'data:image/png;base64,dGVzdGluZw==';
   const { uri: resolvedURI } = utils.resolveURI(uri, { ipfs: IPFS_GATEWAY } );
-  t.is(uri, resolvedURI);
+  t.is(uri, 'data:image/png;base64,' + resolvedURI);
 });
 
 test('should return http URIs without any changes', async (t: ExecutionContext<TestContext>) => {

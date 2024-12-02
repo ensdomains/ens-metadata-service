@@ -255,10 +255,10 @@
     dns-packet "^5.6.1"
     typescript-logging "^1.0.1"
 
-"@ensdomains/ens-avatar@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-1.0.0.tgz#731b02477f88c0abc3e2132465f1c4a427682bd2"
-  integrity sha512-coz6kMnQJAHxWTQ/fLGxYiJy8m5xURxMndrKKfTHZDw7rlSoVjXYywAhrasr3Vu8e2IqeLjSGVAb5KZArN7chQ==
+"@ensdomains/ens-avatar@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@ensdomains/ens-avatar/-/ens-avatar-1.0.3.tgz#f9f6922f60e7d30552b8a32fed39d17cabc65d91"
+  integrity sha512-iNJfhzJMhyXJTdtGs518X2dTC39sD3TKZ68q0QgUnv7T8jPBlJCcREUrHnZy/NuW6H+fmZl5xihFparfAjI8cg==
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/providers" "^5.7.0"

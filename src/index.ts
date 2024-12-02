@@ -8,6 +8,7 @@ import docUI                                        from 'redoc-express';
 import endpoints                                    from './endpoint';
 import { blockRecursiveCalls }                      from './utils/blockRecursiveCalls';
 import { rateLimitMiddleware }                      from './utils/rateLimiter';
+import { malformedURIMiddleware }                   from './utils/malformedURI';
 
 const setCacheHeader = function (
   req: Request,
@@ -63,7 +64,7 @@ app.use(blockRecursiveCalls);
 // apply cache header for all get requests
 app.use(setCacheHeader);
 endpoints(app);
-
+app.use(malformedURIMiddleware);
 app.use(compression({ filter: shouldCompress }));
 
 function shouldCompress(req: Request, res: Response) {
@@ -81,7 +82,7 @@ app.listen(PORT, () => {
   console.log(`APP_LOG::App listening on port ${PORT}`);
 });
 
-app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.ico', (_, res) => res.status(204).end());
 
 app.get(
   '/docs',
