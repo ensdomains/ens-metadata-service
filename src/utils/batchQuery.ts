@@ -14,6 +14,50 @@ class BatchedQuery {
     this.queryName = queryName;
   }
 
+  /**
+   * Adds a new GraphQL document to the batch.
+   *
+   * @param document - A string containing the GraphQL query or mutation.
+   * @returns The current instance of `BatchedQuery` for chaining.
+   * @throws Error if the document parameter is empty.
+   *
+   * Example:
+   * ```typescript
+   * const batch = createBatchQuery('MyBatchQuery');
+   * batch.add(`
+   *   query GetUser($id: ID!) {
+   *     user(id: $id) {
+   *       id
+   *       name
+   *     }
+   *   }
+   * `);
+   * batch.add(`
+   *   query GetPosts($limit: Int!) {
+   *     posts(limit: $limit) {
+   *       id
+   *       title
+   *     }
+   *   }
+   * `);
+   * const query = batch.query();
+   * console.log(query);
+   * ```
+   *
+   * Console Output:
+   * ```
+   * query MyBatchQuery($id: ID!, $limit: Int!) {
+   *   user(id: $id) {
+   *     id
+   *     name
+   *   }
+   *   posts(limit: $limit) {
+   *     id
+   *     title
+   *   }
+   * }
+   * ```
+   */
   add(document: string) {
     if (!document) throw Error('Parameters cannot be empty.');
     const documentNode: DocumentNode = parse(document);
@@ -49,7 +93,10 @@ class BatchedQuery {
     query ${this.queryName}(${variables}) {
       ${documentNodes}
     }
-    `.replace(/\n/g, '').replace(/\s\s+/g, ' ').trim();
+    `
+      .replace(/\n/g, '')
+      .replace(/\s\s+/g, ' ')
+      .trim();
   }
 }
 

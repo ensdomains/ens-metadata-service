@@ -1,3 +1,12 @@
+/**
+ * Converts a bigint value to a Uint8Array.
+ *
+ * function handles both positive and negative bigints and ensures the result
+ * is a proper two's complement representation for negative values.
+ *
+ * @param big - The bigint value to convert.
+ * @returns A Uint8Array representing the input bigint.
+ */
 export function bigIntToUint8Array(big: bigint) {
   // ensure big is positive and determine its byte size
   const isNegative = big < BigInt(0);

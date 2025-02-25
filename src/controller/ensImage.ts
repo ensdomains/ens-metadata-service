@@ -45,12 +45,14 @@ export async function ensImage(req: Request, res: Response) {
     if (result.image_url) {
       if (req.header('sec-fetch-dest') === 'document') {
         const documentTemplate = createDocumentfromTemplate({ metadata: {...result, network: networkName }});
-        res
-          .writeHead(200, {
-            'Content-Type': 'text/html',
-          })
-          .end(documentTemplate);
-        return;
+        if (!res.headersSent) {
+          res
+            .writeHead(200, {
+              'Content-Type': 'text/html',
+            })
+            .end(documentTemplate);
+          return;
+        }
       }
       const base64 = result.image_url.replace('data:image/svg+xml;base64,', '');
       const buffer = Buffer.from(base64, 'base64');
@@ -76,10 +78,12 @@ export async function ensImage(req: Request, res: Response) {
       /* #swagger.responses[404] = { 
            description: 'No results found' 
       } */
-      res.status(404).json({
-        message: error.message,
-      });
-      return;
+      if (!res.headersSent) {
+        res.status(404).json({
+          message: error.message,
+        });
+        return;
+      }
     }
 
     /* #swagger.responses[500] = { 
