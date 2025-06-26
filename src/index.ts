@@ -9,6 +9,7 @@ import endpoints                                    from './endpoint';
 import { blockRecursiveCalls }                      from './utils/blockRecursiveCalls';
 import { rateLimitMiddleware }                      from './utils/rateLimiter';
 import { malformedURIMiddleware }                   from './utils/malformedURI';
+import { universalValidation }                      from './utils/validateParameters';
 
 const setCacheHeader = function (
   req: Request,
@@ -66,6 +67,9 @@ app.use(rateLimitMiddleware);
 
 // Prevent recursive API calls that could lead to infinite loops
 app.use(blockRecursiveCalls);
+
+// Apply universal validation to all routes
+app.use(universalValidation);
 
 // Apply cache headers to all GET requests
 app.use(setCacheHeader);
