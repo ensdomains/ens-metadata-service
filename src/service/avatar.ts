@@ -1,7 +1,11 @@
 import http                              from 'http';
 import https                             from 'https';
 
-import { AvatarResolver, utils }         from '@ensdomains/ens-avatar';
+import {
+  AvatarResolver,
+  UnsupportedMediaKey,
+  utils
+}                                        from '@ensdomains/ens-avatar';
 import { strict as assert }              from 'assert';
 import { JsonRpcProvider }               from 'ethers';
 import createDOMPurify                   from 'dompurify';
@@ -65,12 +69,20 @@ export class AvatarMetadata {
     this.uri = uri;
   }
 
-  async getImage(): Promise<[Buffer, string]> {
+  async getImage(type: "avatar" | "header" = "avatar"): Promise<[Buffer, string]> {
     let avatarURI;
     try {
-      avatarURI = await this.avtResolver.getAvatar(this.uri, {
-        jsdomWindow: window,
-      });
+      if (type === "avatar") {
+        avatarURI = await this.avtResolver.getAvatar(this.uri, {
+          jsdomWindow: window,
+        });
+      } else if (type === "header") {
+        avatarURI = await this.avtResolver.getHeader(this.uri, {
+          jsdomWindow: window
+        })
+      } else {
+        throw new UnsupportedMediaKey();
+      }
     } catch (error: any) {
       if (error instanceof Error) {
         console.log(`${this.uri} - error:`, error.message);
@@ -200,5 +212,13 @@ export async function getAvatarImage(
   name: string
 ): Promise<[Buffer, string]> {
   const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getImage();
+  return await avatar.getImage('avatar');
+}
+
+export async function getHeaderImage(
+  provider: JsonRpcProvider,
+  name: string
+): Promise<[Buffer, string]> {
+  const avatar = new AvatarMetadata(provider, name);
+  return await avatar.getImage('header');
 }
