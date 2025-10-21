@@ -207,12 +207,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AvatarMetadata"
+                  "$ref": "#/components/schemas/MediaMetadata"
                 }
               },
               "application/xml": {
                 "schema": {
-                  "$ref": "#/components/schemas/AvatarMetadata"
+                  "$ref": "#/components/schemas/MediaMetadata"
                 }
               }
             }
@@ -320,7 +320,7 @@
   },
   "components": {
     "examples": {
-      "AvatarMetadata": {
+      "MediaMetadata": {
         "value": {
           "$uri": "matoken.eth",
           "is_owner": true,
@@ -385,7 +385,7 @@
       }
     },
     "schemas": {
-      "AvatarMetadata": {
+      "MediaMetadata": {
         "type": "object",
         "properties": {
           "uri": {
@@ -466,7 +466,7 @@
           "image"
         ],
         "xml": {
-          "name": "AvatarMetadata"
+          "name": "MediaMetadata"
         }
       },
       "ENSMetadata": {
