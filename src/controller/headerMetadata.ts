@@ -1,0 +1,70 @@
+import { Request, Response }       from 'express';
+import { FetchError }              from 'node-fetch';
+import {
+  NFTURIParsingError,
+  ResolverNotFound,
+  RetrieveURIFailed,
+  TextRecordNotFound,
+  UnsupportedNamespace,
+  UnsupportedNetwork,
+}                                  from '../base';
+import { RESPONSE_TIMEOUT }        from '../config';
+import { getHeaderMeta }           from '../service/avatar';
+import getNetwork, { NetworkName } from '../service/network';
+
+export async function headerMetadata(req: Request, res: Response) {
+  // #swagger.description = 'ENS header metadata'
+  // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
+  // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
+  res.setTimeout(RESPONSE_TIMEOUT, () => {
+    res.status(504).json({ message: 'Timeout' });
+  });
+
+  const { name, networkName } = req.params;
+  try {
+    const { provider } = getNetwork(networkName as NetworkName);
+    const meta = await getHeaderMeta(provider, name, networkName);
+    if (meta) {
+      /* #swagger.responses[200] = {
+             description: 'Metadata object',
+             schema: { $ref: '#/definitions/MediaMetadata' }
+      } */
+      if (!res.headersSent) {
+        res.status(200).json(meta);
+      }
+    } else {
+      /* #swagger.responses[404] = {
+             description: 'No results found'
+      } */
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    }
+  } catch (error: any) {
+    const errCode = (error?.code && Number(error.code)) || 500;
+    if (
+      error instanceof FetchError ||
+      error instanceof NFTURIParsingError ||
+      error instanceof ResolverNotFound ||
+      error instanceof RetrieveURIFailed ||
+      error instanceof TextRecordNotFound ||
+      error instanceof UnsupportedNamespace ||
+      error instanceof UnsupportedNetwork
+    ) {
+      /* #swagger.responses[501] = {
+          description: 'Unsupported network'
+      } */
+      if (!res.headersSent) {
+        res.status(errCode).json({
+          message: error.message,
+        });
+      }
+      return;
+    }
+    if (!res.headersSent) {
+      res.status(404).json({
+        message: 'No results found.',
+      });
+    }
+  }
+}
