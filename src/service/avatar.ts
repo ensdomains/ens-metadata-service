@@ -70,7 +70,7 @@ export class AvatarMetadata {
     this.uri = uri;
   }
 
-  async getImage(type: "avatar" | "header" = "avatar"): Promise<[Buffer, string]> {
+  async getImage(type: MediaKey = "avatar"): Promise<[Buffer, string]> {
     let avatarURI;
     try {
       if (type === "avatar") {
