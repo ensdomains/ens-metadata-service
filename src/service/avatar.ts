@@ -6,6 +6,7 @@ import {
   UnsupportedMediaKey,
   utils
 }                                        from '@ensdomains/ens-avatar';
+import { MediaKey }                      from '@ensdomains/ens-avatar/dist/types';
 import { strict as assert }              from 'assert';
 import { JsonRpcProvider }               from 'ethers';
 import createDOMPurify                   from 'dompurify';
@@ -155,10 +156,10 @@ export class AvatarMetadata {
     );
   }
 
-  async getMeta(networkName: string) {
+  async getMeta(networkName: string, key: MediaKey = "avatar") {
     let metadata: any;
     try {
-      metadata = await this.avtResolver.getMetadata(this.uri);
+      metadata = await this.avtResolver.getMetadata(this.uri, key);
     } catch (error: any) {
       if (error instanceof Error) {
         console.log(`${this.uri} - error:`, error.message);
@@ -204,7 +205,16 @@ export async function getAvatarMeta(
   networkName: string
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getMeta(networkName);
+  return await avatar.getMeta(networkName, "avatar");
+}
+
+export async function getHeaderMeta(
+  provider: JsonRpcProvider,
+  name: string,
+  networkName: string
+): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
+  return await avatar.getMeta(networkName, "header");
 }
 
 export async function getAvatarImage(

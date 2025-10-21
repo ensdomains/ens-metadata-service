@@ -25,16 +25,16 @@ export async function avatarMetadata(req: Request, res: Response) {
     const { provider } = getNetwork(networkName as NetworkName);
     const meta = await getAvatarMeta(provider, name, networkName);
     if (meta) {
-      /* #swagger.responses[200] = { 
+      /* #swagger.responses[200] = {
              description: 'Metadata object',
-             schema: { $ref: '#/definitions/AvatarMetadata' }
+             schema: { $ref: '#/definitions/MediaMetadata' }
       } */
       if (!res.headersSent) {
         res.status(200).json(meta);
       }
     } else {
-      /* #swagger.responses[404] = { 
-             description: 'No results found' 
+      /* #swagger.responses[404] = {
+             description: 'No results found'
       } */
       res.status(404).json({
         message: 'No results found.',
@@ -51,8 +51,8 @@ export async function avatarMetadata(req: Request, res: Response) {
       error instanceof UnsupportedNamespace ||
       error instanceof UnsupportedNetwork
     ) {
-      /* #swagger.responses[501] = { 
-          description: 'Unsupported network' 
+      /* #swagger.responses[501] = {
+          description: 'Unsupported network'
       } */
       if (!res.headersSent) {
         res.status(errCode).json({

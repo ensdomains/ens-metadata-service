@@ -5,6 +5,7 @@ import { ensImage } from './controller/ensImage';
 import { ensRasterize } from './controller/ensRasterize';
 import { avatarMetadata } from './controller/avatarMetadata';
 import { avatarImage } from './controller/avatarImage';
+import { headerMetadata } from './controller/headerMetadata';
 import { headerImage } from './controller/headerImage';
 import { queryNFTep } from './controller/queryNFT';
 import { preview } from './controller/preview';
@@ -33,6 +34,8 @@ export default function (app: Express) {
   app.get('/:networkName/avatar/:name/meta', avatarMetadata);
 
   app.get('/:networkName/avatar/:name', avatarImage);
+
+  app.get('/:networkName/header/:name/meta', headerMetadata);
 
   app.get('/:networkName/header/:name', headerImage);
 
