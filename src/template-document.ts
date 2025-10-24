@@ -13,13 +13,16 @@ interface DocumentTemplateFields {
   buffer?: Buffer;
   metadata: DocumentMetadata;
   mimeType?: string;
+  mediaType?: "avatar" | "header";
 }
 
 export default function createDocumentfromTemplate({
   buffer,
   metadata,
   mimeType,
+  mediaType = "avatar",
 }: DocumentTemplateFields) {
+  const _mediaType = mediaType === "avatar" ? "Avatar" : "Header";
   if (!metadata && !buffer) {
     throw 'Either image url, or image buffer needs to be provided for the document template';
   }
@@ -31,7 +34,7 @@ export default function createDocumentfromTemplate({
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <title>${metadata.name}</title>
     <style type="text/css">
       @font-face {
@@ -253,10 +256,10 @@ export default function createDocumentfromTemplate({
           style="width:100%;"
         />`
           : "<div style='width:100%;'>" + buffer?.toString() + '</div>' || ''
-        ).replace(/"/g, "'")}" 
-          sandbox="allow-same-origin" 
+        ).replace(/"/g, "'")}"
+          sandbox="allow-same-origin"
           id="imgSource"
-          frameborder="0" 
+          frameborder="0"
           scrolling="no">
         </iframe>
       </div>
@@ -265,13 +268,13 @@ export default function createDocumentfromTemplate({
           <div>
             <div>
               <div>
-                <h3>ENS NFT ${buffer ? 'Avatar' : ''} Image API Endpoint</h3>
+                <h3>ENS NFT ${buffer ? _mediaType : ''} Image API Endpoint</h3>
                 <p>
                   <a href="https://metadata.ens.domains/${metadata.network}/${
-    buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
+    buffer ? _mediaType.toLowerCase() : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
   }/${metadata.name}${buffer ? '' : '/image'}">
                     https://metadata.ens.domains/${metadata.network}/${
-    buffer ? 'avatar' : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
+    buffer ? _mediaType.toLowerCase() : '0x57f1887a8BF19b14fC0dF6Fd9B2acc9Af147eA85'
   }/${metadata.name}${buffer ? '' : '/image'}
                   </a>
                 </p>
@@ -403,7 +406,7 @@ export default function createDocumentfromTemplate({
                     <p>Image file</p>
                   </div>
                 </button>
-                <button disabled="" class="response response--fail"> 
+                <button disabled="" class="response response--fail">
                   <strong>404 </strong>
                   <div>
                     <p>No results found</p>

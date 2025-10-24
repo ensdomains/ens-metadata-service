@@ -23,7 +23,7 @@ const doc = {
   },
   host: SERVER_URL,
   definitions: {
-    AvatarMetadata: {
+    MediaMetadata: {
       $uri: 'ENS name of avatar holder',
       is_owner: 'Ownership verification of NFT',
       host_meta: {
@@ -64,7 +64,7 @@ const doc = {
   },
   components: {
     examples: {
-      AvatarMetadata: {
+      MediaMetadata: {
         $uri: 'matoken.eth',
         is_owner: true,
         host_meta: {

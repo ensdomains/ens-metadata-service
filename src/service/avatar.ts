@@ -1,7 +1,12 @@
 import http                              from 'http';
 import https                             from 'https';
 
-import { AvatarResolver, utils }         from '@ensdomains/ens-avatar';
+import {
+  AvatarResolver,
+  UnsupportedMediaKey,
+  utils
+}                                        from '@ensdomains/ens-avatar';
+import { MediaKey }                      from '@ensdomains/ens-avatar/dist/types';
 import { strict as assert }              from 'assert';
 import { JsonRpcProvider }               from 'ethers';
 import createDOMPurify                   from 'dompurify';
@@ -65,12 +70,20 @@ export class AvatarMetadata {
     this.uri = uri;
   }
 
-  async getImage(): Promise<[Buffer, string]> {
+  async getImage(type: MediaKey = "avatar"): Promise<[Buffer, string]> {
     let avatarURI;
     try {
-      avatarURI = await this.avtResolver.getAvatar(this.uri, {
-        jsdomWindow: window,
-      });
+      if (type === "avatar") {
+        avatarURI = await this.avtResolver.getAvatar(this.uri, {
+          jsdomWindow: window,
+        });
+      } else if (type === "header") {
+        avatarURI = await this.avtResolver.getHeader(this.uri, {
+          jsdomWindow: window
+        })
+      } else {
+        throw new UnsupportedMediaKey();
+      }
     } catch (error: any) {
       if (error instanceof Error) {
         console.log(`${this.uri} - error:`, error.message);
@@ -143,10 +156,10 @@ export class AvatarMetadata {
     );
   }
 
-  async getMeta(networkName: string) {
+  async getMeta(networkName: string, key: MediaKey = "avatar") {
     let metadata: any;
     try {
-      metadata = await this.avtResolver.getMetadata(this.uri);
+      metadata = await this.avtResolver.getMetadata(this.uri, key);
     } catch (error: any) {
       if (error instanceof Error) {
         console.log(`${this.uri} - error:`, error.message);
@@ -192,7 +205,16 @@ export async function getAvatarMeta(
   networkName: string
 ): Promise<any> {
   const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getMeta(networkName);
+  return await avatar.getMeta(networkName, "avatar");
+}
+
+export async function getHeaderMeta(
+  provider: JsonRpcProvider,
+  name: string,
+  networkName: string
+): Promise<any> {
+  const avatar = new AvatarMetadata(provider, name);
+  return await avatar.getMeta(networkName, "header");
 }
 
 export async function getAvatarImage(
@@ -200,5 +222,13 @@ export async function getAvatarImage(
   name: string
 ): Promise<[Buffer, string]> {
   const avatar = new AvatarMetadata(provider, name);
-  return await avatar.getImage();
+  return await avatar.getImage('avatar');
+}
+
+export async function getHeaderImage(
+  provider: JsonRpcProvider,
+  name: string
+): Promise<[Buffer, string]> {
+  const avatar = new AvatarMetadata(provider, name);
+  return await avatar.getImage('header');
 }

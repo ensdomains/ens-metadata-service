@@ -9,11 +9,11 @@ import {
   UnsupportedNetwork,
 }                                  from '../base';
 import { RESPONSE_TIMEOUT }        from '../config';
-import { getAvatarMeta }           from '../service/avatar';
+import { getHeaderMeta }           from '../service/avatar';
 import getNetwork, { NetworkName } from '../service/network';
 
-export async function avatarMetadata(req: Request, res: Response) {
-  // #swagger.description = 'ENS avatar metadata'
+export async function headerMetadata(req: Request, res: Response) {
+  // #swagger.description = 'ENS header metadata'
   // #swagger.parameters['networkName'] = { schema: { $ref: '#/definitions/networkName' } }
   // #swagger.parameters['name'] = { description: 'ENS name', schema: { $ref: '#/definitions/ensName' } }
   res.setTimeout(RESPONSE_TIMEOUT, () => {
@@ -23,7 +23,7 @@ export async function avatarMetadata(req: Request, res: Response) {
   const { name, networkName } = req.params;
   try {
     const { provider } = getNetwork(networkName as NetworkName);
-    const meta = await getAvatarMeta(provider, name, networkName);
+    const meta = await getHeaderMeta(provider, name, networkName);
     if (meta) {
       /* #swagger.responses[200] = {
              description: 'Metadata object',
