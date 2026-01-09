@@ -16,7 +16,7 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                                        from '../base';
-import { IPFS_GATEWAY, OPENSEA_API_KEY } from '../config';
+import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
 import { abortableFetch }                from '../utils/abortableFetch';
 import isSvg                             from '../utils/isSvg';
 
@@ -92,14 +92,14 @@ export class AvatarMetadata {
         console.log(`${this.uri} - error:`, error);
       }
       throw new RetrieveURIFailed(
-        `Error fetching avatar: Provided url or NFT source is broken.`,
+        `Error fetching ${type}: Provided url or NFT source is broken.`,
         404
       );
     }
 
     if (!avatarURI) {
       throw new TextRecordNotFound(
-        'There is no avatar set under given address',
+        `There is no ${type} set under given address`,
         404
       );
     }
@@ -108,6 +108,7 @@ export class AvatarMetadata {
       // abort fetching image after 5sec
       const response = await abortableFetch(avatarURI, {
         timeout: 7000,
+        size: MAX_CONTENT_LENGTH,
         headers: {
           'user-agent': 'ENS-ImageFetcher/1.0.0',
         },
@@ -175,25 +176,29 @@ export class AvatarMetadata {
 
     if (!metadata) {
       throw new TextRecordNotFound(
-        'There is no avatar set under given address',
+        `There is no ${key} set under given address`,
         404
       );
     }
 
-    if (!metadata.image) {
-      if (metadata.image_url) {
-        metadata.image = metadata.image_url;
-      } else if (metadata.image_data) {
-        metadata.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
-      } else {
-        throw new TextRecordNotFound(
-          'There is no avatar set under given address',
-          404
-        );
+    if (key === "avatar") {
+      if (!metadata.image) {
+        if (metadata.image_url) {
+          metadata.image = metadata.image_url;
+        } else if (metadata.image_data) {
+          metadata.image = `https://metadata.ens.domains/${networkName}/avatar/${this.uri}`;
+        } else {
+          throw new TextRecordNotFound(
+            `There is no avatar set under given address`,
+            404
+          );
+        }
       }
+      // replace back original url after fetch
+      metadata.image = metadata.image.replace(IPFS_GATEWAY, 'https://ipfs.io');
+    } else if (key === "header") {
+      metadata.header = metadata.header.replace(IPFS_GATEWAY, 'https://ipfs.io');
     }
-    // replace back original url after fetch
-    metadata.image = metadata.image.replace(IPFS_GATEWAY, 'https://ipfs.io');
 
     return metadata;
   }
