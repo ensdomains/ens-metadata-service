@@ -57,6 +57,9 @@ app.use(
   })
 );
 
+// Compress responses to improve performance, unless explicitly disabled
+app.use(compression({ filter: shouldCompress }));
+
 if (process.env.ENV === 'local') {
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
 }
@@ -73,9 +76,6 @@ endpoints(app);
 
 // Handle malformed URIs gracefully
 app.use(malformedURIMiddleware);
-
-// Compress responses to improve performance, unless explicitly disabled
-app.use(compression({ filter: shouldCompress }));
 
 // Function to determine whether to compress a response
 function shouldCompress(req: Request, res: Response) {
