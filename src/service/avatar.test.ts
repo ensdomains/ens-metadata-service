@@ -186,7 +186,7 @@ test('AvatarMetadata.getMeta should call getMetadata with "header" key when spec
   const avatarMetadata = new AvatarMetadata(mockProvider, testName);
 
   const mockMetadata = {
-    image: 'https://example.com/header.png',
+    header: 'https://example.com/header.png',
     name: 'Test Header',
     description: 'Test header description'
   };
@@ -197,7 +197,7 @@ test('AvatarMetadata.getMeta should call getMetadata with "header" key when spec
 
     t.true(getMetadataStub.calledOnce);
     t.true(getMetadataStub.calledWith(testName, 'header'));
-    t.is(result.image, mockMetadata.image.replace(IPFS_GATEWAY, 'https://ipfs.io'));
+    t.is(result.header, mockMetadata.header.replace(IPFS_GATEWAY, 'https://ipfs.io'));
   } finally {
     getMetadataStub.restore();
   }
