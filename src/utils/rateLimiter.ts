@@ -44,7 +44,9 @@ export async function rateLimitMiddleware(
     return next();
   }
 
-  const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  // using Cloudflare's CF-Connecting-IP for clarity instead of X-Forwarded-For, which can be spooofed if not behind CF.
+  // Falls back to socket remote address if not behind CF
+  const clientIP = req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
   try {
     await rateLimiter.consume(clientIP as string);
     next();

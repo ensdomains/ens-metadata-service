@@ -41,6 +41,9 @@ const NAMEWRAPPER_ABI = [
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 15 * 1000;
 
+// Maximum content length for fetched images (50MB)
+const MAX_CONTENT_LENGTH = 50000000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -52,6 +55,7 @@ export {
   INAMEWRAPPER,
   IPFS_GATEWAY,
   INFURA_API_KEY,
+  MAX_CONTENT_LENGTH,
   OPENSEA_API_KEY,
   REDIS_URL,
   NODE_PROVIDER,
