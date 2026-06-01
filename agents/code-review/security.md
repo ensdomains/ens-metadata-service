@@ -604,3 +604,97 @@ A user-content-rendering subdomain that is XSS-vulnerable becomes a wallet-inter
 **Why this matters.** Past Critical-tier findings against this org have specifically chained user-content rendering on one subdomain into wallet interactions on a sibling subdomain via the image-proxy pattern (rule 10) and via cross-tab navigation. The mitigation discussion concluded that the trust boundary is the rendering origin, not the rendering path: any rendered HTML at a user-content subdomain is one social-engineering step from a wallet prompt. New subdomains added to the apex inherit this risk by default.
 
 **How to apply.** When reviewing any change that adds a new subdomain, a new route under an existing subdomain that emits HTML, or a new content-rendering capability, ask: "Is this origin user-influenced? Does this origin share registrable domain with a wallet-connected app?" If both, the change requires explicit isolation, rasterisation, or migration to a separate registrable domain. The decision must be documented at the call site.
+
+## Rule 13: CSS injection on user-controlled style inputs is its own sink class
+
+**Pattern to flag.** A user-controlled string interpolated into a `style="..."` attribute, an inline `<style>` block, a styled-components template literal, or a CSS variable, without passing the value through a CSS-token allowlist.
+
+**Counterexample (bad):**
+
+```typescript
+function renderBanner(bannerUrl: string) {
+  return `<div style="background-image: url('${bannerUrl}');">...</div>`;
+}
+```
+
+The string `bannerUrl` may contain `'); ...malicious-css...; background-image: url('` to break out of the `url(...)` value, close the property, and append arbitrary CSS rules. The HTML attribute encoder will not stop this because the issue is in the CSS grammar, not the HTML grammar.
+
+Equivalent shape in styled-components:
+
+```typescript
+const Banner = styled.div`
+  background-image: url('${props => props.bannerUrl}');
+`;
+```
+
+Same problem. The CSS-in-JS engine substitutes the string verbatim into the rendered style.
+
+**Acceptable shape:**
+
+```typescript
+function safeImageUrl(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== 'https:') return null;
+    if (!ALLOWED_IMAGE_HOSTS.has(parsed.hostname)) return null;
+    return CSS.escape(parsed.toString());
+  } catch {
+    return null;
+  }
+}
+
+function renderBanner(bannerUrl: string) {
+  const safe = safeImageUrl(bannerUrl);
+  if (!safe) return '<div></div>';
+  return `<div style="background-image: url('${safe}');">...</div>`;
+}
+```
+
+For numeric / length / color values, use a CSS-token parser that returns only the validated token type. For `url(...)` values, validate the URL scheme and host through an allowlist, then `CSS.escape` (or equivalent) before interpolation.
+
+**Why this matters.** HTML encoding (escaping `<`, `>`, `&`, `"`) does not prevent CSS injection. CSS has its own grammar with `}` closing rules, `@import` directives, `expression(...)` and `behavior:url(...)` legacy primitives that resurface in some renderers, and various property values that can carry attacker-controlled URLs. Past defects in this codebase have used CSS injection via on-chain banner / profile text records to create persistent UI overlays and to defeat phishing-mitigation chrome. CSS-only attacks are not blocked by `script-src` and are invisible to most XSS scanners.
+
+**How to grep.** Find every `style="..."` attribute and every inline `<style>` content that contains `${...}` or `+ variable +`. Find every styled-components template literal that contains a `${props => ...}` or similar dynamic value. For each, trace the variable to its source. If user-controlled, verify it passes through a CSS-token allowlist plus `CSS.escape`. If not, flag.
+
+## Rule 14: HTML responses must set Cross-Origin-Opener-Policy
+
+**Pattern to flag.** A route that emits HTML without setting `Cross-Origin-Opener-Policy: same-origin` (or stricter), AND without a shared response-header middleware that sets it for all HTML responses.
+
+**Counterexample (bad):**
+
+```typescript
+app.get('/preview/:name', (req, res) => {
+  const html = renderPreview(req.params.name);
+  res.setHeader('Content-Type', 'text/html');
+  res.send(html);
+});
+```
+
+No COOP header. An attacker page on a different origin can call `window.open(this URL)` and retain the returned `WindowProxy`. After the user interacts with the popup, the attacker page can call `popup.location = 'https://attacker.example/phishing'` (or `opener.location = ...` from the other direction) and silently navigate the user to a phishing page. The address bar updates; the user perceives continuity with the legitimate origin.
+
+**Acceptable shape:**
+
+```typescript
+// Shape A: shared middleware setting cross-origin headers on every response.
+app.use((_req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  next();
+});
+```
+
+```typescript
+// Shape B: helmet, which sets COOP and related headers by default in recent versions.
+import helmet from 'helmet';
+app.use(helmet());
+app.use(helmet.crossOriginOpenerPolicy({ policy: 'same-origin' }));
+```
+
+Per-route header setting is also acceptable, but it does not scale: any new HTML-emitting route added later will inherit the bug unless the reviewer remembers to set COOP. Shared middleware is the maintainable shape.
+
+**Why this matters.** CSP does not cover the `window.opener` navigation primitive. `script-src` does not block it; `default-src 'self'` does not block it; even `default-src 'none'` does not block it, because the navigation is performed by the browser on behalf of the opening page, not by script in the opened page. `X-Frame-Options: DENY` blocks framing but not the popup case. COOP is the dedicated header that severs the `window.opener` relationship across origins. Past defects in this codebase have used COOP-missing responses to silently navigate users from a legitimate origin to a phishing destination after a brief delay. The metadata service's HTML emissions (preview templates, docs pages, rasterize inner pages, any error pages rendered as HTML) all inherit this risk by default.
+
+**How to grep.** Find every code path that calls `res.send(...)`, `res.sendFile(...)`, `res.render(...)`, `res.setHeader('Content-Type', 'text/html')`, or returns a response with HTML content. For each, verify that `Cross-Origin-Opener-Policy` is set either explicitly at the route or via shared middleware that runs before the response. If a route emits HTML and neither path sets COOP, flag.
