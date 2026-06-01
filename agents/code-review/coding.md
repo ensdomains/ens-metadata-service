@@ -209,3 +209,82 @@ const DEFAULT_CONFIG = {
 **Why this matters.** A declared-but-unread config option masquerades as an active feature. It misleads anyone reading the code into believing the feature is present and configured. It also undermines trust in the rest of the config object: if one key is dead, others may be too. This is dead code that should not ship.
 
 **How to grep.** For each key in a default-config object in this codebase, search the codebase for references to that key. If the only reference is in the declaration itself, flag.
+
+## Rule 5: Express path-parameter regex is the validation schema; missing constraints flow to downstream sinks
+
+**Pattern to flag.** An Express route definition where a path parameter (`:foo`) flows to an HTML template, an external RPC call, a database query, or a fetched URL, AND the route definition does not constrain that parameter with a regex.
+
+**Counterexample (bad):**
+
+```typescript
+app.get(
+  '/:networkName/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/render',
+  renderHandler,
+);
+
+async function renderHandler(req: Request, res: Response) {
+  const { networkName, contractAddress, tokenId } = req.params;
+  const html = `<img src="https://upstream.example/${networkName}/${contractAddress}/${tokenId}/image"/>`;
+  // html is sent to a headless browser
+}
+```
+
+`contractAddress` has a regex constraint that admits only 40-hex-char strings. `networkName` and `tokenId` have no constraint. Both flow into a template literal. An attacker can send a URL-encoded payload in either segment that survives Express's URL decoding and decodes inside the template into arbitrary HTML.
+
+**Acceptable shape:**
+
+```typescript
+app.get(
+  '/:networkName(mainnet|sepolia|holesky):contractAddress(0x[a-fA-F0-9]{40})/:tokenId(\\d+|0x[a-fA-F0-9]{1,64})/render',
+  renderHandler,
+);
+```
+
+Or apply a route-level middleware (per `security.md` rule 2) that validates each path parameter strictly against the allowed character set for that parameter's semantic type. The regex on the route is the only schema Express enforces; relying on downstream sanitisation when a route-level schema is feasible is a maintenance burden and an easy place to introduce bugs.
+
+**Why this matters.** The Express route definition is the most visible declaration of "what shape can this parameter take". When a parameter is unconstrained at the route, a future reviewer assumes there is downstream validation. When the downstream validation is missing or broken (see `security.md` rule 2 for the canonical middleware-mount issue), the only thing left between raw user input and the sink is the absence of a regex on the route.
+
+**How to grep.** For each `app.get(path, ...)`, `app.post(path, ...)`, and equivalent route registration in this codebase, parse the path string and identify every `:param` segment. For each `:param` without a regex constraint, trace the parameter's use inside the handler. If the parameter flows to a template literal containing HTML, to a fetched URL, to a downstream RPC call, or to a database query, flag the route definition.
+
+## Rule 6: Error handlers that destructure `err.response` must guard the undefined case
+
+**Pattern to flag.** A `.catch(({ response }) => ...)` (destructuring) or `.catch(err => err.response.X)` (property access) inside a request-flow code path, where `response` may be undefined.
+
+**Counterexample (bad):**
+
+```typescript
+import axios from 'axios';
+
+async function fetchUpstream(url: string) {
+  return axios.get(url).catch(({ response }) => {
+    const { status, statusText } = response;
+    return { error: status, statusText };
+  });
+}
+```
+
+When the upstream returns an HTTP response, `axios` rejects with an `AxiosError` that has a `response` property. When the upstream connection fails (DNS error, TCP reset, timeout, certificate error), `axios` rejects with an error whose `response` is `undefined`. The destructuring `const { status, statusText } = response;` throws `TypeError: Cannot read properties of undefined (reading 'status')`. If this `.catch` is itself inside an async route handler, the thrown error propagates as an unhandled rejection (see `coding.md` rule 1) and the process may terminate.
+
+**Acceptable shape:**
+
+```typescript
+import axios, { AxiosError } from 'axios';
+
+async function fetchUpstream(url: string) {
+  return axios.get(url).catch((err: unknown) => {
+    if (err instanceof AxiosError && err.response) {
+      return { error: err.response.status, statusText: err.response.statusText };
+    }
+    if (err instanceof Error) {
+      return { error: 'NETWORK_ERROR', message: err.message };
+    }
+    return { error: 'UNKNOWN' };
+  });
+}
+```
+
+The same pattern applies to other HTTP clients (`got`, `node-fetch`, `undici`). Any time an error handler reaches into the error to extract upstream-response details, it must handle the case where there is no upstream response (network-level failure, timeout, abort).
+
+**Why this matters.** Past defects in this codebase have shipped a `.catch(({ response }) => ...)` pattern inside an async route handler. When the upstream timed out or refused the connection, `response` was undefined, the destructuring threw, and the throw became an unhandled rejection that took the request handler down (and, depending on Node configuration, the process). The crash was triggered by an attacker pointing the upstream URL at a black-holed or unresponsive host.
+
+**How to grep.** Find every `.catch(` call in the codebase. For each, inspect the argument. If the argument is an arrow function or function literal that destructures `response` from its parameter, or that accesses `err.response.X` without a prior `if (err.response)` guard, flag.

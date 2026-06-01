@@ -148,11 +148,31 @@ The CSP should be the most restrictive that still allows the legitimate function
 
 **Why this matters.** CSP is the last layer of defence when input validation, output encoding, or sandbox flags fail. Past audits of this codebase have shown cases where CSP was the only working control standing between an attacker-controlled input and an exploitable sink. Adding CSP to a new template is cheap; the cost of relying on a single upstream control is paid in incidents.
 
-**How to grep.** In any module that emits HTML (via template literal, file template, or string builder), check whether the emitted HTML includes a `Content-Security-Policy` directive. If not, flag.
+**The CSP must cover both script execution AND navigation.** `script-src` alone does not block `<meta http-equiv="refresh">`, which is sufficient for open-redirect via injected HTML. To block injected meta-refresh, either strip all `<meta>` elements from forwarded payloads or set the CSP to a posture where the inner page cannot navigate (`default-src 'self'` plus `<meta>` element sanitisation; or `default-src 'none'` for fully inert content).
 
-## Rule 5: User-supplied SVG and HTML content must be sanitised or rasterised
+**Headless-browser inner pages need their own CSP.** When this service renders content inside a headless browser (Puppeteer `page.setContent`, `page.goto('data:text/html,...')`, or similar), the outer site's HTTP response CSP does not reach the inner page. The inner page's HTML must include its own `<meta http-equiv="Content-Security-Policy">` tag, and the browser must be launched with `javaScriptEnabled: false` (verified per rule 3). Watch for regressions when switching from URL-load (where the URL's origin CSP applies) to template-load (where no CSP applies unless the template includes one).
 
-**Pattern to flag.** An endpoint that serves SVG or HTML content fetched from a user-controlled URL (avatar text records, NFT metadata, external links) without sanitisation or rasterisation.
+**How to grep.** In any module that emits HTML (via template literal, file template, or string builder), check whether the emitted HTML includes a `Content-Security-Policy` directive. If not, flag. Specifically: any call to `page.setContent` or similar headless-browser methods must be reviewed for an inline CSP in the HTML being loaded.
+
+## Rule 5: User-supplied SVG and HTML content must be sanitised or rasterised on every ingestion path, using an allowlist sanitiser
+
+**Pattern to flag.** An endpoint that serves SVG or HTML content fetched from a user-controlled URL (avatar text records, NFT metadata, external links) without sanitisation or rasterisation. Equally important: a sanitiser that runs on one ingestion path (e.g. `fetch(url)` when Content-Type indicates SVG) but not on a sibling path (data: URI returned from a contract's `tokenURI`, base64-decoded inline content, on-chain metadata fields).
+
+**Counterexample (bad sibling-path skip):**
+
+```typescript
+async function resolveAvatar(record: string) {
+  if (record.startsWith('data:')) {
+    // Decode the data URI inline; no sanitiser runs here.
+    return decodeDataUri(record);
+  }
+  // External URL path: sanitiser runs here.
+  const response = await fetch(record);
+  return sanitiseSvg(await response.text());
+}
+```
+
+The external path is sanitised. The on-chain data-URI path is not. Attacker mints an NFT whose `tokenURI` returns a base64-encoded SVG and sets that NFT as their ENS avatar; the data-URI branch decodes and serves the SVG with no sanitisation.
 
 **Counterexample (bad):**
 
@@ -199,9 +219,19 @@ export async function avatarHandler(req: Request, res: Response) {
 }
 ```
 
-**Why this matters.** SVG can contain scripts; HTML can contain phishing content. When served from a trusted origin (this service), consumers may embed the response in contexts where the bytes are interpreted as live markup rather than as an inert image. The sanitiser or the rasteriser is the boundary that enforces "this is content, not code".
+**SVG-specific sanitiser requirements.** SVG is a rich format. A `<script>` denylist is not enough; past defects have been triggered by elements and attributes that look benign but enable phishing or navigation:
 
-**How to grep.** Find any handler that calls `fetch` or equivalent against a URL derived from user input, then passes the response body to `res.send` or returns it from a service function. For each, verify that the response passes through a sanitiser or rasteriser before being returned. If not, flag.
+- `<a href=...>` and `<a xlink:href=...>` — clickable navigation, used to embed phishing call-to-actions inside an avatar.
+- `<foreignObject>` — embeds arbitrary HTML inside SVG, bypassing SVG-only sanitisers.
+- `<use href=...>` / `<use xlink:href=...>` — can reference external SVG content and break out of the local document.
+- `<animate attributeName="href" ...>` / `<set attributeName="href" ...>` — can mutate link targets after the sanitiser has run.
+- Inline `style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;"` — creates a full-viewport overlay, enabling phishing UI without any script execution.
+
+Use an allowlist of permitted tags and attributes, not a denylist of forbidden ones. A library configured with an SVG profile (e.g. DOMPurify `USE_PROFILES: { svg: true, svgFilters: true }`) is the baseline; verify the allowlist excludes `<a>`, `<foreignObject>`, and `<use>` for the specific context.
+
+**Why this matters.** SVG can contain scripts; HTML can contain phishing content. When served from a trusted origin (this service), consumers may embed the response in contexts where the bytes are interpreted as live markup rather than as an inert image. The sanitiser or the rasteriser is the boundary that enforces "this is content, not code". Past defects in this codebase have been: sanitiser running on one ingestion path but not on a sibling path (data URIs, on-chain base64); denylist-based sanitiser allowing `<a>` and full-viewport `<rect>`+`<text>` overlays through; and SVG content from NFT metadata fields like `image` and `background_image` bypassing the avatar-resolution sanitiser entirely.
+
+**How to grep.** Find any handler that calls `fetch` or equivalent against a URL derived from user input, then passes the response body to `res.send` or returns it from a service function. For each, verify that the response passes through a sanitiser or rasteriser before being returned. Also: find every place the codebase decodes a `data:` URI or processes on-chain metadata, and verify the same sanitiser runs on those paths. Verify the sanitiser config is allowlist-based and excludes the specific SVG elements listed above. If not, flag.
 
 ## Rule 6: Every security control must have at least one independent backup layer
 
@@ -323,7 +353,9 @@ export async function fetchExternalContent(rawUrl: string) {
 
 The exact shape varies by use case (some endpoints have a strict allowlist; others must allow open destinations but block internal ranges). The minimum requirements are: protocol restriction, internal-address blocking, manual redirect handling so a 30x response cannot redirect into an internal address, and a request timeout.
 
-**Why this matters.** Server-side request forgery is the single most common vector this codebase has been audited for. Past findings have involved attackers using outbound fetches to reach cloud metadata services, internal admin endpoints, and resources only reachable from the production VPC. SSRF protections are mandatory for every outbound fetch that touches user-derived input.
+**Per-hop check required.** SSRF protections that run only on the initial URL are bypassed by an attacker-controlled redirect chain. The URL the attacker submits resolves to a public address; the attacker's server responds with a 302 `Location: http://169.254.169.254/...` and the HTTP client (axios, node-fetch, got, undici) follows it by default. The check must run on every hop, including after DNS resolution at each hop. Set `redirect: 'manual'` (or `maxRedirects: 0`) and re-run the destination-allowlist + internal-address check on each `Location` before re-issuing the request. The cloud metadata endpoint `169.254.169.254` (GCP / AWS / Azure) is the canonical exfiltration target; on GCP it returns IAM credentials when the request carries `Metadata-Flavor: Google`.
+
+**Why this matters.** Server-side request forgery is the single most common vector this codebase has been audited for. Past findings have involved attackers using outbound fetches to reach cloud metadata services, internal admin endpoints, and resources only reachable from the production VPC. Past findings have also specifically exploited the redirect-bypass: a check on the initial URL passes, then the attacker's server redirects into the internal range. SSRF protections are mandatory for every outbound fetch that touches user-derived input, on every hop.
 
 **How to grep.** Find every call to `fetch`, `axios.<method>`, `http.request`, `https.request`, or similar in `src/service/` and `src/controller/`. For each call, identify whether the URL argument is fully internally constructed or whether any segment derives from external input. If external input contributes to the URL, verify that the call site applies destination allowlisting, internal-address blocking, and redirect-handling. If not, flag.
 
@@ -384,9 +416,13 @@ while (true) {
 const buffer = Buffer.concat(chunks);
 ```
 
-**Why this matters.** Past findings have included memory-exhaustion via unbounded external fetches and Content-Type-confusion attacks where a sanitiser was bypassed because the upstream served unexpected content. Validating Content-Type only on the HEAD response (or trusting the upstream's declared type without verifying on the GET) has been a specific bypass vector in this codebase.
+**Streaming byte cap is mandatory; Content-Length pre-check alone is not enough.** A `Content-Length`-based pre-check is bypassable because the upstream can omit the header (HTTP/1.1 chunked transfer encoding, HTTP/2 framing) and stream arbitrary bytes. A timeout is also not enough: a fast attacker streams hundreds of megabytes inside a few seconds. The byte cap must be enforced by counting actual bytes read from the response stream and aborting the read when the counter exceeds the limit. Helper libraries like node-fetch's `size` option implement this; verify the option is set and the limit is sane for the use case.
 
-**How to grep.** For each call to `fetch` or equivalent identified by rule 7, additionally verify that the response body is read with an explicit byte cap and that the response's actual Content-Type is checked against an expected set before the body is passed to downstream consumers.
+**HEAD/GET divergence is a class of bug, not a missing check.** Code that issues a HEAD to a user-controlled URL, validates the HEAD response's Content-Type, then issues a GET and forwards the GET response body or headers downstream is structurally broken. The attacker's server can respond differently to HEAD vs GET: HEAD returns `Content-Type: image/svg+xml` and passes validation; GET returns `Content-Type: text/html; ...injected payload...` or a different body entirely. Any check that influences a downstream decision must run on the response that is actually consumed. Either issue one GET and validate that response, or re-run all checks on the GET response before using its body.
+
+**Why this matters.** Past findings have included memory-exhaustion via unbounded external fetches and Content-Type-confusion attacks where a sanitiser was bypassed because the upstream served unexpected content. Validating Content-Type only on the HEAD response (or trusting the upstream's declared type without verifying on the GET) has been a specific bypass vector in this codebase. Past findings have also exploited the upstream forwarding the raw `Content-Type` header value into the downstream response, where the attacker-controlled header carries injected HTML.
+
+**How to grep.** For each call to `fetch` or equivalent identified by rule 7, additionally verify that the response body is read with an explicit byte cap enforced by a counter (not just `Content-Length` pre-check) and that the response's actual Content-Type is checked against an expected set on the response whose body is consumed. Flag any HEAD-then-GET pattern where validation runs on HEAD and body+headers are consumed from GET without re-validation.
 
 ## Rule 9: Error responses must be uncacheable; success responses must set cache headers deliberately
 
@@ -470,4 +506,101 @@ const csp = `default-src 'none'; img-src https://our-static-cdn.example/;`;
 
 **Why this matters.** A chained-vector pattern in past audits: an attacker uploads malicious content to a user-content host, then the malicious content is loaded under a "trusted" allowlist on a different surface (typically a wallet-connected frontend), elevating a low-impact content-control finding into a high-impact wallet-interaction chain. Past Critical-tier findings in adjacent services have followed this shape.
 
-**How to grep.** Find every CSP directive (in code, in HTML templates, in `helmet` middleware configuration) and every image-host or domain allowlist (in `next.config.js`-style configs, in URL builders). For each entry, verify that the listed origin is not a host that serves user-controlled content. If unclear, flag.
+**Image-proxy and Next.js `images.domains` specifics.** Image-optimisation proxies (Next.js `_next/image`, similar Vercel / Cloudflare features) re-serve the image bytes from the proxy origin, not from the upstream. Any user-influenced upstream in the proxy allowlist becomes a same-origin XSS surface on the proxy site for any payload that escapes the image contract (SVG with embedded HTML, sniffed-as-HTML content). Specific configurations to flag:
+
+- Next.js `images.domains` or `images.remotePatterns` entries pointing at hosts that serve user content (avatar services, NFT metadata services, IPFS gateways, user-uploaded CDN buckets).
+- Next.js `dangerouslyAllowSVG: true` without `contentDispositionType: 'attachment'` and a strict `contentSecurityPolicy` on the `_next/image` endpoint. SVG through the image proxy is XSS by default in Next.js; the safe defaults must be set explicitly.
+- Equivalent settings in other frameworks: Vercel image optimisation, Cloudflare Images, custom proxies that re-emit bytes under the proxy's origin.
+
+**How to grep.** Find every CSP directive (in code, in HTML templates, in `helmet` middleware configuration) and every image-host or domain allowlist (in `next.config.js`-style configs, in URL builders). For each entry, verify that the listed origin is not a host that serves user-controlled content. If unclear, flag. Specifically check for Next.js `images` config blocks and verify SVG handling.
+
+## Rule 11: NFT-metadata fields that hold URLs or markup are XSS sinks
+
+**Pattern to flag.** Code that reads `image`, `background_image`, `animation_url`, `external_url`, `image_data`, or similar fields from arbitrary NFT metadata (i.e. JSON returned by a contract's `tokenURI`) and renders, embeds, or forwards the value without (a) constraining the URL scheme to `https:` or `ipfs:` only, (b) re-running the sanitisation pipeline on the resolved content if it is SVG or HTML, and (c) treating the field as fully attacker-controlled regardless of which contract returned it.
+
+**Counterexample (bad):**
+
+```typescript
+async function renderNftPreview(contract: string, tokenId: string) {
+  const metadata = await fetchNftMetadata(contract, tokenId);
+  return `
+    <div class="preview">
+      <img src="${metadata.image}" />
+      <div style="background-image: url('${metadata.background_image}');">
+        <a href="${metadata.external_url}">View</a>
+      </div>
+    </div>
+  `;
+}
+```
+
+Three independent injection sinks. `metadata.image` and `metadata.background_image` can contain `javascript:` URIs (depending on the rendering context), SVG data URIs that bypass image-context sanitisers, or attacker-controlled URLs whose resolved content is HTML. `metadata.external_url` is a direct phishing-link primitive. All three flow from attacker input (anyone can mint an NFT and define these fields).
+
+**Acceptable shape:**
+
+```typescript
+import { encode } from 'html-entities';
+
+const ALLOWED_SCHEMES = new Set(['https:', 'ipfs:']);
+
+function safeUrl(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  try {
+    const parsed = new URL(raw);
+    if (!ALLOWED_SCHEMES.has(parsed.protocol)) return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function renderNftPreview(contract: string, tokenId: string) {
+  const metadata = await fetchNftMetadata(contract, tokenId);
+  const image = safeUrl(metadata.image);
+  const externalUrl = safeUrl(metadata.external_url);
+
+  // If the resolved content is SVG, it goes through rule 5's sanitiser before rendering.
+  const imageHtml = image ? `<img src="${encode(image)}" />` : '';
+  const linkHtml = externalUrl ? `<a href="${encode(externalUrl)}" rel="noopener noreferrer">View</a>` : '';
+
+  return `
+    <div class="preview">
+      ${imageHtml}
+      ${linkHtml}
+    </div>
+  `;
+}
+```
+
+**Why this matters.** Past defects in this codebase have used the `image` and `background_image` fields of arbitrary NFT metadata as the injection sink. The metadata is JSON returned by a contract under attacker control; anyone can mint an NFT, populate these fields with attacker-controlled values, and either set the NFT as their ENS avatar or airdrop it to a victim. The fields are not optional input the service can refuse; they are part of the standard NFT-metadata contract. They must be treated as fully untrusted at every read site.
+
+**How to grep.** Find every read of `metadata.image`, `metadata.background_image`, `metadata.animation_url`, `metadata.external_url`, `metadata.image_data`, and similar fields. For each, trace the value through to its sink. If the sink is HTML rendering (template literal, `res.send`, `dangerouslySetInnerHTML`-equivalent), verify that the value passes through URL-scheme validation, HTML encoding, and (if the resolved content is SVG/HTML) the sanitiser from rule 5. If any of these is missing, flag.
+
+## Rule 12: User-content-rendering subdomains inherit wallet trust from sibling subdomains
+
+**Pattern to flag.** A new subdomain on the apex domain (or any subdomain whose origin renders user-controlled content) without explicit isolation from sibling subdomains where users connect wallets.
+
+**The trust boundary.** The browser's same-origin policy isolates by origin (scheme + host + port). Wallet extensions (MetaMask, Rabby, etc.) scope `window.ethereum` per origin. But cookies, storage, and some browser-level features are scoped to the registrable domain (eTLD+1). And users build trust based on the apex name, not the subdomain. A subdomain that serves user-controlled HTML or SVG inherits the apex's brand trust without inheriting the apex's security review.
+
+**Counterexample (bad shape):**
+
+```
+example.com                          # marketing / no wallet
+app.example.com                      # wallet-connected app, full origin trust
+metadata.example.com                 # serves user-controlled NFT metadata (avatar SVGs, image bytes)
+                                     # ← XSS here is one social-engineering step from a wallet prompt
+new-tool.example.com                 # newly added subdomain, also serves user content
+                                     # ← any user-content rendering here inherits the same risk
+```
+
+A user-content-rendering subdomain that is XSS-vulnerable becomes a wallet-interaction vector via cross-subdomain navigation, image-proxy embedding (see rule 10), or chained-origin attacks. Users who see "example.com" in the URL bar treat the page as trusted.
+
+**Acceptable shapes:**
+
+- Serve user content from a separate registrable domain (e.g. `example-user-content.net`) that is clearly outside the trusted apex. The user-content domain has its own CSP, its own deployment review, and crucially does not inherit user trust from the wallet-connected app.
+- Or: if the user content must live under the apex for compatibility, render the content in a way that does not produce arbitrary HTML/SVG on the subdomain's origin. Specifically: rasterise to bitmap (PNG/JPEG) on the server, serve only `image/*` bytes (with `X-Content-Type-Options: nosniff`), and never let HTML reach the subdomain's origin even via a preview template gated on a `Sec-Fetch-Dest` header.
+- Or: scope wallet connection on the trusted app to a specific origin and disable wallet auto-connect on any sibling subdomain, so XSS on the sibling does not transitively get a wallet to interact with.
+
+**Why this matters.** Past Critical-tier findings against this org have specifically chained user-content rendering on one subdomain into wallet interactions on a sibling subdomain via the image-proxy pattern (rule 10) and via cross-tab navigation. The mitigation discussion concluded that the trust boundary is the rendering origin, not the rendering path: any rendered HTML at a user-content subdomain is one social-engineering step from a wallet prompt. New subdomains added to the apex inherit this risk by default.
+
+**How to apply.** When reviewing any change that adds a new subdomain, a new route under an existing subdomain that emits HTML, or a new content-rendering capability, ask: "Is this origin user-influenced? Does this origin share registrable domain with a wallet-connected app?" If both, the change requires explicit isolation, rasterisation, or migration to a separate registrable domain. The decision must be documented at the call site.
