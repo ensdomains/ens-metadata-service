@@ -9,6 +9,7 @@ import { headerMetadata } from './controller/headerMetadata';
 import { headerImage } from './controller/headerImage';
 import { queryNFTep } from './controller/queryNFT';
 import { preview } from './controller/preview';
+import { universalValidation } from './utils/validateParameters';
 
 export default function (app: Express) {
   // #swagger.ignore = true
@@ -18,28 +19,31 @@ export default function (app: Express) {
 
   app.get(
     '/:networkName/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId',
+    universalValidation,
     ensMetadata
   );
 
   app.get(
     '/:networkName/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/image',
+    universalValidation,
     ensImage
   );
 
   app.get(
     '/:networkName/:contractAddress(0x[a-fA-F0-9]{40})/:tokenId/rasterize',
+    universalValidation,
     ensRasterize
   );
 
-  app.get('/:networkName/avatar/:name/meta', avatarMetadata);
+  app.get('/:networkName/avatar/:name/meta', universalValidation, avatarMetadata);
 
-  app.get('/:networkName/avatar/:name', avatarImage);
+  app.get('/:networkName/avatar/:name', universalValidation, avatarImage);
 
-  app.get('/:networkName/header/:name/meta', headerMetadata);
+  app.get('/:networkName/header/:name/meta', universalValidation, headerMetadata);
 
-  app.get('/:networkName/header/:name', headerImage);
+  app.get('/:networkName/header/:name', universalValidation, headerImage);
 
-  app.get('/queryNFT', queryNFTep);
+  app.get('/queryNFT', universalValidation, queryNFTep);
 
-  app.get('/preview/:name', preview);
+  app.get('/preview/:name', universalValidation, preview);
 }
