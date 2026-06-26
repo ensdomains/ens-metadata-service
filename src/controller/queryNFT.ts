@@ -7,9 +7,11 @@ export async function queryNFTep(req: Request, res: Response) {
   // #swagger.parameters['uri'] = { in: 'query', description: 'NFT URI as defined under CAIP-22 for erc721 assets and CAIP-29 for erc1155 assets.' }
   const { uri } = req.query;
   if (!uri) {
-    throw Error(
-      'Please be sure adding your NFT URI as a query. i.e. /queryNFT?uri=eip155:1/erc721:0x...'
-    );
+    res.status(400).json({
+      message:
+        'Please be sure adding your NFT URI as a query. i.e. /queryNFT?uri=eip155:1/erc721:0x...',
+    });
+    return;
   }
   try {
     const metadata = await queryNFT(uri as string);

@@ -44,6 +44,12 @@ const RESPONSE_TIMEOUT = 15 * 1000;
 // Maximum content length for fetched images (50MB)
 const MAX_CONTENT_LENGTH = 50000000;
 
+// Timeout for /queryNFT metadata resolution (10 seconds)
+const QUERY_NFT_TIMEOUT = 10_000;
+
+// Hostnames of this service — used to block self-referential fetches
+const SELF_HOST_DENYLIST = ['metadata.ens.domains'];
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -57,6 +63,7 @@ export {
   INFURA_API_KEY,
   MAX_CONTENT_LENGTH,
   OPENSEA_API_KEY,
+  QUERY_NFT_TIMEOUT,
   REDIS_URL,
   NODE_PROVIDER,
   NODE_PROVIDER_URL,
@@ -64,6 +71,7 @@ export {
   NODE_PROVIDER_URL_GOERLI,
   NODE_PROVIDER_URL_SEPOLIA,
   RESPONSE_TIMEOUT,
+  SELF_HOST_DENYLIST,
   SERVER_URL,
   THE_GRAPH_API_KEY
 };
