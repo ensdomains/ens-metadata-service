@@ -41,8 +41,8 @@ const NAMEWRAPPER_ABI = [
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 15 * 1000;
 
-// Maximum content length for fetched images (50MB)
-const MAX_CONTENT_LENGTH = 50000000;
+// Maximum content length for fetched images (25MB)
+const MAX_CONTENT_LENGTH = 25000000;
 
 // Timeout for /queryNFT metadata resolution (10 seconds)
 const QUERY_NFT_TIMEOUT = 10_000;
