@@ -16,7 +16,7 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                                        from '../base';
-import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
+import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, OPENSEA_API_KEY, SELF_HOST_DENYLIST } from '../config';
 import { abortableFetch }                from '../utils/abortableFetch';
 import isSvg                             from '../utils/isSvg';
 
@@ -61,7 +61,10 @@ export class AvatarMetadata {
     this.avtResolver = new AvatarResolver(provider, {
       ipfs: IPFS_GATEWAY,
       apiKey: { opensea: OPENSEA_API_KEY },
-      urlDenyList: ['metadata.ens.domains'],
+      // Include both the bare host and its trailing-dot FQDN form. @ensdomains/ens-avatar
+      // compares against new URL(uri).hostname, which preserves a trailing dot, so the
+      // FQDN form (metadata.ens.domains.) would otherwise bypass an exact-string entry.
+      urlDenyList: SELF_HOST_DENYLIST.flatMap((h) => [h, `${h}.`]),
       agents: {
         httpAgent: requestFilterHandler(new http.Agent()),
         httpsAgent: requestFilterHandler(new https.Agent()),

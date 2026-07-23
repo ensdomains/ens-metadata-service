@@ -5,6 +5,7 @@ import { utils, specs, UnsupportedNamespace } from '@ensdomains/ens-avatar';
 import getNetwork, { NetworkName }            from '../service/network';
 import { UnsupportedNetwork }                 from '../base';
 import { QUERY_NFT_TIMEOUT, SELF_HOST_DENYLIST } from '../config';
+import { canonicalHost }                       from '../utils/canonicalHost';
 import { INTERNAL_HEADER }                    from '../utils/blockRecursiveCalls';
 
 const { requestFilterHandler } = require('ssrf-req-filter');
@@ -22,7 +23,7 @@ function createGuardedAgent(agent: any): any {
   const { createConnection } = agent;
   agent.createConnection = function (this: any, options: any, callback: any) {
     const host = options.host || options.hostname;
-    if (host && SELF_HOST_DENYLIST.includes(host)) {
+    if (host && SELF_HOST_DENYLIST.map(canonicalHost).includes(canonicalHost(host))) {
       throw new Error(`Self-referential request to ${host} is blocked`);
     }
     return createConnection.call(this, options, callback);
