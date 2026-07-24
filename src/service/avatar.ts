@@ -1,6 +1,3 @@
-import http                              from 'http';
-import https                             from 'https';
-
 import {
   AvatarResolver,
   UnsupportedMediaKey,
@@ -18,9 +15,10 @@ import {
 }                                        from '../base';
 import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
 import { abortableFetch }                from '../utils/abortableFetch';
-import isSvg                             from '../utils/isSvg';
-
-const { requestFilterHandler } = require('ssrf-req-filter');
+import isSvg, { SNIFF_BYTES }            from '../utils/isSvg';
+// Side-effect import: hardens @ensdomains/ens-avatar's shared axios instance
+// (single SSRF-guarded agent interceptor + metadata size cap + timeout) once.
+import '../utils/ensAvatarFetch';
 
 const window = new JSDOM('').window;
 const { ALLOWED_IMAGE_MIMETYPES } = utils;
@@ -58,14 +56,13 @@ export class AvatarMetadata {
   avtResolver: AvatarResolver;
   constructor(provider: JsonRpcProvider, uri: string) {
     this.defaultProvider = provider;
+    // Note: no per-request `agents`. the SSRF-guarded agents are applied once,
+    // process-wide, via ../utils/ensAvatarFetch (see import above). Passing agents
+    // here would append an un-ejected interceptor to the shared axios per request.
     this.avtResolver = new AvatarResolver(provider, {
       ipfs: IPFS_GATEWAY,
       apiKey: { opensea: OPENSEA_API_KEY },
       urlDenyList: ['metadata.ens.domains'],
-      agents: {
-        httpAgent: requestFilterHandler(new http.Agent()),
-        httpsAgent: requestFilterHandler(new https.Agent()),
-      },
     });
     this.uri = uri;
   }
@@ -124,7 +121,13 @@ export class AvatarMetadata {
         'Mimetype is not supported'
       );
 
-      if (mimeType?.includes('svg') || isSvg(data.toString())) {
+      // Only materialise the SVG sniff window (not the whole ≤25MB buffer) as a
+      // string. SNIFF_BYTES*4 bytes covers isSvg's first-4096-chars check even for
+      // multi-byte leading content; the full toString below runs only for SVGs.
+      if (
+        mimeType?.includes('svg') ||
+        isSvg(data.subarray(0, SNIFF_BYTES * 4).toString())
+      ) {
         const DOMPurify = createDOMPurify(window);
         const cleanData = DOMPurify.sanitize(data.toString(), {
           FORBID_TAGS: ['a', 'area', 'base', 'iframe', 'link'],

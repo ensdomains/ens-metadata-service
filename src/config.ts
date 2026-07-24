@@ -56,6 +56,11 @@ const CCIP_READ_TIMEOUT = 10_000;
 // Maximum content length for CCIP-read (ERC-3668) gateway responses (1MB)
 const CCIP_READ_MAX_CONTENT_LENGTH = 1000000;
 
+// Maximum content length for NFT/avatar metadata JSON fetched by @ensdomains/ens-avatar
+// through its shared axios instance (4MB). Bounds attacker-controlled (possibly
+// gzip-bombed) metadata bodies; generous for legitimate metadata incl. on-chain SVG.
+const NFT_METADATA_MAX_CONTENT_LENGTH = 4000000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -70,6 +75,7 @@ export {
   IPFS_GATEWAY,
   INFURA_API_KEY,
   MAX_CONTENT_LENGTH,
+  NFT_METADATA_MAX_CONTENT_LENGTH,
   OPENSEA_API_KEY,
   QUERY_NFT_TIMEOUT,
   REDIS_URL,
