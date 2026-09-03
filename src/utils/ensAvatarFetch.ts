@@ -72,6 +72,19 @@ export function hardenEnsAvatarFetch(): void {
   fetch.defaults.maxContentLength = NFT_METADATA_MAX_CONTENT_LENGTH;
   fetch.defaults.maxBodyLength = NFT_METADATA_MAX_CONTENT_LENGTH;
   fetch.defaults.timeout = QUERY_NFT_TIMEOUT;
+
+  // Reject top-level-array metadata BEFORE ens-avatar's getMetadata spreads it
+  // (`{ ...metadata, is_owner }`). A JSON array from an attacker-controlled tokenURI
+  // would otherwise be spread into millions of enumerable index properties, freezing
+  // the event loop and exhausting memory. Image fetches return a Buffer/ArrayBuffer
+  // (never an Array), so they are unaffected. Object-with-many-keys and our own
+  // re-spread/serialization are additionally bounded by assertPlainMetadata.
+  fetch.interceptors.response.use((response: any) => {
+    if (Array.isArray(response?.data)) {
+      throw new Error('NFT metadata must be a JSON object, not an array');
+    }
+    return response;
+  });
 }
 
 hardenEnsAvatarFetch();

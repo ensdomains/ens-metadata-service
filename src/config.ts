@@ -61,6 +61,13 @@ const CCIP_READ_MAX_CONTENT_LENGTH = 1000000;
 // gzip-bombed) metadata bodies; generous for legitimate metadata incl. on-chain SVG.
 const NFT_METADATA_MAX_CONTENT_LENGTH = 4000000;
 
+// Maximum number of top-level enumerable properties allowed on NFT/avatar metadata
+// before it is spread/serialized. A top-level JSON array (or an object with millions
+// of keys) returned by an attacker-controlled tokenURI would otherwise be spread into
+// millions of enumerable properties, freezing the event loop and exhausting memory.
+// Legitimate metadata objects have a handful of top-level keys; 1000 is generous.
+const NFT_METADATA_MAX_PROPERTIES = 1000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
@@ -76,6 +83,7 @@ export {
   INFURA_API_KEY,
   MAX_CONTENT_LENGTH,
   NFT_METADATA_MAX_CONTENT_LENGTH,
+  NFT_METADATA_MAX_PROPERTIES,
   OPENSEA_API_KEY,
   QUERY_NFT_TIMEOUT,
   REDIS_URL,

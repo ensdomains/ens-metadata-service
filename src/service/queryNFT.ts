@@ -2,8 +2,10 @@ import { utils, specs, UnsupportedNamespace } from '@ensdomains/ens-avatar';
 import getNetwork, { NetworkName }            from '../service/network';
 import { UnsupportedNetwork }                 from '../base';
 import { QUERY_NFT_TIMEOUT }                  from '../config';
+import { assertPlainMetadata }               from '../utils/assertPlainMetadata';
 // Side-effect import: hardens @ensdomains/ens-avatar's shared axios instance
-// (single SSRF-guarded agent interceptor + metadata size cap + timeout) once.
+// (single SSRF-guarded agent interceptor + metadata size cap + timeout + a
+// response interceptor that rejects top-level-array metadata) once.
 import '../utils/ensAvatarFetch';
 
 const networks: { [key: string]: string } = {
@@ -43,7 +45,7 @@ export async function queryNFT(uri: string) {
   // Bound total wall-clock time for the metadata resolution.
   let timer: ReturnType<typeof setTimeout>;
   try {
-    const { is_owner, ...metadata } = await Promise.race([
+    const result = await Promise.race([
       spec.getMetadata(
         provider,
         undefined,
@@ -57,6 +59,10 @@ export async function queryNFT(uri: string) {
         );
       }),
     ]);
+    // Reject non-plain-object / oversized metadata BEFORE spreading or serializing it,
+    // so attacker-controlled tokenURI content cannot blow up the event loop / memory.
+    assertPlainMetadata(result);
+    const { is_owner, ...metadata } = result;
     return { host_meta, ...metadata };
   } finally {
     clearTimeout(timer!);
