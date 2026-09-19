@@ -7,6 +7,10 @@ import {
 } from '../config';
 import { abortableFetch } from './abortableFetch';
 import { INTERNAL_HEADER } from './blockRecursiveCalls';
+import { canonicalHost } from './canonicalHost';
+
+// Pre-canonicalized self-host denylist so the trailing-dot FQDN form is also blocked.
+const SELF_HOST_DENYLIST_CANONICAL = SELF_HOST_DENYLIST.map(canonicalHost);
 
 // Guards the CCIP-read (ERC-3668) fetch of a provider instance:
 // OffchainLookup gateway URLs are resolver-controlled, so they are fetched
@@ -36,7 +40,7 @@ export function guardCcipRead(provider: JsonRpcProvider): JsonRpcProvider {
         continue;
       }
       if (!['http:', 'https:'].includes(parsed.protocol)) continue;
-      if (SELF_HOST_DENYLIST.includes(parsed.hostname)) continue;
+      if (SELF_HOST_DENYLIST_CANONICAL.includes(canonicalHost(parsed.hostname))) continue;
 
       const isGet = url.indexOf('{data}') !== -1;
       const response = await abortableFetch(href, {

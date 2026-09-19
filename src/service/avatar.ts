@@ -13,7 +13,7 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                                        from '../base';
-import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, NFT_METADATA_MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
+import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, NFT_METADATA_MAX_CONTENT_LENGTH, OPENSEA_API_KEY, SELF_HOST_DENYLIST } from '../config';
 import { abortableFetch }                from '../utils/abortableFetch';
 import isSvg, { SNIFF_BYTES }            from '../utils/isSvg';
 // Side-effect import: hardens @ensdomains/ens-avatar's shared axios instance
@@ -62,7 +62,11 @@ export class AvatarMetadata {
     this.avtResolver = new AvatarResolver(provider, {
       ipfs: IPFS_GATEWAY,
       apiKey: { opensea: OPENSEA_API_KEY },
-      urlDenyList: ['metadata.ens.domains'],
+      // Include both the bare host and its trailing-dot FQDN form: @ensdomains/ens-avatar
+      // compares against `new URL(uri).hostname` with an exact-string match, which
+      // preserves a trailing dot, so `metadata.ens.domains.` would otherwise bypass a
+      // bare entry. (The socket-level guard in ensAvatarFetch canonicalizes instead.)
+      urlDenyList: SELF_HOST_DENYLIST.flatMap((h) => [h, `${h}.`]),
       // Conservative cap on attacker-controlled metadata/image bodies (supported on
       // 1.0.3: sets fetch.defaults.maxContentLength on the shared axios). Bounds the
       // size of inline SVG / metadata fed into downstream regex/XML/DOMPurify work.
