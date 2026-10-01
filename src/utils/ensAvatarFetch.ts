@@ -9,8 +9,13 @@ import {
   SELF_HOST_DENYLIST,
 }                                        from '../config';
 import { INTERNAL_HEADER }               from './blockRecursiveCalls';
+import { canonicalHost }                 from './canonicalHost';
 
 const { requestFilterHandler } = require('ssrf-req-filter');
+
+// Pre-canonicalized self-host denylist (lowercased, trailing dot stripped), so the
+// socket-level check also catches the FQDN form (e.g. `metadata.ens.domains.`).
+const SELF_HOST_DENYLIST_CANONICAL = SELF_HOST_DENYLIST.map(canonicalHost);
 
 // Harden the request agent so that, on top of the ssrf-req-filter IP checks:
 //  - self-referential connections (to this service's own hosts) are refused at
@@ -21,7 +26,7 @@ function createGuardedAgent(agent: any): any {
   const { createConnection } = agent;
   agent.createConnection = function (this: any, options: any, callback: any) {
     const host = options.host || options.hostname;
-    if (host && SELF_HOST_DENYLIST.includes(host)) {
+    if (host && SELF_HOST_DENYLIST_CANONICAL.includes(canonicalHost(host))) {
       throw new Error(`Self-referential request to ${host} is blocked`);
     }
     return createConnection.call(this, options, callback);
