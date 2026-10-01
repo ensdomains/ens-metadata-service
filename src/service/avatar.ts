@@ -13,7 +13,7 @@ import {
   RetrieveURIFailed,
   TextRecordNotFound,
 }                                        from '../base';
-import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
+import { IPFS_GATEWAY, MAX_CONTENT_LENGTH, NFT_METADATA_MAX_CONTENT_LENGTH, OPENSEA_API_KEY } from '../config';
 import { abortableFetch }                from '../utils/abortableFetch';
 import isSvg, { SNIFF_BYTES }            from '../utils/isSvg';
 // Side-effect import: hardens @ensdomains/ens-avatar's shared axios instance
@@ -63,6 +63,10 @@ export class AvatarMetadata {
       ipfs: IPFS_GATEWAY,
       apiKey: { opensea: OPENSEA_API_KEY },
       urlDenyList: ['metadata.ens.domains'],
+      // Conservative cap on attacker-controlled metadata/image bodies (supported on
+      // 1.0.3: sets fetch.defaults.maxContentLength on the shared axios). Bounds the
+      // size of inline SVG / metadata fed into downstream regex/XML/DOMPurify work.
+      maxContentLength: NFT_METADATA_MAX_CONTENT_LENGTH,
     });
     this.uri = uri;
   }

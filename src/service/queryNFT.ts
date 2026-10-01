@@ -63,7 +63,9 @@ export async function queryNFT(uri: string) {
     // so attacker-controlled tokenURI content cannot blow up the event loop / memory.
     assertPlainMetadata(result);
     const { is_owner, ...metadata } = result;
-    return { host_meta, ...metadata };
+    // Assign trusted host_meta LAST so attacker-controlled metadata cannot shadow it
+    // (a metadata key named `host_meta` would otherwise override the trusted value).
+    return { ...metadata, host_meta };
   } finally {
     clearTimeout(timer!);
   }

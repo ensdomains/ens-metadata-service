@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { rasterize } from '../service/rasterize';
+import { safeErrorMessage } from '../utils/safeErrorMessage';
 
 /* istanbul ignore next */
 export async function ensRasterize(req: Request, res: Response) {
@@ -23,8 +24,10 @@ export async function ensRasterize(req: Request, res: Response) {
     });
     res.end(buffer);
   } catch (error) {
+    // Serialize a bounded scalar, never the raw error object (same crash class as
+    // /queryNFT: an unserialisable error here would escape this async catch).
     res.status(500).json({
-      message: error,
+      message: safeErrorMessage(error, 'Rasterization failed'),
     });
   }
 }

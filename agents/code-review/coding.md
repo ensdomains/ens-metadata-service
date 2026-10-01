@@ -20,6 +20,10 @@ export async function handler(req: Request, res: Response) {
     const result = await doWork(foo);
     res.status(200).json(result);
   } catch (error) {
+    // BAD (second reason): serialising the raw error can throw inside this async
+    // catch (BigInt in an ethers CALL_EXCEPTION, circular graph in an AxiosError),
+    // which escapes as an unhandled rejection and kills the process. Never send the
+    // raw error object — send a scalar message (see safeErrorMessage).
     res.status(500).json({ message: error });
   }
 }
@@ -38,7 +42,8 @@ export async function handler(req: Request, res: Response) {
     const result = await doWork(foo);
     res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: error });
+    // Send a scalar message, never the raw error object.
+    res.status(500).json({ message: error instanceof Error ? error.message : String(error) });
   }
 }
 ```

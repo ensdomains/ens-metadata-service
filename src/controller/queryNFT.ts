@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { queryNFT } from '../service/queryNFT';
+import { safeErrorMessage } from '../utils/safeErrorMessage';
 
 /* istanbul ignore next */
 export async function queryNFTep(req: Request, res: Response) {
@@ -26,11 +27,14 @@ export async function queryNFTep(req: Request, res: Response) {
       });
       return;
     }
-    /* #swagger.responses[500] = { 
+    /* #swagger.responses[500] = {
           description: 'Internal Server Error'
     } */
+    // Serialize a bounded scalar, never the raw error object: ethers CALL_EXCEPTION
+    // carries a BigInt and axios AxiosError a circular agent graph, either of which
+    // would throw inside this async catch and crash the process. See safeErrorMessage.
     res.status(500).json({
-      message: error,
+      message: safeErrorMessage(error, 'NFT metadata resolution failed'),
     });
   }
 }
