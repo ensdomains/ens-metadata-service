@@ -5,7 +5,12 @@ import {
   registerFont 
 }                                                   from 'canvas';
 import { Version }                                  from '../base';
-import { CANVAS_FONT_PATH, CANVAS_EMOJI_FONT_PATH } from '../config';
+import {
+  CANVAS_FONT_PATH,
+  CANVAS_EMOJI_FONT_PATH,
+  MAX_BACKGROUND_EMBED_LENGTH,
+  MAX_SVG_OUTPUT_LENGTH,
+} from '../config';
 import createSVGfromTemplate                        from '../svg-template';
 import base64EncodeUnicode                          from '../utils/base64encode';
 import { isASCII, findCharacterSet }                from '../utils/characterSet';
@@ -160,6 +165,15 @@ export class Metadata {
 
   setBackground(base64: string, mimeType?: string) {
     if (this.is_normalized) {
+      // Don't embed an oversized avatar verbatim into the generated card SVG — a
+      // bounded input would otherwise become a much larger composed response. Over
+      // the limit, render the card without the background rather than erroring.
+      if (base64 && base64.length > MAX_BACKGROUND_EMBED_LENGTH) {
+        console.log(
+          `setBackground: avatar background of ${base64.length} bytes exceeds ${MAX_BACKGROUND_EMBED_LENGTH}; rendering without background`
+        );
+        return;
+      }
       this.background_image = base64;
       this.mimeType = mimeType;
     }
@@ -180,6 +194,15 @@ export class Metadata {
     );
 
     try {
+      // Backstop: never base64-encode / return an unexpectedly huge composed SVG.
+      // With the background bound this should not trip for legitimate input.
+      if (svg.length > MAX_SVG_OUTPUT_LENGTH) {
+        console.log(
+          `generateImage: composed SVG of ${svg.length} bytes exceeds ${MAX_SVG_OUTPUT_LENGTH}; dropping image`
+        );
+        this.setImage('');
+        return;
+      }
       this.setImage('data:image/svg+xml;base64,' + base64EncodeUnicode(svg));
     } catch (e) {
       console.log("generateImage", processedDomain, e);

@@ -27,8 +27,13 @@ export function rasterize(
       .then((response: any) =>
         resolve(Buffer.from(response.data, 'binary').toString('base64'))
       )
-      .catch(({ response }: any) => {
-        const { status, statusText } = response;
+      .catch((error: any) => {
+        // On a connection-level failure (DNS, refused, reset, timeout) there is no
+        // `response`, so destructuring it would throw inside this .catch — itself an
+        // unhandled rejection — and leave the outer promise unsettled (request hangs).
+        const status = error?.response?.status ?? 502;
+        const statusText =
+          error?.response?.statusText ?? error?.message ?? 'Rasterization request failed';
         reject({ status, statusText });
       });
   });

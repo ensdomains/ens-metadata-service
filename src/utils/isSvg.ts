@@ -1,39 +1,31 @@
-// @ref: https://github.com/sindresorhus/is-svg
-// @ref: https://github.com/sindresorhus/is-svg/pull/38
-import { XMLParser, XMLValidator } from 'fast-xml-parser';
+// Cheap magic-bytes check for SVG content served with a wrong/generic
+// Content-Type. Only inspects the first few KB with plain string scans
+// (no regex, no backtracking) so classification cost stays O(1) regardless
+// of body size (a full-document XML parse here was a DoS vector).
+// False negatives are safe: undetected SVGs are served under their declared
+// non-SVG mimetype, which browsers only handle in scriptless image mode.
+
+export const SNIFF_BYTES = 4096;
 
 export default function isSvg(data: string) {
   if (typeof data !== 'string') {
     throw new TypeError(`Expected a \`string\`, got \`${typeof data}\``);
   }
 
-  data = data.toLowerCase().trim();
-
-  if (data.length === 0) {
-    return false;
+  let head = data.slice(0, SNIFF_BYTES).trimStart().toLowerCase();
+  if (head.startsWith('\uFEFF')) {
+    head = head.slice(1).trimStart();
   }
 
-  // Has to be `!==` as it can also return an object with error info.
-  if (XMLValidator.validate(data) !== true) {
-    return false;
+  if (head.startsWith('<svg')) {
+    return true;
   }
-
-  let jsonObject;
-  const parser = new XMLParser();
-
-  try {
-    jsonObject = parser.parse(data);
-  } catch {
-    return false;
+  if (head.startsWith('<!doctype svg')) {
+    return true;
   }
-
-  if (!jsonObject) {
-    return false;
+  if (head.startsWith('<?xml')) {
+    const declEnd = head.indexOf('?>');
+    return declEnd !== -1 && head.slice(declEnd + 2).trimStart().startsWith('<svg');
   }
-
-  if (!('svg' in jsonObject)) {
-    return false;
-  }
-
-  return true;
+  return false;
 }

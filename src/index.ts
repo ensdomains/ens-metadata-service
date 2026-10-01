@@ -9,6 +9,19 @@ import endpoints                                    from './endpoint';
 import { blockRecursiveCalls }                      from './utils/blockRecursiveCalls';
 import { rateLimitMiddleware }                      from './utils/rateLimiter';
 import { malformedURIMiddleware }                   from './utils/malformedURI';
+import { safeErrorMessage }                         from './utils/safeErrorMessage';
+
+// Process-level backstop: a throw/rejection that escapes a handler (e.g. a
+// serialization error inside an async catch) must not terminate the worker. Node
+// >= 15 exits on an unhandled rejection by default; log and keep serving instead.
+// This service is stateless and read-only, so surviving a leaked request is
+// preferable to dropping every in-flight request on that instance.
+process.on('unhandledRejection', (reason) => {
+  console.error('APP_LOG::unhandledRejection', safeErrorMessage(reason));
+});
+process.on('uncaughtException', (err) => {
+  console.error('APP_LOG::uncaughtException', safeErrorMessage(err));
+});
 
 const setCacheHeader = function (
   req: Request,
@@ -76,6 +89,18 @@ endpoints(app);
 
 // Handle malformed URIs gracefully
 app.use(malformedURIMiddleware);
+
+// Final error-handling middleware: convert any error forwarded via next(err) into a
+// bounded scalar 500 rather than the default handler's stack, and never serialize a
+// raw (possibly BigInt-bearing or circular) error object.
+app.use(
+  (err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+      return next(err);
+    }
+    res.status(500).json({ message: safeErrorMessage(err) });
+  }
+);
 
 // Function to determine whether to compress a response
 function shouldCompress(req: Request, res: Response) {

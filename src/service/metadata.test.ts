@@ -26,3 +26,33 @@ test('should return correct font size', async (t: ExecutionContext<TestContext>)
   const textSize = Metadata._getFontSize('nick.eth');
   t.is(textSize, 32);
 });
+
+test('setBackground skips an oversized avatar background (item-3 bound)', (t: ExecutionContext<TestContext>) => {
+  const md = new Metadata({
+    name: 'nick.eth',
+    created_date: 1571924851000,
+    tokenId: '0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f',
+    version: Version.v1,
+  });
+  const huge = 'A'.repeat(10_000_001); // > MAX_BACKGROUND_EMBED_LENGTH
+  md.setBackground(huge, 'image/svg+xml');
+  t.is((md as any).background_image, undefined, 'oversized background must not be embedded');
+
+  const small = 'A'.repeat(1000);
+  md.setBackground(small, 'image/png');
+  t.is((md as any).background_image, small, 'normal background is embedded');
+});
+
+test('generateImage drops an oversized composed SVG instead of returning it (item-3 backstop)', (t: ExecutionContext<TestContext>) => {
+  const md = new Metadata({
+    name: 'nick.eth',
+    created_date: 1571924851000,
+    tokenId: '0x5d5727cb0fb76e4944eafb88ec9a3cf0b3c9025a4b2f947729137c5d7f84f68f',
+    version: Version.v1,
+  });
+  // Force a pathological composed SVG by stubbing the renderer via a huge background
+  // that slips past setBackground is not possible (it's capped), so stub _renderSVG.
+  (md as any)._generateByVersion = () => 'x'.repeat(12_000_001); // > MAX_SVG_OUTPUT_LENGTH
+  md.generateImage();
+  t.is(md.image, '', 'oversized composed SVG must be dropped, not returned');
+});

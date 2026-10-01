@@ -56,7 +56,35 @@ const CCIP_READ_TIMEOUT = 10_000;
 // Maximum content length for CCIP-read (ERC-3668) gateway responses (1MB)
 const CCIP_READ_MAX_CONTENT_LENGTH = 1000000;
 
+// Maximum content length for NFT/avatar metadata JSON fetched by @ensdomains/ens-avatar
+// through its shared axios instance (1MB). Bounds attacker-controlled (possibly
+// gzip-bombed) metadata bodies. Aligned with ens-avatar's own MAX_METADATA_BYTES
+// (1,000,000) — from 1.0.5 the library enforces this internally regardless of what
+// the service passes, so keeping the service value in step avoids a looser window.
+const NFT_METADATA_MAX_CONTENT_LENGTH = 1000000;
+
+// Maximum number of top-level enumerable properties allowed on NFT/avatar metadata
+// before it is spread/serialized. A top-level JSON array (or an object with millions
+// of keys) returned by an attacker-controlled tokenURI would otherwise be spread into
+// millions of enumerable properties, freezing the event loop and exhausting memory.
+// Legitimate metadata objects have a handful of top-level keys; 1000 is generous.
+const NFT_METADATA_MAX_PROPERTIES = 1000;
+
+// Maximum base64 length of an avatar that may be embedded as the background of the
+// generated ENS NFT card SVG (~10MB base64 ≈ 7.5MB binary). A large avatar would
+// otherwise be inlined verbatim into the service's own SVG and returned, turning a
+// bounded input into a much larger composed response. Over this, the card is rendered
+// without the background (graceful degradation), not errored.
+const MAX_BACKGROUND_EMBED_LENGTH = 10_000_000;
+
+// Backstop on the size of the composed ENS NFT card SVG before it is base64-encoded
+// into a data URI and returned. With the background bound above this should never trip
+// for legitimate input; it caps any unexpected blowup in the generated markup.
+const MAX_SVG_OUTPUT_LENGTH = 12_000_000;
+
 export {
+  MAX_BACKGROUND_EMBED_LENGTH,
+  MAX_SVG_OUTPUT_LENGTH,
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
   ADDRESS_NAME_WRAPPER,
@@ -70,6 +98,8 @@ export {
   IPFS_GATEWAY,
   INFURA_API_KEY,
   MAX_CONTENT_LENGTH,
+  NFT_METADATA_MAX_CONTENT_LENGTH,
+  NFT_METADATA_MAX_PROPERTIES,
   OPENSEA_API_KEY,
   QUERY_NFT_TIMEOUT,
   REDIS_URL,
