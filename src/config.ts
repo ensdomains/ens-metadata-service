@@ -41,8 +41,8 @@ const NAMEWRAPPER_ABI = [
 // response timeout: 1 min
 const RESPONSE_TIMEOUT = 15 * 1000;
 
-// Maximum content length for fetched images (50MB)
-const MAX_CONTENT_LENGTH = 50000000;
+// Maximum content length for fetched images (25MB)
+const MAX_CONTENT_LENGTH = 25000000;
 
 // Timeout for /queryNFT metadata resolution (10 seconds)
 const QUERY_NFT_TIMEOUT = 10_000;
@@ -50,12 +50,20 @@ const QUERY_NFT_TIMEOUT = 10_000;
 // Hostnames of this service — used to block self-referential fetches
 const SELF_HOST_DENYLIST = ['metadata.ens.domains'];
 
+// Timeout for CCIP-read (ERC-3668) gateway fetches (10 seconds)
+const CCIP_READ_TIMEOUT = 10_000;
+
+// Maximum content length for CCIP-read (ERC-3668) gateway responses (1MB)
+const CCIP_READ_MAX_CONTENT_LENGTH = 1000000;
+
 export {
   ADDRESS_ETH_REGISTRAR,
   ADDRESS_ETH_REGISTRY,
   ADDRESS_NAME_WRAPPER,
   CANVAS_FONT_PATH,
   CANVAS_EMOJI_FONT_PATH,
+  CCIP_READ_MAX_CONTENT_LENGTH,
+  CCIP_READ_TIMEOUT,
   ETH_REGISTRY_ABI,
   NAMEWRAPPER_ABI,
   INAMEWRAPPER,
